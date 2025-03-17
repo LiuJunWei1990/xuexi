@@ -1,0 +1,295 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Character : MonoBehaviour
+{
+    /// <summary>
+    /// 等距坐标类型
+    /// </summary>
+    Iso iso;
+    /// <summary>
+    /// 动画组件
+    /// </summary>
+    Animator animator;
+    /// <summary>
+    /// 方向(存疑)
+    /// </summary>
+    public int direction = 0;
+    /// <summary>
+    /// 速度
+    /// </summary>
+    static public float speed = 3.5f;
+    /// <summary>
+    /// 路径,表现为一个装坐标的容器
+    /// </summary>
+    List<Pathing.Step> path = new List<Pathing.Step>();
+    /// <summary>
+    /// 当前互动的物体
+    /// </summary>
+    public Usable usable;
+    /// <summary>
+    /// 已经移动的距离
+    /// </summary>
+    float traveled = 0;
+
+    private void Start()
+    {
+        //获取两个组件
+        iso = GetComponent<Iso>();
+        animator = GetComponent<Animator>();
+    }
+
+    /// <summary>
+    /// 使用/互动
+    /// </summary>
+    /// <param name="usable">使用的目标物</param>
+    public void Use(Usable usable)
+    {
+        //准备要使用的物体和正在使用的物体时同一个就跳出,不需要执行任何代码.
+        if (this.usable == usable) return;
+        //生成走向物体的路径
+        GoTo(usable.GetComponent<Iso>().tilePos);
+        //生成路径后把当前互动物置为现在使用的这个,因为生成路径会重置当前互动物体为空,所以放在后面
+        this.usable = usable;
+    }
+
+    /// <summary>
+    /// 行走至(生成路径,移动是尤Move()实现的)
+    /// </summary>
+    /// <param name="target">目标点(鼠标点击处)</param>
+    public void GoTo(Vector2 target)
+    {
+        //生成路径之前,重置当前互动的物体
+        this.usable = null;
+        //////////////第一部分是清空原有路径,因为鼠标点了一个新目的地.
+
+        //取当前游戏对象的等距坐标,在Iso类型里面取
+        Vector2 startPos = iso.tilePos;
+        //路径容器大于0,就是代表还有路点没走完(需要清空原有的路径)
+        if(path.Count > 0)
+        {
+            //获取原第一个路径
+            var firstStep = path[0];
+            //坐标加路径等于目标点(原第一个路点)
+            startPos = firstStep.pos;
+            //清空路径
+            path.Clear();
+            //把原本的第一个路点优先添加到刚才已经清空的路径中,这样做的目的是为了避免人物突然卡住,飘逸,闪现的问题
+            path.Add(firstStep);
+        }
+        else
+        {
+            //路点走完了就是待机状态,直接清空就行了.
+            path.Clear();
+            traveled = 0;
+        }
+
+        ////////////////第二部分,是创建新的路径
+
+        //重新生成并添加路点,注意前面已经把firstStep加为第一个路点了.
+        path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target));
+        //更新动画
+        UpdateAnimation();
+    }
+
+    /// <summary>
+    /// 瞬移
+    /// </summary>
+    /// <param name="target">目标点</param>
+    public void Teleport(Vector2 target)
+    {
+        //判断目标网格是否可通行
+        if (Tilemap.instance[target])
+        {
+            //可通行就直接瞬移
+            iso.pos = target;
+            iso.tilePos = target;
+        }
+        else
+        {
+            //不可通行就画路径,准备瞬移到按照寻路的规则的目标网格
+            var pathToTarget = Pathing.BuildPath(Iso.Snap(iso.tilePos), target);
+            //路径不为空,为空就返回
+            if (pathToTarget.Count == 0) return;
+            //长度-1,就是路径容器中的最后一个路点,瞬移过去
+            iso.pos = pathToTarget[pathToTarget.Count - 1].pos;
+            iso.tilePos = iso.pos;
+        }
+        //既然是瞬移,就把路径清空
+        path.Clear();
+        //行走距离也清零
+        traveled = 0;
+        //更新个动画吧
+        UpdateAnimation();
+    }
+
+    private void Update()
+    {
+        //画线人物站立的网格画线
+        Iso.DebugDrawTile(iso.tilePos);
+        //画路径线
+        Pathing.DebugDrawPath(path);
+        //移动角色
+        Move();
+
+        //执行完当前帧的Move()后,如果路径为空,并且有当前互动的物体
+        if(path.Count == 0 && usable)
+        {
+            //使用当前物体
+            usable.Use();
+            //当前物体设置为空
+            usable = null;
+        }
+    }
+    /// <summary>
+    /// 移动角色
+    /// </summary>
+    private void Move()
+    {
+        //分支1.路径为空就返回
+        if (path.Count == 0) return;
+
+
+        //获取第一个路径
+        Vector2 step = path[0].direction;
+        //计算第一路径的长度;
+        float stepLen = step.magnitude;
+
+        //计算当前帧的移动距离
+        float distance = speed * Time.deltaTime;
+
+        //分支2.当下一帧要经过第一路径了,已走距离加上当前帧距离超过第一路径长度
+        while (traveled + distance >= stepLen)
+        {
+            //算距离第一个路点的距离
+            float firstPart = stepLen - traveled;
+            //角色移动到第一路点,具体操作是把第一路径归一化乘以距离.归一化就是把路径变成方向,乘以长度后就会变成一端路径.
+            iso.pos += step.normalized * firstPart;
+            //当前帧距离,要减去上面角色移动掉的距离.
+            distance -= firstPart;
+            //更新已经移动了的距离(不明白为什么要减去第一条路径的长度)
+            traveled += firstPart - stepLen;
+            //更新角色所在网格的位置
+            iso.tilePos += step;
+            //第一段路径已经走完了,删除
+            path.RemoveAt(0);
+            //更新动画
+            UpdateAnimation();
+            //路径不为空就继续获取下面的路径
+            if (path.Count > 0)
+            {
+                step = path[0].direction;
+            }
+        }
+        //分支3.路径不为空就开走
+        if (path.Count > 0)
+        {
+            traveled += distance;
+            iso.pos += step.normalized * distance;
+        }
+        //分支4.上面代码执行完之后路径空了,转为待机
+        if (path.Count == 0)
+        {
+            //坐标取整
+            iso.pos.x = Mathf.Round(iso.pos.x);
+            iso.pos.y = Mathf.Round(iso.pos.y);
+            //移动距离归零
+            traveled = 0;
+        }
+    }
+
+    /// <summary>
+    /// 更新动画
+    /// </summary>
+    private void UpdateAnimation()
+    {
+        //动画名称
+        String animation;
+
+        //没有路径就是待机动画
+        if(path.Count == 0)
+        {
+            animation = "Idle";
+        }
+        //否则就是行走
+        else
+        {
+            //行走有不同方向都是以Walk开头
+            animation = "Walk";
+            //调取当前路径
+            Vector2 vel = path[0].direction;
+            //根据X,Y轴的正负判断方向
+            if (vel.x > 0 && vel.y < 0)
+            {
+                direction = 0;
+            }
+            else if (vel.x > 0 && vel.y == 0)
+            {
+                direction = 1;
+            }
+            else if (vel.x > 0 && vel.y > 0)
+            {
+                direction = 2;
+            }
+            else if (vel.x == 0 && vel.y > 0)
+            {
+                direction = 3;
+            }
+            else if (vel.x < 0 && vel.y > 0)
+            {
+                direction = 4;
+            }
+            else if (vel.x < 0 && vel.y == 0)
+            {
+                direction = 5;
+            }
+            else if (vel.x < 0 && vel.y < 0)
+            {
+                direction = 6;
+            }
+            else if (vel.x == 0 && vel.y < 0)
+            {
+                direction = 7;
+            }
+        }
+
+        //根据方向添加动画名称的末尾
+        if (direction == 0)
+        {
+            animation += "Right";
+        }
+        else if (direction == 1)
+        {
+            animation += "UpRight";
+        }
+        else if (direction == 2)
+        {
+            animation += "Up";
+        }
+        else if (direction == 3)
+        {
+            animation += "UpLeft";
+        }
+        else if (direction == 4)
+        {
+            animation += "Left";
+        }
+        else if (direction == 5)
+        {
+            animation += "DownLeft";
+        }
+        else if (direction == 6)
+        {
+            animation += "Down";
+        }
+        else if (direction == 7)
+        {
+            animation += "DownRight";
+        }
+
+        // 播放动画
+        animator.Play(animation);
+    }
+}
