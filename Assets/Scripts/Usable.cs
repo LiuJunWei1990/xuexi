@@ -42,7 +42,7 @@ public class Usable : MonoBehaviour
         //设置为当前目标
         hot = this;
         //修改材质亮度
-        spriteRenderer.material.SetFloat("_SelfIllum", 1.0f);
+        spriteRenderer.material.SetFloat("_SelfIllum", 2.0f);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class Usable : MonoBehaviour
         //当前目标置空
         hot = null;
         //修改材质亮度
-        spriteRenderer.material.SetFloat("_SelfIllum", 0.75f);
+        spriteRenderer.material.SetFloat("_SelfIllum", 1.0f);
     }
 
     /// <summary>

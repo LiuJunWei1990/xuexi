@@ -7,19 +7,27 @@ using System.Collections.Generic;
 // 引入 Unity 引擎的命名空间，用于访问 Unity 的核心功能
 using UnityEngine;
 
+
+
 /// <summary>
 /// 定义 Iso 类，用于处理等距坐标和世界坐标之间的转换,绘制地图标线(用于调试模式,和寻路遮挡)
 /// </summary>
-/// 该脚本携带一个组件
+/// 特性:会在编辑模式下运行该脚本
+[ExecuteInEditMode]
+/// 特性:该脚本携带一个组件
 [RequireComponent(typeof(SpriteRenderer))]
 public class Iso : MonoBehaviour
 {
 
     /// <summary>
-    /// 静态变量，表示每个瓦片的大小，默认值为 0.2
+    /// 静态变量，瓦片的尺寸（宽度）
     /// </summary>
     static public float tileSize = 0.2f;
 
+    /// <summary>
+    /// 静态变量，瓦片的尺寸（高度，为宽度的一半）
+    /// </summary>
+    static public float tileSizeY = tileSize / 2;
     /// <summary>
     /// 当前对象的位置（等距坐标）
     /// </summary>
@@ -34,6 +42,11 @@ public class Iso : MonoBehaviour
     /// 精灵材质渲染器
     /// </summary>
     SpriteRenderer spriteRenderer;
+
+    /// <summary>
+    /// 宏瓦片的排序值,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+    /// </summary>
+    public int macroTileOrder;
 
     /// <summary>
     /// 将等距坐标转换为世界坐标
@@ -114,6 +127,22 @@ public class Iso : MonoBehaviour
         return pos;
     }
 
+    /// <summary>
+    /// 计算宏瓦片坐标（将坐标按 5x5 分块）,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+    /// </summary>
+    /// <param name="pos">等距坐标</param>
+    /// <returns>XY轴分别除以5并取整的结果</returns>
+    static public Vector3 MacroTile(Vector3 pos)
+    {
+        //保持Z轴不变
+        var macroTlie = pos;
+        //X,Y轴除以5后取整
+        macroTlie.x = Mathf.Round(pos.x / 5);
+        macroTlie.y = Mathf.Round(pos.y / 5);
+        //返回处理后的坐标
+        return macroTlie;
+    }
+
     private void Awake()
     {
         //获取当前对象坐标
@@ -130,20 +159,47 @@ public class Iso : MonoBehaviour
         // 空方法，未实现具体逻辑
     }
 
+    /// <summary>
+    /// 用来取余数的方法,也叫取模.这个方法保证余数精度不变,除之前小数点后几位就是几位
+    /// </summary>
+    /// <param name="a">除</param>
+    /// <param name="b">被除</param>
+    /// <returns>a除以b余多少</returns>
+    static float fmod(float a, float b)
+    {
+        return a - b * Mathf.Round(a / b);
+    }
+
     // Update 方法，每帧调用一次
     void Update()
     {
-        // 将当前对象的等距坐标转换为世界坐标，并设置对象的位置
-        transform.position = MapToWorld(pos);
+        // 如果当前对象处于游戏状态
+        if (Application.isPlaying)
+        {
+            // 每帧将当前对象的等距坐标转换为世界坐标，并设置对象的位置
+            transform.position = MapToWorld(pos);
+        }
+        // 如果当前对象处于编辑状态
+        else
+        {
+            // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐网格)
+            transform.position = MapToWorld(Snap(MapToIso(transform.position)));
+            //反过来由当前对象世界坐标转换为等距坐标来更新pos,原本是pos更新人物位置,现在是人物位置更新pos,因为编辑模式下,人物位置是可以拖动的
+            pos = MapToIso(transform.position);
+        }
+
         //管理物体的渲染层级,数值越大越靠前,因为加了-号,变成数值越小越靠前
-        //y轴不用解释了,后面那个是精灵的像素高度,这样保证同一坐标下,贴图大的精灵更加靠后
-        spriteRenderer.sortingOrder = -(int)(transform.position.y * spriteRenderer.sprite.pixelsPerUnit);
+        spriteRenderer.sortingOrder = -Mathf.RoundToInt(transform.position.y / tileSizeY);
+        //宏瓦片的排序值,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+        var macroTile = MacroTile(pos);
+        macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
+        spriteRenderer.sortingOrder += macroTileOrder * 1000;
     }
 
-    // 在 Unity 编辑器中绘制 Gizmos（调试信息）
-    void OnDrawGizmosSelected()
-    {
-        // 绘制当前游戏对象的网格调试信息
-        DebugDrawTile(pos);
-    }
+    //// 在 Unity 编辑器中绘制 Gizmos（调试信息）
+    //void OnDrawGizmosSelected()
+    //{
+    //    // 绘制当前游戏对象的网格调试信息
+    //    DebugDrawTile(pos);
+    //}
 }

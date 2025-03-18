@@ -74,9 +74,9 @@ public class Tilemap : MonoBehaviour
             pos.x -= tile.width / 2;
             pos.y -= tile.height / 2;
             //遍历瓦片的所有网格
-            for (int x = 0; x < tile.height; ++x)
+            for (int x = 0; x < tile.width; ++x)
             {
-                for (int y = 0; y < tile.width; ++y)
+                for (int y = 0; y < tile.height; ++y)
                 {
                     //根据瓦片可否通行给网格打可否通行标记
                     Tilemap.instance[pos + new Vector3(x, y)] = tile.passable;
