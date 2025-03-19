@@ -149,17 +149,22 @@ public class Tilemap : MonoBehaviour
             map[MapToIndex(tilePos)] = value;
         }
     }
-
+    /// <summary>
+    /// 这个是编辑模式和运行模式都会调用的方法,用来绘制网格线
+    /// </summary>
     private void OnDrawGizmos()
     {
+        //设置颜色
         Gizmos.color = new Color(0.35f, 0.35f, 0.35f);
-
+        //遍历-10到9.作为瓦片的边框
         for (int x = -10; x < 10; ++x)
         {
             for (int y = -10; y < 10; ++y)
             {
+                //不太明白怎么算的,反正是画瓦片的四条边
+                //算出瓦片的中心点，然后转换为世界坐标，再除以瓦片长度
                 var pos = Iso.MapToWorld(new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
-
+                //绘制瓦片的四条边
                 Gizmos.DrawLine(pos, pos + new Vector3(20, 10));
                 Gizmos.DrawLine(pos, pos + new Vector3(20, -10));
             }

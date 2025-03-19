@@ -20,12 +20,12 @@ public class Iso : MonoBehaviour
 {
 
     /// <summary>
-    /// 静态变量，瓦片的尺寸（宽度）
+    /// 静态变量，瓦片的尺寸（世界坐标宽度）
     /// </summary>
     static public float tileSize = 0.2f;
 
     /// <summary>
-    /// 静态变量，瓦片的尺寸（高度，为宽度的一半）
+    /// 静态变量，瓦片的尺寸（世界坐标高度，为宽度的一半）
     /// </summary>
     static public float tileSizeY = tileSize / 2;
     /// <summary>
@@ -71,17 +71,17 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 绘制标线的调试信息，带有颜色和网格边距(绘制一小格的四条边)
+    /// 绘制标线的调试信息，带有颜色和网格边距(主要应该是绘制网格的，长度默认是0.5f.当然要绘制瓦片边界也不是不行，给偏移加负数长度使其超过0.5就行)
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="color">线条颜色</param>
-    /// <param name="margin">偏移</param>
+    /// <param name="margin">偏移，就是网格中间的小方块，A*寻路用的那种</param>
     static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0)
     {
         // 将等距坐标转换为世界坐标
         pos = Iso.MapToWorld(pos);
 
-        // 计算标线网格的边界
+        // 计算标线网格的一半边长
         float d = 0.5f - margin;
 
         // 绘制网格的四条边
@@ -90,12 +90,16 @@ public class Iso : MonoBehaviour
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color);
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)), color);
     }
-
+    /// <summary>
+    /// 专门给调试模式用的,绘制瓦片边界，颜色由Gizmos的颜色决定，边长的计算方式有点变化，这里是边长乘以0.5
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <param name="size"></param>
     static public void GizmosDrawTile(Vector3 pos,float size = 1.0f)
     {
         // 将等距坐标转换为世界坐标
         pos = Iso.MapToWorld(pos);
-        // 计算标线网格的边界
+        // 计算标线网格的一半边长
         float d = 0.5f * size;
         // 绘制网格的四条边
         Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)));
@@ -105,7 +109,7 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 绘制游戏对象地面网格的调试信息，默认颜色为白色(脚下的小格子)
+    /// 不提供颜色的重载debug画线，默认颜色为白色
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="margin">偏移</param>
