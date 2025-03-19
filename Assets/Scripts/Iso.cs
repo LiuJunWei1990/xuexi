@@ -91,6 +91,19 @@ public class Iso : MonoBehaviour
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)), color);
     }
 
+    static public void GizmosDrawTile(Vector3 pos,float size = 1.0f)
+    {
+        // 将等距坐标转换为世界坐标
+        pos = Iso.MapToWorld(pos);
+        // 计算标线网格的边界
+        float d = 0.5f * size;
+        // 绘制网格的四条边
+        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)));
+        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)));
+        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)));
+        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)));
+    }
+
     /// <summary>
     /// 绘制游戏对象地面网格的调试信息，默认颜色为白色(脚下的小格子)
     /// </summary>
@@ -182,6 +195,7 @@ public class Iso : MonoBehaviour
         // 如果当前对象处于编辑状态
         else
         {
+            //>>>>>>>>>>这里代码的作用时,在编辑模式下,可以拖动游戏对象位置,并且自动对齐网格,一格一格的动<<<<<<<<<<<<
             // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐网格)
             transform.position = MapToWorld(Snap(MapToIso(transform.position)));
             //反过来由当前对象世界坐标转换为等距坐标来更新pos,原本是pos更新人物位置,现在是人物位置更新pos,因为编辑模式下,人物位置是可以拖动的

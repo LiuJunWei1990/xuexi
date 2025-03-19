@@ -73,6 +73,9 @@ public class Tilemap : MonoBehaviour
             //获取瓦片最下方网格的等距坐标
             pos.x -= tile.width / 2;
             pos.y -= tile.height / 2;
+            //加上瓦片的偏移量
+            pos.x += tile.offsetX;
+            pos.y += tile.offsetY;
             //遍历瓦片的所有网格
             for (int x = 0; x < tile.width; ++x)
             {
@@ -90,9 +93,9 @@ public class Tilemap : MonoBehaviour
         //下面都是绘制网格红线的代码
 
         //准备颜色,白
-        Color color = new Color(1, 1, 1, 0.07f);
+        Color color = new Color(1, 1, 1, 0.15f);
         //准备颜色,红
-        Color redColor = new Color(1, 0, 0, 0.2f);
+        Color redColor = new Color(1, 0, 0, 0.3f);
 
         //取屏幕中心点的等距坐标
         Vector3 pos = Iso.Snap(Iso.MapToIso(Camera.main.transform.position));
@@ -109,7 +112,7 @@ public class Tilemap : MonoBehaviour
             for (int y = 1; y < debugHeight; ++y)
             {
                 //形参1,当前网格坐标,形参2,获取当前网格状态,可通行的白色不可的红色
-                Iso.DebugDrawTile(pos + new Vector3(x, y), this[pos + new Vector3(x, y)] ? color : redColor);
+                Iso.DebugDrawTile(pos + new Vector3(x, y), this[pos + new Vector3(x, y)] ? color : redColor,0.9f);
             }
         }
     }
@@ -144,6 +147,22 @@ public class Tilemap : MonoBehaviour
         {
             //通过等距坐标计算出索引
             map[MapToIndex(tilePos)] = value;
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = new Color(0.35f, 0.35f, 0.35f);
+
+        for (int x = -10; x < 10; ++x)
+        {
+            for (int y = -10; y < 10; ++y)
+            {
+                var pos = Iso.MapToWorld(new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
+
+                Gizmos.DrawLine(pos, pos + new Vector3(20, 10));
+                Gizmos.DrawLine(pos, pos + new Vector3(20, -10));
+            }
         }
     }
 

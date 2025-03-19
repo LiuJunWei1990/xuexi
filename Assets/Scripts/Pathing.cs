@@ -266,12 +266,10 @@ public class Pathing
             StepTo(node);
 
             iterCount += 1;
-            if (iterCount > 1000)
+            if (iterCount > 100)
             {
-                //避免陷入死循环
-                Debug.LogWarning("异常多的路径生成迭代,中止");
-                //暂停编辑器并跳转到这一行
-                Debug.Break();
+                //寻路循环超过100次,就回溯,生成路径,避免陷入死循环
+                TraverseBack(node);
                 //跳出
                 break;
             }
