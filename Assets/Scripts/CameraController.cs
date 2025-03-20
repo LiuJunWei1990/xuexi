@@ -3,21 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 相机控制器组件
+/// </summary>
 public class CameraController : MonoBehaviour
 {
     /// <summary>
-    /// 目标对象(通常是玩家角色)
+    /// 目标
     /// </summary>
-    public Transform targrt;
+    PlayerController playerController;
 
-    private void Start()
+    private void Awake()
     {
-        //如果每目标就绑玩家
-        if (!targrt)
-        {
-            targrt = GameObject.FindWithTag("Player").transform;
-        }
-
+        //获取目标,按TAG找
+        playerController = GameObject.FindObjectOfType<PlayerController>();
         //更新一下坐标
         transform.position = CalcTargetPos();
     }
@@ -35,7 +34,7 @@ public class CameraController : MonoBehaviour
     private Vector3 CalcTargetPos()
     {
         //保存目标坐标
-        Vector3 targetPos = targrt.position;
+        Vector3 targetPos = playerController.character.transform.position;
 
         //修改保存坐标的Z轴,实际就是Z不动
         targetPos.z = transform.position.z;

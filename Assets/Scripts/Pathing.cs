@@ -6,11 +6,12 @@ using UnityEngine;
 public class Pathing
 {
     /// <summary>
-    /// 步子,把每一步具象成一个结构,包含方向和坐标
+    /// 步子,把每一步具象成一个结构,包含方向和坐标,方向索引
     /// </summary>
     public struct Step
     {
         public Vector2 direction;
+        public int directionIndex;
         public Vector2 pos;
     }
 
@@ -29,6 +30,7 @@ public class Pathing
         public Vector2 pos;                      // 节点的位置
         public Node parent;                      // 父节点
         public Vector2 direction;                // 移动方向
+        public int dirctionIndex;                // 方向索引
 
         private Node()
         {
@@ -113,24 +115,50 @@ public class Pathing
     /// 关闭列表
     /// </summary>
     static private List<Node> closeNodes = new List<Node>();
+
+    /// <summary>
+    /// 需要遍历的可能移动的方向,更具判断条件被赋值为8或16个方向
+    /// </summary>
+    static private Vector2[] directions;
     /// <summary>
     /// 8个可能的移动方向
     /// </summary>
-    static private Vector2[] directions =
+    static private Vector2[] directions8 =
     {
-        new Vector2(1, 0),
+        new Vector2(-1, -1),
+        new Vector2(-1, 0),
+        new Vector2(-1, 1),
         new Vector2(0, 1),
         new Vector2(1, 1),
-        new Vector2(-1, 0),
-        new Vector2(0, -1),
-        new Vector2(-1, -1),
+        new Vector2(1, 0),
         new Vector2(1, -1),
-        new Vector2(-1, 1)
+        new Vector2(0, -1) };
+    /// <summary>
+    /// 16个可能的移动方向
+    /// </summary>
+    static private Vector2[] directions16 =
+    {
+        new Vector2(-1, -1), 
+        new Vector2(-2, -1), 
+        new Vector2(-1, 0), 
+        new Vector2(-2, 1), 
+        new Vector2(-1, 1), 
+        new Vector2(-1, 2), 
+        new Vector2(0, 1), 
+        new Vector2(1, 2), 
+        new Vector2(1, 1), 
+        new Vector2(2, 1), 
+        new Vector2(1, 0), 
+        new Vector2(2, -1), 
+        new Vector2(1, -1), 
+        new Vector2(1, -2), 
+        new Vector2(0, -1), 
+        new Vector2(-1, -2)
 
     };
 
     /// <summary>
-    /// 遍历八个方向的节点
+    /// 走向...(遍历可能方向)
     /// </summary>
     /// <param name="node">中心节点</param>
     static private void StepTo(Node node)
@@ -139,9 +167,10 @@ public class Pathing
         closeNodes.Add(node);
         //添加一个空的节点对象,做为新节点
         Node newNode = null;
-        //遍历八个方向的路径
-        foreach (Vector2 direction in directions)
+        //遍厉可能的方向的路径
+        for(int i = 0;i < directions.Length;++i)
         {
+            Vector2 direction = directions[i];
             //中心节点+某一方向路径,等于该方向的节点坐标(用的是等距坐标)
             Vector2 pos = node.pos + direction;
 
@@ -157,12 +186,13 @@ public class Pathing
                 //Contains列表中是否包含形参,这里就是判断两个列表中是否都没有newNode,都没有就执行代码
                 if (!closeNodes.Contains(newNode) && !openNodes.Contains(newNode))
                 {
-                    //节点评分:移动成本+启发式距离(移动成本是1,因为每次只遍历中心点周围一圈的距离)
-                    newNode.score = CalcScore(newNode.pos, target);
                     //中心点为新节点的父节点
                     newNode.parent = node;
                     //方向,因为只移动1的距离,方向和路径是一样的
                     newNode.direction = direction;
+                    newNode.dirctionIndex = i;
+                    //节点评分:移动成本+启发式距离(移动成本是1,因为每次只遍历中心点周围一圈的距离)
+                    newNode.score = CalcScore(target,newNode);
                     //添加到开放节点中
                     openNodes.Add(newNode);
                     //新节点置空
@@ -175,14 +205,14 @@ public class Pathing
     }
 
     /// <summary>
-    /// //节点评分:移动成本+启发式距离(移动成本是1,因为每次只遍历中心点周围一圈的距离)
+    /// //节点评分:移动成本+启发式距离(移动成本是下一步方向的长度,约等于1这样更精确)
     /// </summary>
     /// <param name="src">节点位置</param>
     /// <param name="target">目标位置</param>
     /// <returns></returns>
-    static private float CalcScore(Vector2 src, Vector2 target)
+    static private float CalcScore(Vector2 src, Node target)
     {
-        return 1 + Vector2.Distance(src, target);
+        return target.direction.magnitude + Vector2.Distance(src, target.pos);
     }
 
     /// <summary>
@@ -198,6 +228,7 @@ public class Pathing
             Step step = new Step();
             //把节点的属性赋值给步子
             step.direction = node.direction;
+            step.directionIndex = node.dirctionIndex;
             step.pos = node.pos;
             //把步子插入到路径的第一个
             path.Insert(0, step);
@@ -212,10 +243,11 @@ public class Pathing
     /// <param name="from">来自</param>
     /// <param name="target">目标</param>
     /// <returns>返回路径列表</returns>
-    static public List<Step> BuildPath(Vector2 from, Vector2 target)
+    static public List<Step> BuildPath(Vector2 from, Vector2 target,int directionCount = 8)
     {
         //////////前期准备
-
+        //判断是8方向还是16方向
+        directions = directionCount == 8 ? directions8 : directions16;
         //先把目标点赋给类中的目标点
         Pathing.target = target;
         //回收内存,开放节点和关闭节点的
@@ -230,7 +262,7 @@ public class Pathing
         //给起始节点初始化,各种赋值,添入开放列表
         startNode.parent = null;
         startNode.pos = from;
-        startNode.score = CalcScore(from, target);
+        startNode.score = 999; //这是第一个节点,评分无所谓,给个最高分就行,因为它是最远的
         openNodes.Add(startNode);
 
 
@@ -262,7 +294,7 @@ public class Pathing
 
             //没到目标点就删掉
             openNodes.RemoveAt(0);
-            //这个方法会把node加入关闭列表,并且把它的八个方向加入开放列表
+            //这个方法会把node加入关闭列表,并且把它的方向加入开放列表
             StepTo(node);
 
             iterCount += 1;

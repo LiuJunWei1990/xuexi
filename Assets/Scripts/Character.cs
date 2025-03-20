@@ -6,6 +6,30 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     /// <summary>
+    /// 方向数量
+    /// </summary>
+    public int directionCount = 8;
+    /// <summary>
+    /// 速度
+    /// </summary>
+    public float speed = 3.5f;
+    /// <summary>
+    /// 是否在跑动
+    /// </summary>
+    public bool run = false;
+    /// <summary>
+    /// 当前互动的物体
+    /// </summary>
+    ///特性:在Inspector面板中隐藏
+    [HideInInspector]
+    public Usable usable;
+    /// <summary>
+    /// 方向(存疑)
+    /// </summary>
+    /// 特性:在Inspector面板中隐藏
+    [HideInInspector]
+    public int direction = 0;
+    /// <summary>
     /// 等距坐标类型
     /// </summary>
     Iso iso;
@@ -13,22 +37,12 @@ public class Character : MonoBehaviour
     /// 动画组件
     /// </summary>
     Animator animator;
-    /// <summary>
-    /// 方向(存疑)
-    /// </summary>
-    public int direction = 0;
-    /// <summary>
-    /// 速度
-    /// </summary>
-    static public float speed = 3.5f;
+
     /// <summary>
     /// 路径,表现为一个装坐标的容器
     /// </summary>
     List<Pathing.Step> path = new List<Pathing.Step>();
-    /// <summary>
-    /// 当前互动的物体
-    /// </summary>
-    public Usable usable;
+
     /// <summary>
     /// 已经移动的距离
     /// </summary>
@@ -89,7 +103,7 @@ public class Character : MonoBehaviour
         ////////////////第二部分,是创建新的路径
 
         //重新生成并添加路点,注意前面已经把firstStep加为第一个路点了.
-        path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target));
+        path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target,directionCount));
         //更新动画
         UpdateAnimation();
     }
@@ -110,7 +124,7 @@ public class Character : MonoBehaviour
         else
         {
             //不可通行就画路径,准备瞬移到按照寻路的规则的目标网格
-            var pathToTarget = Pathing.BuildPath(Iso.Snap(iso.tilePos), target);
+            var pathToTarget = Pathing.BuildPath(Iso.Snap(iso.tilePos), target,directionCount);
             //路径不为空,为空就返回
             if (pathToTarget.Count == 0) return;
             //长度-1,就是路径容器中的最后一个路点,瞬移过去
@@ -216,80 +230,21 @@ public class Character : MonoBehaviour
         //否则就是行走
         else
         {
-            //行走有不同方向都是以Walk开头
-            animation = "Walk";
-            //调取当前路径
-            Vector2 vel = path[0].direction;
-            //根据X,Y轴的正负判断方向
-            if (vel.x > 0 && vel.y < 0)
-            {
-                direction = 0;
-            }
-            else if (vel.x > 0 && vel.y == 0)
-            {
-                direction = 1;
-            }
-            else if (vel.x > 0 && vel.y > 0)
-            {
-                direction = 2;
-            }
-            else if (vel.x == 0 && vel.y > 0)
-            {
-                direction = 3;
-            }
-            else if (vel.x < 0 && vel.y > 0)
-            {
-                direction = 4;
-            }
-            else if (vel.x < 0 && vel.y == 0)
-            {
-                direction = 5;
-            }
-            else if (vel.x < 0 && vel.y < 0)
-            {
-                direction = 6;
-            }
-            else if (vel.x == 0 && vel.y < 0)
-            {
-                direction = 7;
-            }
+            //通过奔跑标签判断是跑还是走
+            animation = run ? "Run" : "Walk";
+            //人物方向和路径方向一致,以便播放正确的动画
+            direction = path[0].directionIndex;
         }
 
-        //根据方向添加动画名称的末尾
-        if (direction == 0)
+        //动画名称加上方向的字符串
+        animation += direction.ToString();
+        //GetCurrentAnimatorStateInfo(0),返回动画状态的信息,0是层的索引,0层就是默认层,是当前动画的状态信息
+        //IsName()判断当前动画名是否与形参相同,这里形参隐式转换为动画名
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName(animation))
         {
-            animation += "Right";
+            //如果要播放动画,与当前动画不同就播放
+            //形参1:动画名,形参2:层的索引(0就是当前动画),形参3:动画的归一化时间(就是当前播放进度了)
+            animator.Play(animation, 0, animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
         }
-        else if (direction == 1)
-        {
-            animation += "UpRight";
-        }
-        else if (direction == 2)
-        {
-            animation += "Up";
-        }
-        else if (direction == 3)
-        {
-            animation += "UpLeft";
-        }
-        else if (direction == 4)
-        {
-            animation += "Left";
-        }
-        else if (direction == 5)
-        {
-            animation += "DownLeft";
-        }
-        else if (direction == 6)
-        {
-            animation += "Down";
-        }
-        else if (direction == 7)
-        {
-            animation += "DownRight";
-        }
-
-        // 播放动画
-        animator.Play(animation);
     }
 }
