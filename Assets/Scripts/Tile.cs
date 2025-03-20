@@ -24,13 +24,13 @@ public class Tile : MonoBehaviour
      public int height = 5;
 
     /// <summary>
-    /// 滑动条,用于调整不可通行网格的X偏移
+    /// 滑动条,用于调整可通行网格的X偏移
     /// </summary>
     [Range(-5, 5)]
     public int offsetX = 0;
 
     /// <summary>
-    /// 滑动条,用于调整不可通行网格的Y偏移
+    /// 滑动条,用于调整可通行网格的Y偏移
     /// </summary>
     [Range(-5, 5)]
     public int offsetY = 0;

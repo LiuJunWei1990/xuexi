@@ -106,13 +106,19 @@ public class Tilemap : MonoBehaviour
         pos.x -= debugWidth / 2;
         pos.y -= debugHeight / 2;
 
-        //绘制网格标线,
+        //绘制网格标线,网格的小格子
         for (int x = 1; x < debugWidth; ++x)
         {
             for (int y = 1; y < debugHeight; ++y)
             {
-                //形参1,当前网格坐标,形参2,获取当前网格状态,可通行的白色不可的红色
-                Iso.DebugDrawTile(pos + new Vector3(x, y), this[pos + new Vector3(x, y)] ? color : redColor,0.9f);
+                //获取当前网格的可通行状态
+                bool passable = this[pos + new Vector3(x, y)];
+                //如果不可通行,就绘制红线
+                if (!passable)
+                {
+                    //这里不太理解,都已经if了passable,为什么还要判断一下,不是多余的吗?好像这样只会画红线
+                    Iso.DebugDrawTile(pos + new Vector3(x, y), passable ? color : redColor, 0.9f);
+                }
             }
         }
     }
@@ -154,6 +160,8 @@ public class Tilemap : MonoBehaviour
     /// </summary>
     private void OnDrawGizmos()
     {
+        //这里把屏幕中心的等距坐标除以5,后面再除以瓦片尺寸0.2,就是乘以5.保证它一定是5的倍数,这样就能保证对齐瓦片
+        var cameraTile = Iso.MacroTile(Iso.MapToIso(Camera.main.transform.position));
         //设置颜色
         Gizmos.color = new Color(0.35f, 0.35f, 0.35f);
         //遍历-10到9.作为瓦片的边框
@@ -163,7 +171,7 @@ public class Tilemap : MonoBehaviour
             {
                 //不太明白怎么算的,反正是画瓦片的四条边
                 //算出瓦片的中心点，然后转换为世界坐标，再除以瓦片长度
-                var pos = Iso.MapToWorld(new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
+                var pos = Iso.MapToWorld(cameraTile + new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
                 //绘制瓦片的四条边
                 Gizmos.DrawLine(pos, pos + new Vector3(20, 10));
                 Gizmos.DrawLine(pos, pos + new Vector3(20, -10));

@@ -43,10 +43,17 @@ public class Iso : MonoBehaviour
     /// </summary>
     SpriteRenderer spriteRenderer;
 
+    //>>>>>>>>>>>大尺寸瓦片:就是指模型原本的尺寸(网格的5倍),<<<<<<<<<<<<<<<<
+
     /// <summary>
-    /// 宏瓦片的排序值,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+    /// 大尺寸瓦片的排序值,用来增加渲染层级的数值差距,使其分开渲染,以此来提升性能
     /// </summary>
     public int macroTileOrder;
+
+    /// <summary>
+    /// 是否大尺寸瓦片,当物体不需要那么精确的网格对齐时,可以使用这个,它拖动时是以瓦片尺寸为一格
+    /// </summary>
+    public bool macro = false;
 
     /// <summary>
     /// 将等距坐标转换为世界坐标
@@ -145,7 +152,7 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 计算宏瓦片坐标（将坐标按 5x5 分块）,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+    /// 计算大尺寸瓦片坐标（将坐标按 5x5 分块）,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <returns>XY轴分别除以5并取整的结果</returns>
@@ -175,18 +182,6 @@ public class Iso : MonoBehaviour
     {
         // 空方法，未实现具体逻辑
     }
-
-    /// <summary>
-    /// 用来取余数的方法,也叫取模.这个方法保证余数精度不变,除之前小数点后几位就是几位
-    /// </summary>
-    /// <param name="a">除</param>
-    /// <param name="b">被除</param>
-    /// <returns>a除以b余多少</returns>
-    static float fmod(float a, float b)
-    {
-        return a - b * Mathf.Round(a / b);
-    }
-
     // Update 方法，每帧调用一次
     void Update()
     {
@@ -200,8 +195,19 @@ public class Iso : MonoBehaviour
         else
         {
             //>>>>>>>>>>这里代码的作用时,在编辑模式下,可以拖动游戏对象位置,并且自动对齐网格,一格一格的动<<<<<<<<<<<<
-            // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐网格)
-            transform.position = MapToWorld(Snap(MapToIso(transform.position)));
+            //如果是大尺寸瓦片,每格就是瓦片大小
+            if (macro)
+            {
+                //MacroTile把等距坐标除以五之后取整,再乘以五,保证坐标一直是5的倍数,这样就是大尺寸瓦片的坐标了.
+                transform.position = MapToWorld(MacroTile(MapToIso(transform.position))) * 5;
+            }
+            //如果不是,每格就是网格大小
+            else
+            {
+                // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐网格)
+                transform.position = MapToWorld(Snap(MapToIso(transform.position)));
+            }
+            
             //反过来由当前对象世界坐标转换为等距坐标来更新pos,原本是pos更新人物位置,现在是人物位置更新pos,因为编辑模式下,人物位置是可以拖动的
             pos = MapToIso(transform.position);
         }
