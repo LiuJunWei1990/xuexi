@@ -48,6 +48,11 @@ public class Character : MonoBehaviour
     /// </summary>
     float traveled = 0;
 
+    /// <summary>
+    /// 目标方向
+    /// </summary>
+    int targetDirection = 0;
+
     private void Start()
     {
         //获取两个组件
@@ -104,8 +109,6 @@ public class Character : MonoBehaviour
 
         //重新生成并添加路点,注意前面已经把firstStep加为第一个路点了.
         path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target,directionCount));
-        //更新动画
-        UpdateAnimation();
     }
 
     /// <summary>
@@ -135,8 +138,6 @@ public class Character : MonoBehaviour
         path.Clear();
         //行走距离也清零
         traveled = 0;
-        //更新个动画吧
-        UpdateAnimation();
     }
 
     private void Update()
@@ -156,6 +157,8 @@ public class Character : MonoBehaviour
             //当前物体设置为空
             usable = null;
         }
+        //更新个动画吧
+        UpdateAnimation();
     }
     /// <summary>
     /// 移动角色
@@ -232,10 +235,19 @@ public class Character : MonoBehaviour
         {
             //通过奔跑标签判断是跑还是走
             animation = run ? "Run" : "Walk";
-            //人物方向和路径方向一致,以便播放正确的动画
-            direction = path[0].directionIndex;
+            //目标方向是路径的第一步的方向
+            targetDirection = path[0].directionIndex;
         }
 
+        //如果人物朝向和目标方向不一样,就转向
+        if (direction != targetDirection)
+        {
+
+            //计算当前方向和目标方向的夹角,获取夹角的正负,正数就是顺时针,负数就是逆时针
+            int diff = (int)Mathf.Sign(Tools.ShortestDelta(direction, targetDirection,directionCount));
+            //平滑的更新当前方向,确保方向值在 [0, directionCount - 1] 范围内
+            direction = (direction + diff + directionCount) % directionCount;
+        }
         //动画名称加上方向的字符串
         animation += direction.ToString();
         //GetCurrentAnimatorStateInfo(0),返回动画状态的信息,0是层的索引,0层就是默认层,是当前动画的状态信息
