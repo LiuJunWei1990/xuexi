@@ -26,6 +26,7 @@ public class Pathing
     //IEquatable,==相等运算符.IComparable,><比较运算符
     class Node : IEquatable<Node>, IComparable<Node>
     {
+        public float gScore;                    // 节点的移动成本
         public float score;                      // 节点的评分(成本 + 启发式距离)
         public Vector2 pos;                      // 节点的位置
         public Node parent;                      // 父节点
@@ -191,8 +192,11 @@ public class Pathing
                     //方向,因为只移动1的距离,方向和路径是一样的
                     newNode.direction = direction;
                     newNode.dirctionIndex = i;
-                    //节点评分:移动成本+启发式距离(移动成本是1,因为每次只遍历中心点周围一圈的距离)
-                    newNode.score = CalcScore(target,newNode);
+                    //>>>>>节点评分:移动成本+启发式距离<<<<<<<<<<
+                    //移动成本是自己填写的g分数+这一步的距离,因为每次只遍历中心点周围一圈的距离
+                    newNode.gScore = node.gScore + direction.magnitude;
+                    //移动成本+启发式距离(目标点和新节点的距离)
+                    newNode.score = newNode.gScore + Vector2.Distance(target,newNode.pos);
                     //添加到开放节点中
                     openNodes.Add(newNode);
                     //新节点置空
@@ -204,16 +208,6 @@ public class Pathing
         if (newNode != null) newNode.Recycle();
     }
 
-    /// <summary>
-    /// //节点评分:移动成本+启发式距离(移动成本是下一步方向的长度,约等于1这样更精确)
-    /// </summary>
-    /// <param name="src">节点位置</param>
-    /// <param name="target">目标位置</param>
-    /// <returns></returns>
-    static private float CalcScore(Vector2 src, Node target)
-    {
-        return target.direction.magnitude + Vector2.Distance(src, target.pos);
-    }
 
     /// <summary>
     /// 从目标节点回溯,生成路径
@@ -262,6 +256,7 @@ public class Pathing
         //给起始节点初始化,各种赋值,添入开放列表
         startNode.parent = null;
         startNode.pos = from;
+        startNode.gScore = 0;
         startNode.score = 999; //这是第一个节点,评分无所谓,给个最高分就行,因为它是最远的
         openNodes.Add(startNode);
 

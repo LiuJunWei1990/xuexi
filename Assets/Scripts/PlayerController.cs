@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             //目标取鼠标位置的网格
-            targetTile = Iso.MouseTile();
+            targetTile = IsoInput.mouseTile;
         }
         //画目标网格的边框,坐标是targetTile,可通行画绿框,不可通行画红框
         Iso.DebugDrawTile(targetTile, Tilemap.instance[targetTile] ? Color.green : Color.red, 0.1f);
@@ -83,9 +83,11 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             //调用瞬移方法
-            character.Teleport(Iso.MouseTile());
+            character.Teleport(IsoInput.mouseTile);
         }
 
+
+        character.LookAt(IsoInput.mousePosition);
         //按下Tab键
         if (Input.GetKeyDown(KeyCode.Tab))
         {

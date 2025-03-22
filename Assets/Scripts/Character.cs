@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Character : MonoBehaviour
@@ -260,5 +261,21 @@ public class Character : MonoBehaviour
             //形参1:动画名,形参2:层的索引(0就是当前动画),形参3:动画的归一化时间(就是当前播放进度了)
             animator.Play(animation, 0, animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
         }
+    }
+
+    /// <summary>
+    /// 观察(转向)
+    /// </summary>
+    /// <param name="target">鼠标</param>
+    public void LookAt(Vector3 target)
+    {
+        //计算方向,目标减去当前位置(等距)
+        var dir = target - (Vector3)iso.pos;
+        //计算角度,Vector3.Angle()计算两个向量之间的夹角,返回的是弧度,乘以Mathf.Sign()是为了判断正负,返回正1,负-1.
+        var angle = Vector3.Angle(new Vector3(-1, -1), dir) * MathF.Sign(dir.y - dir.x);
+        //计算方向的度数,360除以方向数量
+        var dierctionDegrees = 360.0f / directionCount;
+        //目标方向是四舍五入的角度除以360乘以方向数量,取余方向数量
+        targetDirection = Mathf.RoundToInt((angle + 360) / 360 * directionCount) % directionCount;
     }
 }

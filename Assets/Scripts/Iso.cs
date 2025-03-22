@@ -129,20 +129,6 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 获取鼠标所在位置的等距坐标(用作寻路的坐标)
-    /// </summary>
-    /// <returns>鼠标的等距坐标(取整)</returns>
-    static public Vector3 MouseTile()
-    {
-        // 获取鼠标的世界坐标
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
-
-        // 将鼠标的世界坐标转换为等距坐标，并对其取整
-        return Snap(MapToIso(mousePos));
-    }
-
-    /// <summary>
     /// 对坐标进行取整操作
     /// </summary>
     /// <param name="pos">等距坐标</param>
