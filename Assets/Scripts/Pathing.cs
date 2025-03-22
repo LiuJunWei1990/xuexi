@@ -160,10 +160,10 @@ public class Pathing
     /// <summary>
     /// 走向...(遍历可能方向)
     /// </summary>
-    /// <param name="node">中心节点</param>
+    /// <param name="node">节点</param>
     static private void StepTo(Node node)
     {
-        //中心节点添加到关闭节点列表里
+        //节点添加到关闭节点列表里
         closeNodes.Add(node);
         //添加一个空的节点对象,做为新节点
         Node newNode = null;
@@ -183,7 +183,7 @@ public class Pathing
                 //新节点的坐标赋值,就是当前这个方向的节点坐标
                 newNode.pos = pos;
 
-                //Contains列表中是否包含形参,这里就是判断两个列表中是否都没有newNode,都没有就执行代码
+                //Contains:列表中是否包含形参,这里就是判断两个列表中是否都没有newNode,都没有就执行代码
                 if (!closeNodes.Contains(newNode) && !openNodes.Contains(newNode))
                 {
                     //中心点为新节点的父节点
@@ -200,7 +200,7 @@ public class Pathing
                 }
             }
         }
-        //八个方向都遍历完了之后,如果新节点还未置空就回收该节点,就是添加到pool节点池里面.
+        //方向都遍历完了之后,如果新节点还未置空就回收该节点,就是添加到pool节点池里面.
         if (newNode != null) newNode.Recycle();
     }
 
@@ -258,7 +258,7 @@ public class Pathing
         //来自和目标重合就不用寻了,直接返回空路径吧.
         if (from == target) return path;
         //创建起始节点,从池里面取节点,优化内存分配
-        Node startNode = Node.Get();
+        Node startNode = Node.Get();                                                                                                                                                                                                                                                    
         //给起始节点初始化,各种赋值,添入开放列表
         startNode.parent = null;
         startNode.pos = from;
@@ -292,9 +292,9 @@ public class Pathing
                 break;
             }
 
-            //没到目标点就删掉
+            //还没到目标点。就删掉开放列表的当前节点,并把它加入关闭列表
             openNodes.RemoveAt(0);
-            //这个方法会把node加入关闭列表,并且把它的方向加入开放列表
+            //这个方法会把node加入关闭列表,并且把它的所有方向节点加入开放列表
             StepTo(node);
 
             iterCount += 1;

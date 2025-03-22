@@ -4,22 +4,25 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 瓦片/网格容器
-/// 这里要注意网格和瓦片是有5倍的系数.一个瓦片是5*5=25个网格,Tile是瓦片的组件,字段里的map存的是网格
+/// 瓦片/网格的容器
 /// </summary>
+/// 1.瓦片是地板模型的大小.网格是等距长度为1的格子,1瓦片=5*5网格
+/// 2.容器并未实际储存瓦片或者网格,而是通过储存网格的通行状态来映射网格
+/// 3.网格也是虚拟的,游戏环境内只是辅助线,并没有实际的游戏对象
 public class Tilemap : MonoBehaviour
 {
     /// <summary>
-    /// 类的实例
+    /// 类的单例
     /// </summary>
+    /// 容器类型,用一个单例来保证不会被多次实例化
     static public Tilemap instance;
 
     /// <summary>
-    /// 长
+    /// 容器的长
     /// </summary>
     private int widht = 1024;
     /// <summary>
-    /// 宽
+    /// 容器的宽
     /// </summary>
     private int height = 1024;
     /// <summary>
@@ -40,17 +43,20 @@ public class Tilemap : MonoBehaviour
         //初始话实例
         instance = this;
     }
+
+
     /// <summary>
-    /// 需要使用有条件的排序,故继承IComparer接口
-    /// 这个排序是带Floor层级的瓦片排末尾
+    /// 瓦片渲染层级排序器,自定义排序器
     /// </summary>
+    /// IComparer接口用于自定义的排序
+    /// 实际使用list.Sort(new TileOrderComparer()); 容器变量.Sort(new 自定义排序器类名());
     class TileOrderComparer : IComparer<Tile>
     {
         /// <summary>
-        /// 接口方法,比较两个瓦片的层级名,是否为为Floor,a是,b不是,返回否.反之返回是
+        /// 按渲染层级排序
         /// </summary>
-        /// <param name="a">A地板</param>
-        /// <param name="b">B地板</param>
+        /// <param name="a">A瓦片</param>
+        /// <param name="b">B瓦片</param>
         /// <returns>这样的结果就是,地板会排序到后面</returns>
         public int Compare(Tile a,Tile b)
         {
@@ -63,17 +69,20 @@ public class Tilemap : MonoBehaviour
     {
         //找到所有瓦片
         Tile[] tiles = GameObject.FindObjectsOfType<Tile>();
-        //按照是否瓦片层级名为Floor排序,Floor排后面
+        //按照是否瓦片层级名为Floor排序,Floor排后面,数组不能像List一样直接Sort,要用Array.Sort
         Array.Sort(tiles, new TileOrderComparer());
-        //遍历所有瓦片
+
+
+        //>>>>>>>>>>>遍历所有瓦片,根据瓦片坐标标记容器里面的网格是否可通行<<<<<<<<<<<<
         foreach (Tile tile in tiles)
         {
+            //把pos定位到瓦片最下方的网格的中心点
             //当前瓦片坐标转等距
             Vector3 pos = Iso.MapToIso(tile.transform.position);
             //获取瓦片最下方网格的等距坐标
             pos.x -= tile.width / 2;
             pos.y -= tile.height / 2;
-            //加上瓦片的偏移量
+            //加上网格的偏移量(这枚瓦片的所有网格一起偏移)
             pos.x += tile.offsetX;
             pos.y += tile.offsetY;
             //遍历瓦片的所有网格
@@ -81,11 +90,14 @@ public class Tilemap : MonoBehaviour
             {
                 for (int y = 0; y < tile.height; ++y)
                 {
-                    //根据瓦片可否通行给网格打可否通行标记
+                    //根据瓦片可否通行给网格打可否通行标记(创建网格)
                     Tilemap.instance[pos + new Vector3(x, y)] = tile.passable;
                 }
             }
         }
+
+
+
     }
 
     private void Update()

@@ -31,11 +31,13 @@ public class Iso : MonoBehaviour
     /// <summary>
     /// 当前对象的位置（等距坐标）
     /// </summary>
+    [Tooltip("位置(等距)")]
     public Vector2 pos;
 
     /// <summary>
     /// 当前对象的单元格坐标
     /// </summary>
+    [Tooltip("所在网格坐标")]
     public Vector2 tilePos;
 
     /// <summary>
@@ -43,17 +45,18 @@ public class Iso : MonoBehaviour
     /// </summary>
     SpriteRenderer spriteRenderer;
 
-    //>>>>>>>>>>>大尺寸瓦片:就是指模型原本的尺寸(网格的5倍),<<<<<<<<<<<<<<<<
-
     /// <summary>
-    /// 大尺寸瓦片的排序值,用来增加渲染层级的数值差距,使其分开渲染,以此来提升性能
+    /// 是否瓦片,瓦片拖动时按瓦片对齐,否则按网格对齐
     /// </summary>
-    public int macroTileOrder;
-
-    /// <summary>
-    /// 是否大尺寸瓦片,当物体不需要那么精确的网格对齐时,可以使用这个,它拖动时是以瓦片尺寸为一格
-    /// </summary>
+    [Tooltip("与瓦片对齐")]
     public bool macro = false;
+
+    /// <summary>
+    /// 是否排序(渲染层级),默认是排序的,因为有些物体不需要排序,比如地板,整个图层都是地板,地板是不会挡住其他物体的,所以不需要排序
+    /// </summary>
+    [Tooltip("与同层级按分数排序")]
+    public bool sort = true;
+
 
     /// <summary>
     /// 将等距坐标转换为世界坐标
@@ -152,8 +155,9 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 计算大尺寸瓦片坐标（将坐标按 5x5 分块）,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+    /// 用作大尺寸瓦片，坐标取整
     /// </summary>
+    /// 把坐标除以5。调用这个方法的代码后面会乘以5，保证坐标一直是5的倍数，从而对齐瓦片坐标
     /// <param name="pos">等距坐标</param>
     /// <returns>XY轴分别除以5并取整的结果</returns>
     static public Vector3 MacroTile(Vector3 pos)
@@ -212,12 +216,16 @@ public class Iso : MonoBehaviour
             pos = MapToIso(transform.position);
         }
 
-        //管理物体的渲染层级,数值越大越靠前,因为加了-号,变成数值越小越靠前
-        spriteRenderer.sortingOrder = -Mathf.RoundToInt(transform.position.y / tileSizeY);
-        //宏瓦片的排序值,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
-        var macroTile = MacroTile(pos);
-        macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
-        spriteRenderer.sortingOrder += macroTileOrder * 1000;
+        //是否排序,默认是排序的,因为有些物体不需要排序,比如地板,地板是不会挡住其他物体的,所以不需要排序
+        if (sort)
+        {
+            //管理物体的渲染层级,数值越大越靠前,因为加了-号,变成数值越小越靠前
+            spriteRenderer.sortingOrder = -Mathf.RoundToInt(transform.position.y / tileSizeY);
+            //宏瓦片的排序值宏瓦片是相对于规则的地板瓦片来说的,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
+            var macroTile = MacroTile(pos);
+            int macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
+            spriteRenderer.sortingOrder += macroTileOrder * 1000;
+        }
     }
 
     //// 在 Unity 编辑器中绘制 Gizmos（调试信息）

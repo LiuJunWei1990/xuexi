@@ -8,6 +8,7 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 方向数量
     /// </summary>
+    [Tooltip("角色动画朝向数量")]
     public int directionCount = 8;
     /// <summary>
     /// 速度
@@ -16,6 +17,7 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 是否在跑动
     /// </summary>
+    [Tooltip("是否奔跑")]
     public bool run = false;
     /// <summary>
     /// 当前互动的物体

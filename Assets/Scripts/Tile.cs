@@ -3,35 +3,40 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 瓦片类,用于标记地图上的瓦片,并且标记是否可通行
+/// 瓦片组件
 /// </summary>
+/// 瓦片实例
 /// 特性:会在编辑模式下运行该脚本
 [ExecuteInEditMode]
+/// 特性:该脚本携带Iso组件
+[RequireComponent(typeof(Iso))]
 public class Tile : MonoBehaviour
 {
     /// <summary>
-    /// 可通行
+    /// 可否通行
     /// </summary>
     public bool passable = true;
 
     /// <summary>
-    /// 瓦片宽度
+    /// 瓦片宽度(等距单位),默认5可修改
     /// </summary>
     public int width = 5;
     /// <summary>
-    /// 瓦片高度
+    /// 瓦片高度(等距单位),默认5可修改
     /// </summary>
-     public int height = 5;
+    public int height = 5;
 
     /// <summary>
-    /// 滑动条,用于调整可通行网格的X偏移
+    /// 用于调整瓦片的网格的X偏移(等距单位)
     /// </summary>
+    /// 特性:滑动条
     [Range(-5, 5)]
     public int offsetX = 0;
 
     /// <summary>
-    /// 滑动条,用于调整可通行网格的Y偏移
+    /// 用于调整瓦片的网格的Y偏移(等距单位)
     /// </summary>
+    /// /// 特性:滑动条
     [Range(-5, 5)]
     public int offsetY = 0;
 
