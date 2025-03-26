@@ -252,7 +252,7 @@ public class Character : MonoBehaviour
             direction = (direction + diff + directionCount) % directionCount;
         }
         //动画名称加上方向的字符串
-        animation += direction.ToString();
+        animation += "_" + direction.ToString();
         //GetCurrentAnimatorStateInfo(0),返回动画状态的信息,0是层的索引,0层就是默认层,是当前动画的状态信息
         //IsName()判断当前动画名是否与形参相同,这里形参隐式转换为动画名
         if (!animator.GetCurrentAnimatorStateInfo(0).IsName(animation))

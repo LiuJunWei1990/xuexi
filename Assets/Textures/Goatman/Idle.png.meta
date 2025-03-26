@@ -350,7 +350,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: GoatmanIdle_0
+      name: Idle_0
       rect:
         serializedVersion: 2
         x: 0
@@ -364,14 +364,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 02305410000000000800000000000000
-      internalID: 21300000
+      spriteID: 9d35ac55cb58ea94489613392a69110e
+      internalID: -598594225
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_1
+      name: Idle_1
       rect:
         serializedVersion: 2
         x: 71
@@ -385,14 +385,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 22305410000000000800000000000000
-      internalID: 21300002
+      spriteID: 66e182bd477070e4e9e93a81ac376bf5
+      internalID: 1384160598
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_2
+      name: Idle_2
       rect:
         serializedVersion: 2
         x: 142
@@ -406,14 +406,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 42305410000000000800000000000000
-      internalID: 21300004
+      spriteID: eaa9ae87d715f8d4ca9de3baa82c6d80
+      internalID: -1291273299
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_3
+      name: Idle_3
       rect:
         serializedVersion: 2
         x: 213
@@ -427,14 +427,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 62305410000000000800000000000000
-      internalID: 21300006
+      spriteID: e6d61e5dd77a4f542a58f6e46afe353f
+      internalID: 415088975
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_4
+      name: Idle_4
       rect:
         serializedVersion: 2
         x: 284
@@ -448,14 +448,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 82305410000000000800000000000000
-      internalID: 21300008
+      spriteID: b6d6cf82215896049b93c2cf638fe33e
+      internalID: 2134763862
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_5
+      name: Idle_5
       rect:
         serializedVersion: 2
         x: 355
@@ -469,14 +469,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a2305410000000000800000000000000
-      internalID: 21300010
+      spriteID: 821939507d7561543aa7443e3dd5841a
+      internalID: -203920029
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_6
+      name: Idle_6
       rect:
         serializedVersion: 2
         x: 426
@@ -490,14 +490,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c2305410000000000800000000000000
-      internalID: 21300012
+      spriteID: 60604e471ef791f49a4be1a46b79df8a
+      internalID: 209360884
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_7
+      name: Idle_7
       rect:
         serializedVersion: 2
         x: 497
@@ -511,14 +511,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e2305410000000000800000000000000
-      internalID: 21300014
+      spriteID: 1c3b1944e13b88c46877f1e63b6a3b3e
+      internalID: 1908747086
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_8
+      name: Idle_8
       rect:
         serializedVersion: 2
         x: 568
@@ -532,14 +532,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 03305410000000000800000000000000
-      internalID: 21300016
+      spriteID: a71d723132dd8fd4f8f7342b2fdfc4af
+      internalID: 910801496
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_9
+      name: Idle_9
       rect:
         serializedVersion: 2
         x: 639
@@ -553,14 +553,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 23305410000000000800000000000000
-      internalID: 21300018
+      spriteID: fb06d19d1e8b50147af683fab9f57d4c
+      internalID: 353434034
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_10
+      name: Idle_10
       rect:
         serializedVersion: 2
         x: 0
@@ -574,14 +574,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 43305410000000000800000000000000
-      internalID: 21300020
+      spriteID: b2bf0555a30f58d4a8ef9c537da9bbbb
+      internalID: -667707256
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_11
+      name: Idle_11
       rect:
         serializedVersion: 2
         x: 71
@@ -595,14 +595,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 63305410000000000800000000000000
-      internalID: 21300022
+      spriteID: 84b95c3a4d64aed4d95e9256792316df
+      internalID: 657891210
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_12
+      name: Idle_12
       rect:
         serializedVersion: 2
         x: 142
@@ -616,14 +616,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 83305410000000000800000000000000
-      internalID: 21300024
+      spriteID: bd858f2bbba9c544ea36c2d02e3b1239
+      internalID: 1970224080
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_13
+      name: Idle_13
       rect:
         serializedVersion: 2
         x: 213
@@ -637,14 +637,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a3305410000000000800000000000000
-      internalID: 21300026
+      spriteID: 569b12e3d768eb14eb07a6bb4981f78c
+      internalID: 772750078
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_14
+      name: Idle_14
       rect:
         serializedVersion: 2
         x: 284
@@ -658,14 +658,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c3305410000000000800000000000000
-      internalID: 21300028
+      spriteID: 6e26b50c38161fb418b548b264dd5c62
+      internalID: -2044531730
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_15
+      name: Idle_15
       rect:
         serializedVersion: 2
         x: 355
@@ -679,14 +679,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e3305410000000000800000000000000
-      internalID: 21300030
+      spriteID: 75aae88b5ec30d042963d8a910b6eec2
+      internalID: 424636885
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_16
+      name: Idle_16
       rect:
         serializedVersion: 2
         x: 426
@@ -700,14 +700,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 04305410000000000800000000000000
-      internalID: 21300032
+      spriteID: 43b6787f1316fd54f9e1dbfc00a7e867
+      internalID: 104401206
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_17
+      name: Idle_17
       rect:
         serializedVersion: 2
         x: 497
@@ -721,14 +721,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 24305410000000000800000000000000
-      internalID: 21300034
+      spriteID: 10b42e81c1dd7f1429696d756c64884e
+      internalID: -593048763
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_18
+      name: Idle_18
       rect:
         serializedVersion: 2
         x: 568
@@ -742,14 +742,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 44305410000000000800000000000000
-      internalID: 21300036
+      spriteID: 696b669480c79d14b9fe1f43ced2cd6f
+      internalID: -865323731
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_19
+      name: Idle_19
       rect:
         serializedVersion: 2
         x: 639
@@ -763,14 +763,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 64305410000000000800000000000000
-      internalID: 21300038
+      spriteID: a7cb442617ba50542be601b28b0f2758
+      internalID: 839628393
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_20
+      name: Idle_20
       rect:
         serializedVersion: 2
         x: 0
@@ -784,14 +784,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 84305410000000000800000000000000
-      internalID: 21300040
+      spriteID: 985b74a644e15a0488bf3a42473ae8aa
+      internalID: -677711611
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_21
+      name: Idle_21
       rect:
         serializedVersion: 2
         x: 71
@@ -805,14 +805,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a4305410000000000800000000000000
-      internalID: 21300042
+      spriteID: 72140cd7b69407a4db42802a300f1e1d
+      internalID: -315816694
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_22
+      name: Idle_22
       rect:
         serializedVersion: 2
         x: 142
@@ -826,14 +826,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c4305410000000000800000000000000
-      internalID: 21300044
+      spriteID: 260cfc6a2017ab744a254b998e4b7ec6
+      internalID: -1351361052
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_23
+      name: Idle_23
       rect:
         serializedVersion: 2
         x: 213
@@ -847,14 +847,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e4305410000000000800000000000000
-      internalID: 21300046
+      spriteID: c1000a4073d5d7943a9c8cbd5fdcd48a
+      internalID: -1854754695
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_24
+      name: Idle_24
       rect:
         serializedVersion: 2
         x: 284
@@ -868,14 +868,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 05305410000000000800000000000000
-      internalID: 21300048
+      spriteID: 01c05b4d90fc3b1409a5907f5636e075
+      internalID: 455512820
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_25
+      name: Idle_25
       rect:
         serializedVersion: 2
         x: 355
@@ -889,14 +889,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 25305410000000000800000000000000
-      internalID: 21300050
+      spriteID: e4f6abcf7bb0ad2449c441d9d8db04f6
+      internalID: -2091081848
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_26
+      name: Idle_26
       rect:
         serializedVersion: 2
         x: 426
@@ -910,14 +910,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 45305410000000000800000000000000
-      internalID: 21300052
+      spriteID: b1f4678a6b19ce14e83ca63c9d2d081b
+      internalID: 209123270
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_27
+      name: Idle_27
       rect:
         serializedVersion: 2
         x: 497
@@ -931,14 +931,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 65305410000000000800000000000000
-      internalID: 21300054
+      spriteID: 0c0e63abbb213094f9dd21bd8bb6864b
+      internalID: 2031458840
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_28
+      name: Idle_28
       rect:
         serializedVersion: 2
         x: 568
@@ -952,14 +952,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 85305410000000000800000000000000
-      internalID: 21300056
+      spriteID: 3b033a308437dce4683e6fda04bf41d2
+      internalID: 2119752849
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_29
+      name: Idle_29
       rect:
         serializedVersion: 2
         x: 639
@@ -973,14 +973,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a5305410000000000800000000000000
-      internalID: 21300058
+      spriteID: e2a8f228bc04d854486e66b02b9b76f2
+      internalID: -692287509
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_30
+      name: Idle_30
       rect:
         serializedVersion: 2
         x: 0
@@ -994,14 +994,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c5305410000000000800000000000000
-      internalID: 21300060
+      spriteID: 14689beb8806a0d4b9bce01a7dcc809b
+      internalID: 404125701
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_31
+      name: Idle_31
       rect:
         serializedVersion: 2
         x: 71
@@ -1015,14 +1015,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e5305410000000000800000000000000
-      internalID: 21300062
+      spriteID: fc3d494eb5b2c0b479249a012b94307d
+      internalID: 1686635025
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_32
+      name: Idle_32
       rect:
         serializedVersion: 2
         x: 142
@@ -1036,14 +1036,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 06305410000000000800000000000000
-      internalID: 21300064
+      spriteID: 83a59112afc3cd54aa9bec9ad0f25c64
+      internalID: 1220791005
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_33
+      name: Idle_33
       rect:
         serializedVersion: 2
         x: 213
@@ -1057,14 +1057,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 26305410000000000800000000000000
-      internalID: 21300066
+      spriteID: 10f7f8cd38541ba47b81d8249b191b66
+      internalID: 163484212
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_34
+      name: Idle_34
       rect:
         serializedVersion: 2
         x: 284
@@ -1078,14 +1078,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 46305410000000000800000000000000
-      internalID: 21300068
+      spriteID: db4b6e1f384b1664b8243b676e82e3d3
+      internalID: -697474077
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_35
+      name: Idle_35
       rect:
         serializedVersion: 2
         x: 355
@@ -1099,14 +1099,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 66305410000000000800000000000000
-      internalID: 21300070
+      spriteID: c7bba45ad41795847a9bcc5b1db3a07c
+      internalID: -1496740621
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_36
+      name: Idle_36
       rect:
         serializedVersion: 2
         x: 426
@@ -1120,14 +1120,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 86305410000000000800000000000000
-      internalID: 21300072
+      spriteID: ae8395fc80d6fd34999bce6501e10447
+      internalID: -1767686993
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_37
+      name: Idle_37
       rect:
         serializedVersion: 2
         x: 497
@@ -1141,14 +1141,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a6305410000000000800000000000000
-      internalID: 21300074
+      spriteID: a1d94e2a6fe3ea9479e01c8d715fecab
+      internalID: 397292656
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_38
+      name: Idle_38
       rect:
         serializedVersion: 2
         x: 568
@@ -1162,14 +1162,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c6305410000000000800000000000000
-      internalID: 21300076
+      spriteID: 18e586df8f2e1074b878dff78e555f4b
+      internalID: -1076545318
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_39
+      name: Idle_39
       rect:
         serializedVersion: 2
         x: 639
@@ -1183,14 +1183,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e6305410000000000800000000000000
-      internalID: 21300078
+      spriteID: d6e9b311ee2ac8e4d98596aa0b269381
+      internalID: 1182469854
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_40
+      name: Idle_40
       rect:
         serializedVersion: 2
         x: 0
@@ -1204,14 +1204,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 07305410000000000800000000000000
-      internalID: 21300080
+      spriteID: b5395c0e8b5d733499864cbe60b3e6de
+      internalID: -560621060
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_41
+      name: Idle_41
       rect:
         serializedVersion: 2
         x: 71
@@ -1225,14 +1225,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 27305410000000000800000000000000
-      internalID: 21300082
+      spriteID: 1edf6be11472d3942a0cc788794b32a7
+      internalID: 609216017
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_42
+      name: Idle_42
       rect:
         serializedVersion: 2
         x: 142
@@ -1246,14 +1246,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 47305410000000000800000000000000
-      internalID: 21300084
+      spriteID: 35c6beeaa9e69f5438cdb6bd8b50a8ec
+      internalID: 222481530
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_43
+      name: Idle_43
       rect:
         serializedVersion: 2
         x: 213
@@ -1267,14 +1267,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 67305410000000000800000000000000
-      internalID: 21300086
+      spriteID: 8613a6cbc2c35594980505f6cd961634
+      internalID: 1515216293
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_44
+      name: Idle_44
       rect:
         serializedVersion: 2
         x: 284
@@ -1288,14 +1288,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 87305410000000000800000000000000
-      internalID: 21300088
+      spriteID: 95fd0a844b180874094fca6ebb6f1c2b
+      internalID: -498120910
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_45
+      name: Idle_45
       rect:
         serializedVersion: 2
         x: 355
@@ -1309,14 +1309,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a7305410000000000800000000000000
-      internalID: 21300090
+      spriteID: d788396370272f44b9af4d21bf9d9f8a
+      internalID: 743745090
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_46
+      name: Idle_46
       rect:
         serializedVersion: 2
         x: 426
@@ -1330,14 +1330,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c7305410000000000800000000000000
-      internalID: 21300092
+      spriteID: 51bd67e2cc0e6e047affdcc04472ce9a
+      internalID: -1009826238
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_47
+      name: Idle_47
       rect:
         serializedVersion: 2
         x: 497
@@ -1351,14 +1351,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e7305410000000000800000000000000
-      internalID: 21300094
+      spriteID: 6ada339046105e8488ebcb6ccdbde21d
+      internalID: -65358754
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_48
+      name: Idle_48
       rect:
         serializedVersion: 2
         x: 568
@@ -1372,14 +1372,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 08305410000000000800000000000000
-      internalID: 21300096
+      spriteID: 0d0951746f84f8a4bbb8572780f3c20b
+      internalID: 115955993
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_49
+      name: Idle_49
       rect:
         serializedVersion: 2
         x: 639
@@ -1393,14 +1393,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 28305410000000000800000000000000
-      internalID: 21300098
+      spriteID: 45731ee3fa9a8c349af5dca5fe83a309
+      internalID: 1311260385
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_50
+      name: Idle_50
       rect:
         serializedVersion: 2
         x: 0
@@ -1414,14 +1414,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 48305410000000000800000000000000
-      internalID: 21300100
+      spriteID: 7205661773c3ab04fb7044ba29c4f216
+      internalID: -267903211
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_51
+      name: Idle_51
       rect:
         serializedVersion: 2
         x: 71
@@ -1435,14 +1435,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 68305410000000000800000000000000
-      internalID: 21300102
+      spriteID: 37d5f6fa2dbae5d499b6ec7dadc46fee
+      internalID: 1376953122
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_52
+      name: Idle_52
       rect:
         serializedVersion: 2
         x: 142
@@ -1456,14 +1456,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 88305410000000000800000000000000
-      internalID: 21300104
+      spriteID: f9f52611fe1e65c4aa6ae5a130128011
+      internalID: 1160862637
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_53
+      name: Idle_53
       rect:
         serializedVersion: 2
         x: 213
@@ -1477,14 +1477,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a8305410000000000800000000000000
-      internalID: 21300106
+      spriteID: 85d020914074e12409dbf99f95ad77a7
+      internalID: -1367431563
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_54
+      name: Idle_54
       rect:
         serializedVersion: 2
         x: 284
@@ -1498,14 +1498,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c8305410000000000800000000000000
-      internalID: 21300108
+      spriteID: 9f80cac0f1e27c74e9db1a96ca0b33ac
+      internalID: 465332176
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_55
+      name: Idle_55
       rect:
         serializedVersion: 2
         x: 355
@@ -1519,14 +1519,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e8305410000000000800000000000000
-      internalID: 21300110
+      spriteID: f36d85692902bb740a78b3ea93de2ae7
+      internalID: 1271319184
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_56
+      name: Idle_56
       rect:
         serializedVersion: 2
         x: 426
@@ -1540,14 +1540,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 09305410000000000800000000000000
-      internalID: 21300112
+      spriteID: ada6617607509644099e996c7c6783be
+      internalID: 1073515429
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_57
+      name: Idle_57
       rect:
         serializedVersion: 2
         x: 497
@@ -1561,14 +1561,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 29305410000000000800000000000000
-      internalID: 21300114
+      spriteID: ebd6bb040e2caf04a95bea9e3571e78f
+      internalID: -600487849
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_58
+      name: Idle_58
       rect:
         serializedVersion: 2
         x: 568
@@ -1582,14 +1582,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 49305410000000000800000000000000
-      internalID: 21300116
+      spriteID: 9ee7ef5b3bf210044b06e10b2890d6c4
+      internalID: -1050511920
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_59
+      name: Idle_59
       rect:
         serializedVersion: 2
         x: 639
@@ -1603,14 +1603,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 69305410000000000800000000000000
-      internalID: 21300118
+      spriteID: d9aa301d2909d684f807bb4319c4a5d1
+      internalID: -430712591
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_60
+      name: Idle_60
       rect:
         serializedVersion: 2
         x: 0
@@ -1624,14 +1624,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 89305410000000000800000000000000
-      internalID: 21300120
+      spriteID: 01869a8c4d76c074c969181a4d9b398d
+      internalID: 360789596
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_61
+      name: Idle_61
       rect:
         serializedVersion: 2
         x: 71
@@ -1645,14 +1645,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a9305410000000000800000000000000
-      internalID: 21300122
+      spriteID: d7560d390965959419d371320e894bfd
+      internalID: -481452364
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_62
+      name: Idle_62
       rect:
         serializedVersion: 2
         x: 142
@@ -1666,14 +1666,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c9305410000000000800000000000000
-      internalID: 21300124
+      spriteID: 9a7cac55270fa8047bcf542f14677c90
+      internalID: 1297392861
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_63
+      name: Idle_63
       rect:
         serializedVersion: 2
         x: 213
@@ -1687,14 +1687,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e9305410000000000800000000000000
-      internalID: 21300126
+      spriteID: 8c46b1fe391e754418f82bf798986829
+      internalID: 1849171951
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_64
+      name: Idle_64
       rect:
         serializedVersion: 2
         x: 284
@@ -1708,14 +1708,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0a305410000000000800000000000000
-      internalID: 21300128
+      spriteID: 5687d0dd493e31b4db3cb6981f3a7228
+      internalID: -1483662099
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_65
+      name: Idle_65
       rect:
         serializedVersion: 2
         x: 355
@@ -1729,14 +1729,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2a305410000000000800000000000000
-      internalID: 21300130
+      spriteID: 3eac2869b5b04d94083c6939eabef0eb
+      internalID: 1189793682
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_66
+      name: Idle_66
       rect:
         serializedVersion: 2
         x: 426
@@ -1750,14 +1750,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4a305410000000000800000000000000
-      internalID: 21300132
+      spriteID: d90b7a403f061a54f8fecb99fdc0a4e1
+      internalID: -370227082
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_67
+      name: Idle_67
       rect:
         serializedVersion: 2
         x: 497
@@ -1771,14 +1771,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6a305410000000000800000000000000
-      internalID: 21300134
+      spriteID: 120a968e8626ff643a20a0d10f87414e
+      internalID: -2134563382
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_68
+      name: Idle_68
       rect:
         serializedVersion: 2
         x: 568
@@ -1792,14 +1792,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8a305410000000000800000000000000
-      internalID: 21300136
+      spriteID: dcbea8111f486fd4ba643ed47c9d80b4
+      internalID: 596511536
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_69
+      name: Idle_69
       rect:
         serializedVersion: 2
         x: 639
@@ -1813,14 +1813,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: aa305410000000000800000000000000
-      internalID: 21300138
+      spriteID: ea1e740dd51cb84498c720818a5c6efd
+      internalID: -203886874
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_70
+      name: Idle_70
       rect:
         serializedVersion: 2
         x: 0
@@ -1834,14 +1834,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ca305410000000000800000000000000
-      internalID: 21300140
+      spriteID: 861bc170b57fbd54c98659bd2fbe710b
+      internalID: 1747342749
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_71
+      name: Idle_71
       rect:
         serializedVersion: 2
         x: 71
@@ -1855,14 +1855,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ea305410000000000800000000000000
-      internalID: 21300142
+      spriteID: fbffcc7faa796504e8a8f9331de6ee5a
+      internalID: -165834978
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_72
+      name: Idle_72
       rect:
         serializedVersion: 2
         x: 142
@@ -1876,14 +1876,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0b305410000000000800000000000000
-      internalID: 21300144
+      spriteID: 54af9031f70a4f54b88a462925f35cff
+      internalID: 1737649371
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_73
+      name: Idle_73
       rect:
         serializedVersion: 2
         x: 213
@@ -1897,14 +1897,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2b305410000000000800000000000000
-      internalID: 21300146
+      spriteID: 68636e307cbfe7647ab1be1773a5c327
+      internalID: -1008921315
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_74
+      name: Idle_74
       rect:
         serializedVersion: 2
         x: 284
@@ -1918,14 +1918,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4b305410000000000800000000000000
-      internalID: 21300148
+      spriteID: 085dbf595addc78428bfcc2f9f730a63
+      internalID: -1339631618
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_75
+      name: Idle_75
       rect:
         serializedVersion: 2
         x: 355
@@ -1939,14 +1939,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6b305410000000000800000000000000
-      internalID: 21300150
+      spriteID: 86130460c3e7173459759a4190cf9b06
+      internalID: -1502617804
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_76
+      name: Idle_76
       rect:
         serializedVersion: 2
         x: 426
@@ -1960,14 +1960,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8b305410000000000800000000000000
-      internalID: 21300152
+      spriteID: 075eea83b5dbaa84aadf39dc8f8b0b9e
+      internalID: -1284051079
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_77
+      name: Idle_77
       rect:
         serializedVersion: 2
         x: 497
@@ -1981,14 +1981,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ab305410000000000800000000000000
-      internalID: 21300154
+      spriteID: 0f43424aa9658744baecdf94e543a665
+      internalID: 1380126891
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_78
+      name: Idle_78
       rect:
         serializedVersion: 2
         x: 568
@@ -2002,14 +2002,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cb305410000000000800000000000000
-      internalID: 21300156
+      spriteID: f06f5ff3ed5524549a853ef6dee64816
+      internalID: 892002173
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: GoatmanIdle_79
+      name: Idle_79
       rect:
         serializedVersion: 2
         x: 639
@@ -2023,8 +2023,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: eb305410000000000800000000000000
-      internalID: 21300158
+      spriteID: 379a2a731b9303d42bad3c2f3ff26171
+      internalID: -10398561
       vertices: []
       indices: 
       edges: []
@@ -2032,7 +2032,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: a04dba05cd7721342a840682c28a23bf
     internalID: 0
     vertices: []
     indices: 
@@ -2040,86 +2040,86 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      GoatmanIdle_0: 21300000
-      GoatmanIdle_1: 21300002
-      GoatmanIdle_10: 21300020
-      GoatmanIdle_11: 21300022
-      GoatmanIdle_12: 21300024
-      GoatmanIdle_13: 21300026
-      GoatmanIdle_14: 21300028
-      GoatmanIdle_15: 21300030
-      GoatmanIdle_16: 21300032
-      GoatmanIdle_17: 21300034
-      GoatmanIdle_18: 21300036
-      GoatmanIdle_19: 21300038
-      GoatmanIdle_2: 21300004
-      GoatmanIdle_20: 21300040
-      GoatmanIdle_21: 21300042
-      GoatmanIdle_22: 21300044
-      GoatmanIdle_23: 21300046
-      GoatmanIdle_24: 21300048
-      GoatmanIdle_25: 21300050
-      GoatmanIdle_26: 21300052
-      GoatmanIdle_27: 21300054
-      GoatmanIdle_28: 21300056
-      GoatmanIdle_29: 21300058
-      GoatmanIdle_3: 21300006
-      GoatmanIdle_30: 21300060
-      GoatmanIdle_31: 21300062
-      GoatmanIdle_32: 21300064
-      GoatmanIdle_33: 21300066
-      GoatmanIdle_34: 21300068
-      GoatmanIdle_35: 21300070
-      GoatmanIdle_36: 21300072
-      GoatmanIdle_37: 21300074
-      GoatmanIdle_38: 21300076
-      GoatmanIdle_39: 21300078
-      GoatmanIdle_4: 21300008
-      GoatmanIdle_40: 21300080
-      GoatmanIdle_41: 21300082
-      GoatmanIdle_42: 21300084
-      GoatmanIdle_43: 21300086
-      GoatmanIdle_44: 21300088
-      GoatmanIdle_45: 21300090
-      GoatmanIdle_46: 21300092
-      GoatmanIdle_47: 21300094
-      GoatmanIdle_48: 21300096
-      GoatmanIdle_49: 21300098
-      GoatmanIdle_5: 21300010
-      GoatmanIdle_50: 21300100
-      GoatmanIdle_51: 21300102
-      GoatmanIdle_52: 21300104
-      GoatmanIdle_53: 21300106
-      GoatmanIdle_54: 21300108
-      GoatmanIdle_55: 21300110
-      GoatmanIdle_56: 21300112
-      GoatmanIdle_57: 21300114
-      GoatmanIdle_58: 21300116
-      GoatmanIdle_59: 21300118
-      GoatmanIdle_6: 21300012
-      GoatmanIdle_60: 21300120
-      GoatmanIdle_61: 21300122
-      GoatmanIdle_62: 21300124
-      GoatmanIdle_63: 21300126
-      GoatmanIdle_64: 21300128
-      GoatmanIdle_65: 21300130
-      GoatmanIdle_66: 21300132
-      GoatmanIdle_67: 21300134
-      GoatmanIdle_68: 21300136
-      GoatmanIdle_69: 21300138
-      GoatmanIdle_7: 21300014
-      GoatmanIdle_70: 21300140
-      GoatmanIdle_71: 21300142
-      GoatmanIdle_72: 21300144
-      GoatmanIdle_73: 21300146
-      GoatmanIdle_74: 21300148
-      GoatmanIdle_75: 21300150
-      GoatmanIdle_76: 21300152
-      GoatmanIdle_77: 21300154
-      GoatmanIdle_78: 21300156
-      GoatmanIdle_79: 21300158
-      GoatmanIdle_8: 21300016
-      GoatmanIdle_9: 21300018
+      Idle_0: -598594225
+      Idle_1: 1384160598
+      Idle_10: -667707256
+      Idle_11: 657891210
+      Idle_12: 1970224080
+      Idle_13: 772750078
+      Idle_14: -2044531730
+      Idle_15: 424636885
+      Idle_16: 104401206
+      Idle_17: -593048763
+      Idle_18: -865323731
+      Idle_19: 839628393
+      Idle_2: -1291273299
+      Idle_20: -677711611
+      Idle_21: -315816694
+      Idle_22: -1351361052
+      Idle_23: -1854754695
+      Idle_24: 455512820
+      Idle_25: -2091081848
+      Idle_26: 209123270
+      Idle_27: 2031458840
+      Idle_28: 2119752849
+      Idle_29: -692287509
+      Idle_3: 415088975
+      Idle_30: 404125701
+      Idle_31: 1686635025
+      Idle_32: 1220791005
+      Idle_33: 163484212
+      Idle_34: -697474077
+      Idle_35: -1496740621
+      Idle_36: -1767686993
+      Idle_37: 397292656
+      Idle_38: -1076545318
+      Idle_39: 1182469854
+      Idle_4: 2134763862
+      Idle_40: -560621060
+      Idle_41: 609216017
+      Idle_42: 222481530
+      Idle_43: 1515216293
+      Idle_44: -498120910
+      Idle_45: 743745090
+      Idle_46: -1009826238
+      Idle_47: -65358754
+      Idle_48: 115955993
+      Idle_49: 1311260385
+      Idle_5: -203920029
+      Idle_50: -267903211
+      Idle_51: 1376953122
+      Idle_52: 1160862637
+      Idle_53: -1367431563
+      Idle_54: 465332176
+      Idle_55: 1271319184
+      Idle_56: 1073515429
+      Idle_57: -600487849
+      Idle_58: -1050511920
+      Idle_59: -430712591
+      Idle_6: 209360884
+      Idle_60: 360789596
+      Idle_61: -481452364
+      Idle_62: 1297392861
+      Idle_63: 1849171951
+      Idle_64: -1483662099
+      Idle_65: 1189793682
+      Idle_66: -370227082
+      Idle_67: -2134563382
+      Idle_68: 596511536
+      Idle_69: -203886874
+      Idle_7: 1908747086
+      Idle_70: 1747342749
+      Idle_71: -165834978
+      Idle_72: 1737649371
+      Idle_73: -1008921315
+      Idle_74: -1339631618
+      Idle_75: -1502617804
+      Idle_76: -1284051079
+      Idle_77: 1380126891
+      Idle_78: 892002173
+      Idle_79: -10398561
+      Idle_8: 910801496
+      Idle_9: 353434034
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
