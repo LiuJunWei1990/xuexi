@@ -208,8 +208,6 @@ public class Character : MonoBehaviour
             iso.tilePos += step;
             //第一段路径已经走完了,删除
             path.RemoveAt(0);
-            //更新动画
-            UpdateAnimation();
             //路径不为空就继续获取下面的路径
             if (path.Count > 0)
             {
@@ -309,7 +307,7 @@ public class Character : MonoBehaviour
         //计算方向的度数,360除以方向数量
         var dierctionDegrees = 360.0f / directionCount;
         //目标方向是四舍五入的角度除以360乘以方向数量,取余方向数量
-        targetDirection = Mathf.RoundToInt((angle + 360) / 360 * directionCount) % directionCount;
+        targetDirection = Mathf.RoundToInt((angle + 360) % 360 / directionCount) % directionCount;
     }
 
     /// <summary>
@@ -318,7 +316,7 @@ public class Character : MonoBehaviour
     public void Attack()
     {
         //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
-        if(!attack && direction==targetDirection&&path.Count == 0)
+        if (!attack && direction == targetDirection && path.Count == 0)
         {
             //进入攻击状态
             attack = true;
@@ -332,12 +330,8 @@ public class Character : MonoBehaviour
     /// </summary>
     void OnAnimationFinish()
     {
-        //是否攻击状态
-        if (attack)
-        {
-            //攻击状态为否
-            attack = false;
-        }
+        //是否攻击状态,在攻击状态就置否
+        if (attack) attack = false;
     }
 
     void OnAttack1Finish()

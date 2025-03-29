@@ -41,7 +41,12 @@ public class EditorTools : MonoBehaviour
         //分割路径字符串,获取文件夹名(这一步到最后才用到)
         string dir = texturePath.Split('/')[2];
         //3.加载路径下的所有资源,并转换为Sprite类型的数组
-        Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(texturePath).OfType<Sprite>().ToArray();
+        //详解一下每段代码
+        //AssetDatabase.LoadAllAssetsAtPath(texturePath)读texturePath路径下所有文件,包括图片文件下所有精灵
+        //OfType<Sprite>()支取所有文件中的精灵
+        //OrderBy(s => s.name.Length)主排序,按精灵的名字的长度
+        //.ThenBy(s => s.name)次排序,名字长度一致的按名字排序(字母顺序)
+        Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(texturePath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
 
         #endregion
 
@@ -70,39 +75,45 @@ public class EditorTools : MonoBehaviour
             //Take(framesPerAnimation) --- 取出形参数量的元素,就是当前方向的所有帧
             //ToArray() --- 转换为数组
             Sprite[] animSprites = sprites.Skip(direction * framesPerAnimation).Take(framesPerAnimation).ToArray();
-            //创建该方向的人物动画剪辑(编辑器里的动画文件)
-            AnimationClip animation = CreateSpriteAnimationClip(name, animSprites,eventName); // 创建动画剪辑
-            // 生成成动画文件
-            AssetDatabase.CreateAsset(animation, "Assets/Animations/" + dir + "/" + name + ".anim"); 
+            //生成不同朝向的动画路径
+            var assetPath = "Assets/Animations/" + dir + "/" + name + ".anim";
+            //加载路径下的AnimationClip文件并赋值给animationClip,这是加载单个文件的,与上面加载一堆文件的不同
+            var animationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath);
+            //为空,代表加载失败了,要创建一个新的
+            if(animationClip == null)
+            {
+                //初始化
+                animationClip = new AnimationClip();
+                //在路径下生成这个文件
+                AssetDatabase.CreateAsset(animationClip, assetPath);
+            }
+            //给赋值
+            animationClip.name = name;
+            animationClip.frameRate = 12;
+            //更新动画文件
+            FillAnimationClip(animationClip, animSprites, eventName);
         }
 
         #endregion
     }
 
     /// <summary>
-    /// 生成精灵动画剪辑,就是动画文件
+    /// 更新精灵动画剪辑,就是动画文件
     /// </summary>
     /// 这里生成的是一个动画动作,比如walk_0,walk_1,walk_2,walk_3,walk_4,walk_5
     /// AnimationClip就是Unity的动画文件,可以用于播放动画,文件后缀是.anim
-    /// <param name="name">动画剪辑名称</param>
+    /// <param name="clip">动画文件的类型</param>
     /// <param name="sprites">精灵数组</param>
     /// <param name="eventName">动画事件</param>
-    /// <param name="fps">FPS</param>
     /// <returns>动画变量AnimationClip,可以生成为动画文件</returns>
-    static private AnimationClip CreateSpriteAnimationClip(string name, Sprite[] sprites, string eventName, int fps = 12)
+    static private void FillAnimationClip(AnimationClip clip, Sprite[] sprites, string eventName)
     {
         #region >>>>>>>>>>>>>>>>生成动画文件并赋一些基本的值<<<<<<<<<<<<<<<<<<<<<<
 
         //计算帧数,就是数组的长度
         int frameCount = sprites.Length;
-        //计算每帧的时间长度,就是1秒除以帧数
-        float frameLength = 1.0f / fps;
-
-        //创建新的动画
-        AnimationClip clip = new AnimationClip();
-        clip.name = name;  // 设置动画的名字
-        clip.frameRate = fps;   // 设置动画的帧率
-        clip.wrapMode = WrapMode.Loop;   //设置动画的循环模式,这个循环模式并不稳定,后面用到了serializedClip类来设置循环模式的更多参数
+        //1除以动画帧数,等到每帧的时间长度
+        float frameLength = 1f / clip.frameRate;
 
         #endregion
 
@@ -130,8 +141,12 @@ public class EditorTools : MonoBehaviour
             //0,0.083,0.166,0.25,0.333,0.416,0.5,0.583,0.666,0.75,0.833,0.916,每一帧都是关键帧
             kf.time = i * frameLength;  // 设置关键帧的时间
             kf.value = sprites[i];  // 设置关键帧的值
+            //debug日志:输出帧的名字
+            Debug.Log(sprites[i].name);
             keyFrames[i] = kf;  // 将关键帧添加到关键帧数组中
         }
+        //清除当前动画引用中的帧(曲线),注意这是前面新建的一个AnimationClip,这个稳妥起见添加帧之前先清除一遍
+        clip.ClearCurves();
         //将关键帧数组绑定到动画文件上
         //AnimationUtility.SetObjectReferenceCurve是 Unity 动画系统的核心方法之一，用于将对象引用类型的关键帧（如 Sprite、Material 等）绑定到动画
         //clip    AnimationClip 要修改的目标动画文件
@@ -174,8 +189,6 @@ public class EditorTools : MonoBehaviour
             },
         }
         );
-
-        return clip; // 返回创建的动画剪辑
     }
 }
 
@@ -214,121 +227,100 @@ class AnimationClipSettings
     #endregion
 
     #region 各种根属性的获取和设置
-    /* ========== 时间范围控制属性 ========== */
-
-    // 获取或设置动画开始时间（单位：秒）
+    // === 时间控制属性 ===
     public float startTime
     {
-        get => Get("m_StartTime").floatValue;  // 获取float类型的属性值
-        set => Get("m_StartTime").floatValue = value; // 设置属性值
+        get { return Get("m_StartTime").floatValue; } // 获取起始时间
+        set { Get("m_StartTime").floatValue = value; } // 设置起始时间
     }
 
-    // 获取或设置动画结束时间（单位：秒）
     public float stopTime
     {
-        get => Get("m_StopTime").floatValue;
-        set => Get("m_StopTime").floatValue = value;
+        get { return Get("m_StopTime").floatValue; }  // 获取结束时间
+        set { Get("m_StopTime").floatValue = value; } // 设置结束时间
     }
 
-    // 获取或设置Y轴旋转偏移量（单位：度）
+    // === 动画偏移属性 ===
     public float orientationOffsetY
     {
-        get => Get("m_OrientationOffsetY").floatValue;
-        set => Get("m_OrientationOffsetY").floatValue = value;
+        get { return Get("m_OrientationOffsetY").floatValue; } // 获取Y轴旋转偏移
+        set { Get("m_OrientationOffsetY").floatValue = value; } // 设置Y轴旋转偏移
     }
 
-    // 获取或设置动画层级（用于混合动画）
     public float level
     {
-        get => Get("m_Level").floatValue;
-        set => Get("m_Level").floatValue = value;
+        get { return Get("m_Level").floatValue; } // 获取层级值
+        set { Get("m_Level").floatValue = value; } // 设置层级值
     }
 
-    // 获取或设置循环偏移量（标准化时间，0-1范围）
     public float cycleOffset
     {
-        get => Get("m_CycleOffset").floatValue;
-        set => Get("m_CycleOffset").floatValue = value;
+        get { return Get("m_CycleOffset").floatValue; } // 获取循环偏移
+        set { Get("m_CycleOffset").floatValue = value; } // 设置循环偏移
     }
 
-    /* ========== 循环控制属性 ========== */
-
-    // 获取或设置是否启用动画时间循环
+    // === 循环控制属性 ===
     public bool loopTime
     {
-        get => Get("m_LoopTime").boolValue;
-        set => Get("m_LoopTime").boolValue = value;
+        get { return Get("m_LoopTime").boolValue; } // 获取是否循环
+        set { Get("m_LoopTime").boolValue = value; } // 设置是否循环
     }
 
-    // 获取或设置是否启用循环混合
     public bool loopBlend
     {
-        get => Get("m_LoopBlend").boolValue;
-        set => Get("m_LoopBlend").boolValue = value;
+        get { return Get("m_LoopBlend").boolValue; } // 获取是否混合循环
+        set { Get("m_LoopBlend").boolValue = value; } // 设置是否混合循环
     }
 
-    /* ========== 旋转混合控制 ========== */
-
-    // 获取或设置是否启用旋转混合循环
+    // === 混合模式属性 ===
     public bool loopBlendOrientation
     {
-        get => Get("m_LoopBlendOrientation").boolValue;
-        set => Get("m_LoopBlendOrientation").boolValue = value;
+        get { return Get("m_LoopBlendOrientation").boolValue; } // 获取方向混合
+        set { Get("m_LoopBlendOrientation").boolValue = value; } // 设置方向混合
     }
 
-    /* ========== 位置混合控制 ========== */
-
-    // 获取或设置是否启用Y轴位置混合循环
     public bool loopBlendPositionY
     {
-        get => Get("m_LoopBlendPositionY").boolValue;
-        set => Get("m_LoopBlendPositionY").boolValue = value;
+        get { return Get("m_LoopBlendPositionY").boolValue; } // 获取Y轴位置混合
+        set { Get("m_LoopBlendPositionY").boolValue = value; } // 设置Y轴位置混合
     }
 
-    // 获取或设置是否启用XZ平面位置混合循环
     public bool loopBlendPositionXZ
     {
-        get => Get("m_LoopBlendPositionXZ").boolValue;
-        set => Get("m_LoopBlendPositionXZ").boolValue = value;
+        get { return Get("m_LoopBlendPositionXZ").boolValue; } // 获取XZ平面位置混合
+        set { Get("m_LoopBlendPositionXZ").boolValue = value; } // 设置XZ平面位置混合
     }
 
-    /* ========== 原始数据保留控制 ========== */
-
-    // 获取或设置是否保留原始旋转
+    // === 原始状态保留属性 ===
     public bool keepOriginalOrientation
     {
-        get => Get("m_KeepOriginalOrientation").boolValue;
-        set => Get("m_KeepOriginalOrientation").boolValue = value;
+        get { return Get("m_KeepOriginalOrientation").boolValue; } // 获取是否保留原始旋转
+        set { Get("m_KeepOriginalOrientation").boolValue = value; } // 设置是否保留原始旋转
     }
 
-    // 获取或设置是否保留原始Y轴位置
     public bool keepOriginalPositionY
     {
-        get => Get("m_KeepOriginalPositionY").boolValue;
-        set => Get("m_KeepOriginalPositionY").boolValue = value;
+        get { return Get("m_KeepOriginalPositionY").boolValue; } // 获取是否保留原始Y位置
+        set { Get("m_KeepOriginalPositionY").boolValue = value; } // 设置是否保留原始Y位置
     }
 
-    // 获取或设置是否保留原始XZ平面位置
     public bool keepOriginalPositionXZ
     {
-        get => Get("m_KeepOriginalPositionXZ").boolValue;
-        set => Get("m_KeepOriginalPositionXZ").boolValue = value;
+        get { return Get("m_KeepOriginalPositionXZ").boolValue; } // 获取是否保留原始XZ位置
+        set { Get("m_KeepOriginalPositionXZ").boolValue = value; } // 设置是否保留原始XZ位置
     }
 
-    /* ========== 其他特殊控制 ========== */
-
-    // 获取或设置是否从脚部计算高度
+    // === 特殊效果属性 ===
     public bool heightFromFeet
     {
-        get => Get("m_HeightFromFeet").boolValue;
-        set => Get("m_HeightFromFeet").boolValue = value;
+        get { return Get("m_HeightFromFeet").boolValue; } // 获取是否从脚部计算高度
+        set { Get("m_HeightFromFeet").boolValue = value; } // 设置是否从脚部计算高度
     }
 
-    // 获取或设置是否启用镜像动画
     public bool mirror
     {
-        get => Get("m_Mirror").boolValue;
-        set => Get("m_Mirror").boolValue = value;
+        get { return Get("m_Mirror").boolValue; } // 获取是否镜像动画
+        set { Get("m_Mirror").boolValue = value; } // 设置是否镜像动画
     }
 
     #endregion
