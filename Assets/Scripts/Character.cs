@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Character : MonoBehaviour
@@ -15,6 +13,10 @@ public class Character : MonoBehaviour
     /// 速度
     /// </summary>
     public float speed = 3.5f;
+    /// <summary>
+    /// 攻击速度
+    /// </summary>
+    public float attackSpeed = 1.0f;
     /// <summary>
     /// 是否在跑动
     /// </summary>
@@ -55,6 +57,14 @@ public class Character : MonoBehaviour
     /// 目标方向
     /// </summary>
     int targetDirection = 0;
+    /// <summary>
+    /// 是否正在攻击
+    /// </summary>
+    bool attack = false;
+    /// <summary>
+    /// 攻击动画(编号)
+    /// </summary>
+    int attackAnimation;
 
     private void Start()
     {
@@ -83,6 +93,8 @@ public class Character : MonoBehaviour
     /// <param name="target">目标点(鼠标点击处)</param>
     public void GoTo(Vector2 target)
     {
+        //如果正在执行攻击动作,则不能走,直接跳出
+        if (attack) return;
         //生成路径之前,重置当前互动的物体
         this.usable = null;
         //////////////第一部分是清空原有路径,因为鼠标点了一个新目的地.
@@ -120,6 +132,7 @@ public class Character : MonoBehaviour
     /// <param name="target">目标点</param>
     public void Teleport(Vector2 target)
     {
+        if (attack) return;
         //判断目标网格是否可通行
         if (Tilemap.instance[target])
         {
@@ -225,29 +238,46 @@ public class Character : MonoBehaviour
     /// </summary>
     private void UpdateAnimation()
     {
+        //是否维持动画的时间进度,就是重新播放当前动画时,按照之前的进度继续播放
+        bool preserveTime = false;
         //动画名称
-        String animation;
-
-        //没有路径就是待机动画
-        if(path.Count == 0)
+        string animation;
+        //给动画组件赋初始值
+        animator.speed = 1.0f;
+        //如果正在攻击
+        if (attack)
         {
+            //给动画名称赋值
+            animation = "Attack" + attackAnimation;
+            //给动画速度赋值
+            animator.speed = attackSpeed;
+        }
+
+        //没有路径就是待机状态
+        else if(path.Count == 0)
+        {
+            //给动画名赋值
             animation = "Idle";
+            //此动画需要维持,时间进度
+            preserveTime = true;
         }
         //否则就是行走
         else
         {
             //通过奔跑标签判断是跑还是走
             animation = run ? "Run" : "Walk";
+            //此动画需要维持,时间进度
+            preserveTime = true;
             //目标方向是路径的第一步的方向
             targetDirection = path[0].directionIndex;
         }
 
         //如果人物朝向和目标方向不一样,就转向
-        if (direction != targetDirection)
+        if (!attack && direction != targetDirection)
         {
 
             //计算当前方向和目标方向的夹角,获取夹角的正负,正数就是顺时针,负数就是逆时针
-            int diff = (int)Mathf.Sign(Tools.ShortestDelta(direction, targetDirection,directionCount));
+            int diff = (int)Mathf.Sign(Tools.ShortestDelta(direction, targetDirection, directionCount));
             //平滑的更新当前方向,确保方向值在 [0, directionCount - 1] 范围内
             direction = (direction + diff + directionCount) % directionCount;
         }
@@ -258,8 +288,11 @@ public class Character : MonoBehaviour
         if (!animator.GetCurrentAnimatorStateInfo(0).IsName(animation))
         {
             //如果要播放动画,与当前动画不同就播放
+            //如果是维持动画进度的,就用这行,会按照先前的动画进度播放
             //形参1:动画名,形参2:层的索引(0就是当前动画),形参3:动画的归一化时间(就是当前播放进度了)
-            animator.Play(animation, 0, animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+            if (preserveTime) animator.Play(animation, 0, animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+            //不需要维持播放进度的动画,直接就从头开始播
+            else animator.Play(animation);
         }
     }
 
@@ -272,10 +305,47 @@ public class Character : MonoBehaviour
         //计算方向,目标减去当前位置(等距)
         var dir = target - (Vector3)iso.pos;
         //计算角度,Vector3.Angle()计算两个向量之间的夹角,返回的是弧度,乘以Mathf.Sign()是为了判断正负,返回正1,负-1.
-        var angle = Vector3.Angle(new Vector3(-1, -1), dir) * MathF.Sign(dir.y - dir.x);
+        var angle = Vector3.Angle(new Vector3(-1, -1), dir) * Mathf.Sign(dir.y - dir.x);
         //计算方向的度数,360除以方向数量
         var dierctionDegrees = 360.0f / directionCount;
         //目标方向是四舍五入的角度除以360乘以方向数量,取余方向数量
         targetDirection = Mathf.RoundToInt((angle + 360) / 360 * directionCount) % directionCount;
+    }
+
+    /// <summary>
+    /// 攻击
+    /// </summary>
+    public void Attack()
+    {
+        //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
+        if(!attack && direction==targetDirection&&path.Count == 0)
+        {
+            //进入攻击状态
+            attack = true;
+            //随一个攻击动画,编号
+            attackAnimation = Random.Range(1, 3);
+        }
+    }
+
+    /// <summary>
+    /// 在动画完成时执行的方法(不是系统的api哈,就是自己取得名字)
+    /// </summary>
+    void OnAnimationFinish()
+    {
+        //是否攻击状态
+        if (attack)
+        {
+            //攻击状态为否
+            attack = false;
+        }
+    }
+
+    void OnAttack1Finish()
+    {
+
+    }
+    void OnAttack2Finish()
+    {
+
     }
 }

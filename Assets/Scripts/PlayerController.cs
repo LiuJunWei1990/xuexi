@@ -66,25 +66,36 @@ public class PlayerController : MonoBehaviour
         //生成路径,当前坐标--目标网格
         Pathing.BuildPath(iso.tilePos, targetTile,character.directionCount);
 
-        //单击
-        if (Input.GetMouseButton(0))
-        {
-            if (Usable.hot != null)
-            {
-                character.Use(Usable.hot);
-            }
-            else
-            {
-                character.GoTo(targetTile);
-            }
-        }
-
         //单击右键
         if (Input.GetMouseButtonDown(1))
         {
             //调用瞬移方法
             character.Teleport(IsoInput.mouseTile);
         }
+        //单击左键+左Shift
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0))
+        {
+            //执行攻击
+            character.Attack();
+        }
+
+        //单击左键
+        else if (Input.GetMouseButton(0))
+        {
+            //被玩家关注的互动物体不为空
+            if (Usable.hot != null)
+            {
+                //设置当前为玩家关注
+                character.Use(Usable.hot);
+            }
+            //为空就是走路
+            else
+            {
+                character.GoTo(targetTile);
+            }
+        }
+
+
 
 
         character.LookAt(IsoInput.mousePosition);

@@ -51,6 +51,9 @@ public class EditorTools : MonoBehaviour
 
         //计算每个方向动作的帧数,由于每个动作帧数是相等的,所以可以直接除以方向数
         int framesPerAnimation = sprites.Length / directionCount;
+        //动画事件名,是动画文件的名字
+        var eventName = texture.name;
+
         //遍历所有方向
         for (int i = 0; i < directionCount; ++i)
         {
@@ -68,7 +71,7 @@ public class EditorTools : MonoBehaviour
             //ToArray() --- 转换为数组
             Sprite[] animSprites = sprites.Skip(direction * framesPerAnimation).Take(framesPerAnimation).ToArray();
             //创建该方向的人物动画剪辑(编辑器里的动画文件)
-            AnimationClip animation = CreateSpriteAnimationClip(name, animSprites); // 创建动画剪辑
+            AnimationClip animation = CreateSpriteAnimationClip(name, animSprites,eventName); // 创建动画剪辑
             // 生成成动画文件
             AssetDatabase.CreateAsset(animation, "Assets/Animations/" + dir + "/" + name + ".anim"); 
         }
@@ -83,9 +86,10 @@ public class EditorTools : MonoBehaviour
     /// AnimationClip就是Unity的动画文件,可以用于播放动画,文件后缀是.anim
     /// <param name="name">动画剪辑名称</param>
     /// <param name="sprites">精灵数组</param>
+    /// <param name="eventName">动画事件</param>
     /// <param name="fps">FPS</param>
     /// <returns>动画变量AnimationClip,可以生成为动画文件</returns>
-    static private AnimationClip CreateSpriteAnimationClip(string name, Sprite[] sprites,int fps = 12)
+    static private AnimationClip CreateSpriteAnimationClip(string name, Sprite[] sprites, string eventName, int fps = 12)
     {
         #region >>>>>>>>>>>>>>>>生成动画文件并赋一些基本的值<<<<<<<<<<<<<<<<<<<<<<
 
@@ -150,8 +154,26 @@ public class EditorTools : MonoBehaviour
         AnimationClipSettings clipSettings = new AnimationClipSettings(serializedClip.FindProperty("m_AnimationClipSettings"));
         clipSettings.loopTime = true; // 设置循环时间
         serializedClip.ApplyModifiedProperties(); // 应用修改
-
         #endregion
+
+        //这个方法的作用是,把事件添加到动画文件,还可以像下面这样写成数组的方式添加多个事件
+        AnimationUtility.SetAnimationEvents(clip, new[]
+        {
+            new AnimationEvent()
+            {
+                //动画事件的时间是动画长度,那就是末尾
+                time = clip.length,
+                //事件调用的方法名称functionName
+                functionName = "On"+eventName+"Finish"
+            },
+            new AnimationEvent()
+            {
+                //同上
+                time = clip.length,
+                functionName = "OnAnimationFinish"
+            },
+        }
+        );
 
         return clip; // 返回创建的动画剪辑
     }
