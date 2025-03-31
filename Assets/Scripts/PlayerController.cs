@@ -8,13 +8,17 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     /// <summary>
-    /// 等距坐标组件
-    /// </summary>
-    Iso iso;
-    /// <summary>
     /// 角色组件
     /// </summary>
     public Character character;
+    //当前鼠标悬停的游戏对象
+    //特性:不显示在面板上
+    [HideInInspector]
+    static public GameObject hover;
+    /// <summary>
+    /// 等距坐标组件
+    /// </summary>
+    Iso iso;
 
     private void Awake()
     {
@@ -114,5 +118,43 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
+        //>>>>>>>>>>鼠标悬停高亮逻辑代码<<<<<<<<<<<<<<<<
+        //声明鼠标悬停目标
+        GameObject newHover = null;
+        //通过当前相机的渲染获得鼠标当前位置(这里seepseek建议换成Camera.mian主相机,因为当前相机在Update中容易为空)
+        var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //2D射线检测
+        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+
+        //如射线检测到对象
+        if (hit)
+        {
+            //获取这个对象
+            newHover = hit.collider.gameObject;
+        }
+
+        //如这个对象不等于之前的悬停对象
+        if (newHover != hover)
+        {
+            //如之前的悬停对象不为空
+            if (hover != null)
+            {
+                //获取原有悬停对象的渲染器
+                var spriteRenderer = hover.GetComponent<SpriteRenderer>();
+                //把高亮恢复
+                spriteRenderer.material.SetFloat("_SelfIllum", 1.0f);
+            }
+
+            //更新当前悬停对象
+            hover = newHover;
+            //更新过后悬停对象不为空
+            if(hover != null)
+            {
+                var spriteRenderer = hover.GetComponent<SpriteRenderer>();
+                spriteRenderer.material.SetFloat("_SelfIllum", 1.75f);
+            }
+        }
+
     }
 }
