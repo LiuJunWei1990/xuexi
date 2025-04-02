@@ -305,9 +305,9 @@ public class Character : MonoBehaviour
         //计算角度,Vector3.Angle()计算两个向量之间的夹角,返回的是弧度,乘以Mathf.Sign()是为了判断正负,返回正1,负-1.
         var angle = Vector3.Angle(new Vector3(-1, -1), dir) * Mathf.Sign(dir.y - dir.x);
         //计算方向的度数,360除以方向数量
-        var dierctionDegrees = 360.0f / directionCount;
+        var directionDegrees = 360.0f / directionCount;
         //目标方向是四舍五入的角度除以360乘以方向数量,取余方向数量
-        targetDirection = Mathf.RoundToInt((angle + 360) % 360 / directionCount) % directionCount;
+        targetDirection = Mathf.RoundToInt((angle + 360) % 360 / directionDegrees) % directionCount;
     }
 
     /// <summary>
