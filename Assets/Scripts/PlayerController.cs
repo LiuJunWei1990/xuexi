@@ -70,15 +70,15 @@ public class PlayerController : MonoBehaviour
         //生成路径,当前坐标--目标网格
         Pathing.BuildPath(iso.tilePos, targetTile,character.directionCount);
 
-        //按下F4
-        if (Input.GetKeyDown(KeyCode.F4))
+        //单击右键
+        if (Input.GetMouseButtonDown(1))
         {
             //调用瞬移方法
             character.Teleport(IsoInput.mouseTile);
-        } 
-        //单击右键 或者 单击左键+左Shift
-        if (Input.GetMouseButton(1) || (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0)))
-            {
+        }
+        //单击左键+左Shift
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0))
+        {
             //执行攻击
             character.Attack();
         }
