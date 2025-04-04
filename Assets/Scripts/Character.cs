@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 角色组件
+/// </summary>
 public class Character : MonoBehaviour
 {
     /// <summary>
@@ -18,16 +21,56 @@ public class Character : MonoBehaviour
     /// </summary>
     public float attackSpeed = 1.0f;
     /// <summary>
+    /// 互动范围
+    /// </summary>
+    public float useRange = 1.5f;
+    /// <summary>
+    /// 攻击范围
+    /// </summary>
+    public float attackRange = 2.5f;
+    /// <summary>
     /// 是否在跑动
     /// </summary>
     [Tooltip("是否奔跑")]
     public bool run = false;
+
     /// <summary>
-    /// 当前互动的物体
+    /// 目标属性
     /// </summary>
-    ///特性:在Inspector面板中隐藏
+    //特性:不显示在面板上
     [HideInInspector]
-    public Usable usable;
+    public GameObject target
+    {
+        get
+        {
+            ///读取目标字段
+            return m_Target;
+        }
+        set
+        {
+            //>>>>>>>>>>>>>>设定目标<<<<<<<<<<<<<<<
+            //尝试获取将要做为目标的对象的互动组件
+            var usable = value.GetComponent<Usable>();
+            //如果互动组件不为空就代表是可互动的对象,就调<使用/互动>Use方法,<使用>目标
+            if (usable != null) Use(usable);
+            //否则,即目标没有互动组件
+            else
+            {
+                //尝试获取将要做为目标的对象的角色组件
+                var targetCharacter = value.GetComponent<Character>();
+                //如果有角色组件,就代表是可攻击的对象,就调<攻击>Attack方法,<攻击>目标
+                if (targetCharacter) Attack(targetCharacter);
+                //都没有,就return不做任何动作
+                else
+                {
+                    return;
+                }
+            }
+
+            //无论上面代码执行任一动作,都要把目标赋值给当前角色的目标
+            m_Target = value;
+        }
+    }
     /// <summary>
     /// 方向(存疑)
     /// </summary>
@@ -65,6 +108,18 @@ public class Character : MonoBehaviour
     /// 攻击动画(编号)
     /// </summary>
     int attackAnimation;
+    /// <summary>
+    /// 本角色的目标<物体或其他角色>
+    /// </summary>
+    GameObject m_Target;
+    /// <summary>
+    /// 目标的互动组件
+    /// </summary>
+    Usable usable;
+    /// <summary>
+    /// 目标角色组件
+    /// </summary>
+    Character targetCharacter;
 
     private void Start()
     {
@@ -74,15 +129,31 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
+    /// 行至...(生成路径)
+    /// </summary>
+    /// <param name="target">行至的目标</param>
+    /// <param name="minRange">最小范围?</param>
+    void PathTo(Vector2 target,float minRange = 0.1f)
+    {
+        //先放弃当前的行走动作(会保留最后一步做为path[0].pos)
+        AbortMovement();
+        //如果保留了最后一步,新路径起始坐标是path[0].pos.
+        //如果路径为空,代表人物原本是静止的,起始坐标就是人物当前网格的坐标iso.tilePos
+        Vector2 startPos = path.Count > 0 ? path[0].pos : iso.tilePos;
+        //添加路径,生成路径,起始坐标是startPos,目标坐标是target,方向数量是directionCount,最小范围是minRange
+        path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target, directionCount,minRange));
+    }
+
+    /// <summary>
     /// 使用/互动
     /// </summary>
     /// <param name="usable">使用的目标物</param>
     public void Use(Usable usable)
     {
-        //准备要使用的物体和正在使用的物体时同一个就跳出,不需要执行任何代码.
-        if (this.usable == usable) return;
-        //生成走向物体的路径
-        GoTo(usable.GetComponent<Iso>().tilePos);
+        //正在攻击动作中就不能使用,直接返回
+        if (attack) return;
+        //生成路径,止步最小范围是互动范围
+        PathTo(usable.GetComponent<Iso>().tilePos, useRange);
         //生成路径后把当前互动物置为现在使用的这个,因为生成路径会重置当前互动物体为空,所以放在后面
         this.usable = usable;
     }
@@ -95,35 +166,8 @@ public class Character : MonoBehaviour
     {
         //如果正在执行攻击动作,则不能走,直接跳出
         if (attack) return;
-        //生成路径之前,重置当前互动的物体
-        this.usable = null;
-        //////////////第一部分是清空原有路径,因为鼠标点了一个新目的地.
-
-        //取当前游戏对象的等距坐标,在Iso类型里面取
-        Vector2 startPos = iso.tilePos;
-        //路径容器大于0,就是代表还有路点没走完(需要清空原有的路径)
-        if(path.Count > 0)
-        {
-            //获取原第一个路径
-            var firstStep = path[0];
-            //坐标加路径等于目标点(原第一个路点)
-            startPos = firstStep.pos;
-            //清空路径
-            path.Clear();
-            //把原本的第一个路点优先添加到刚才已经清空的路径中,这样做的目的是为了避免人物突然卡住,飘逸,闪现的问题
-            path.Add(firstStep);
-        }
-        else
-        {
-            //路点走完了就是待机状态,直接清空就行了.
-            path.Clear();
-            traveled = 0;
-        }
-
-        ////////////////第二部分,是创建新的路径
-
-        //重新生成并添加路点,注意前面已经把firstStep加为第一个路点了.
-        path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target,directionCount));
+        //生成路径
+        PathTo(target);
     }
 
     /// <summary>
@@ -156,6 +200,37 @@ public class Character : MonoBehaviour
         traveled = 0;
     }
 
+    /// <summary>
+    /// 放弃行走动作
+    /// </summary>
+    private void AbortMovement()
+    {
+        //把关于路径的所有变量都清空
+        m_Target = null;
+        usable = null;
+        targetCharacter = null;
+
+        //如果路径还没走完,就走完当前这一步(一帧的行走距离)
+        if(path.Count > 0)
+        {
+            //存路径的第一步的
+            var firstStep = path[0];
+            //清空路径
+            path.Clear();
+            //把第一步再添加到路径开头
+            path.Add(firstStep);
+        }
+
+        //否则,即路径已经走完了,就把路径清空
+        else
+        {
+            //路径清空
+            path.Clear();
+            //移动距离也清零
+            traveled = 0;
+        }
+    }
+
     private void Update()
     {
         //画线人物站立的网格画线
@@ -165,13 +240,38 @@ public class Character : MonoBehaviour
         //移动角色
         Move();
 
-        //执行完当前帧的Move()后,如果路径为空,并且有当前互动的物体
-        if(path.Count == 0 && usable)
+        //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
+        //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
+        //当寻路结束
+        if (path.Count == 0)
         {
-            //使用当前物体
-            usable.Use();
-            //当前物体设置为空
-            usable = null;
+            //如果目标有互动组件
+            if (usable)
+            {
+                //如果目标的网格和角色的网格距离小于等于互动范围,就执行互动
+                if (Vector2.Distance(usable.GetComponent<Iso>().tilePos, iso.tilePos) <= useRange) usable.Use();
+                //执行完毕后,把目标置空
+                usable = null;
+            }
+            //如果目标有角色组件
+            if (targetCharacter)
+            {
+                //如果目标的网格和角色的网格距离小于等于攻击范围,就执行攻击
+                Vector2 target = targetCharacter.GetComponent<Iso>().tilePos;
+                if(Vector2.Distance(target,iso.tilePos) <= attackRange)
+                {
+                    //状态修改为攻击中
+                    attack = true;
+                    //随机赋值1-3用于选择攻击动画
+                    attackAnimation = Random.Range(1, 3);
+                    //获取到目标的方向的编号
+                    direction = Iso.Direction(iso.tilePos, target, directionCount);
+                }
+                //执行完毕后,把目标置空
+                targetCharacter = null;
+            }
+            //所有动作执行完毕后,把目标置空
+            m_Target = null;
         }
         //更新个动画吧
         UpdateAnimation();
@@ -300,14 +400,8 @@ public class Character : MonoBehaviour
     /// <param name="target">鼠标</param>
     public void LookAt(Vector3 target)
     {
-        //计算方向,目标减去当前位置(等距)
-        var dir = target - (Vector3)iso.pos;
-        //计算角度,Vector3.Angle()计算两个向量之间的夹角,返回的是弧度,乘以Mathf.Sign()是为了判断正负,返回正1,负-1.
-        var angle = Vector3.Angle(new Vector3(-1, -1), dir) * Mathf.Sign(dir.y - dir.x);
-        //计算方向的度数,360除以方向数量
-        var directionDegrees = 360.0f / directionCount;
-        //目标方向是四舍五入的角度除以360乘以方向数量,取余方向数量
-        targetDirection = Mathf.RoundToInt((angle + 360) % 360 / directionDegrees) % directionCount;
+        //目标方向等于自身-目标的方向
+        targetDirection = Iso.Direction(iso.tilePos, target,directionCount);
     }
 
     /// <summary>
@@ -323,6 +417,22 @@ public class Character : MonoBehaviour
             //随一个攻击动画,编号
             attackAnimation = Random.Range(1, 3);
         }
+    }
+
+    /// <summary>
+    /// 攻击(重载,有目标版)
+    /// </summary>
+    /// <param name="targetCharacter">目标</param>
+    public void Attack(Character targetCharacter)
+    {
+        //如果正在攻击就返回
+        if (attack) return;
+        //获取目标的Iso组件
+        Iso targetIso = targetCharacter.GetComponent<Iso>();
+        //行至目标出,以攻击范围做为止步范围
+        PathTo(targetIso.tilePos, attackRange);
+        //获取目标的角色组件
+        this.targetCharacter = targetCharacter;
     }
 
     /// <summary>

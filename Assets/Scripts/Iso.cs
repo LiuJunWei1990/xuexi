@@ -157,6 +157,27 @@ public class Iso : MonoBehaviour
         return macroTlie;
     }
 
+    /// <summary>
+    /// 获取两点之间的方向的索引(directionCount:8向或者16向)
+    /// </summary>
+    /// <param name="from">来自</param>
+    /// <param name="target">目标</param>
+    /// <param name="directionCount">8向或者16向</param>
+    /// <returns></returns>
+    static public int Direction(Vector2 from, Vector3 target,int directionCount)
+    {
+        //终点减起点得到两点之间的向量
+        var dir = target - (Vector3)from;
+        //获取Vector3(-1,-1,-1)(左下方向)和向量dir之间的夹角
+        //Mathf.Sign(dir.y - dir.x)判断的是-1,-1,-1到1,1,1之间,负数是下半,正数是上半
+        //给夹角加上正负数,可以代表360度中的任一角度
+        var angle = Vector3.Angle(new Vector3(-1,-1,-1), dir)*Mathf.Sign(dir.y - dir.x);
+        //360°除以方向数,得到每一个方向的角度
+        var directionDegrees = 360.0f / directionCount;
+        //获取方向索引
+        return Mathf.RoundToInt((angle + 360) % 360 / directionDegrees) % directionCount;
+    }
+
     private void Awake()
     {
         //获取当前对象坐标

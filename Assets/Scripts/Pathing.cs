@@ -237,7 +237,7 @@ public class Pathing
     /// <param name="from">来自</param>
     /// <param name="target">目标</param>
     /// <returns>返回路径列表</returns>
-    static public List<Step> BuildPath(Vector2 from, Vector2 target,int directionCount = 8)
+    static public List<Step> BuildPath(Vector2 from, Vector2 target, int directionCount = 8, float minRange = 0.1f)
     {
         //////////前期准备
         //判断是8方向还是16方向
@@ -252,7 +252,7 @@ public class Pathing
         //来自和目标重合就不用寻了,直接返回空路径吧.
         if (from == target) return path;
         //创建起始节点,从池里面取节点,优化内存分配
-        Node startNode = Node.Get();                                                                                                                                                                                                                                                    
+        Node startNode = Node.Get();
         //给起始节点初始化,各种赋值,添入开放列表
         startNode.parent = null;
         startNode.pos = from;
@@ -272,7 +272,7 @@ public class Pathing
             //处理第一个,处理完的会移至关闭列表,所以,永远都是处理第一个
             Node node = openNodes[0];
             //如果目标不可通行 并且 节点有父节点 并且 节点的评分大于等于父节点(越寻越远了)
-            if (!Tilemap.instance[target] && node.parent != null && node.score >= node.parent.score)
+            if (!Tilemap.instance[target] && node.parent != null && node.score > node.parent.score)
             {
                 //那还寻个屁,回溯,生成路径
                 TraverseBack(node.parent);
@@ -280,8 +280,8 @@ public class Pathing
                 break;
             }
 
-            //到目标点就结束了,开始回溯路径,然后跳出循环
-            if (node.pos == target)
+            //到目标点的停止距离就结束了,开始回溯路径,然后跳出循环
+            if (Vector2.Distance(node.pos,target) <= minRange)
             {
                 TraverseBack(node);
                 break;

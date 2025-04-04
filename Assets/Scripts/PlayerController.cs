@@ -49,15 +49,61 @@ public class PlayerController : MonoBehaviour
         iso = character.GetComponent<Iso>();
     }
 
+    /// <summary>
+    /// 更新鼠标悬停的目标
+    /// </summary>
+    void UpdateHover()
+    {
+        //鼠标左键按下时不更新
+        if (Input.GetMouseButton(0)) return;
+
+        //存新悬停目标的变量
+        GameObject newHover = null;
+        //获取鼠标在世界坐标系中的位置
+        var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        //打出射线
+        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+        //如果射线碰撞到物体
+        if (hit)
+        {
+            //获取碰撞到的物体,便是鼠标悬停的目标
+            newHover = hit.collider.gameObject;
+        }
+
+        //如果新悬停目标不等于当前悬停目标
+        if (newHover != hover)
+        {
+            //如果当前悬停目标不为空
+            if (hover != null)
+            {
+                //获取当前悬停目标的精灵渲染器组件
+                var spriteRenderer = hover.GetComponent<SpriteRenderer>();
+                //还原其亮度
+                spriteRenderer.material.SetFloat("_SelfIllum", 1.0f);
+            }
+            //把新悬停目标赋值给当前悬停目标
+            hover = newHover;
+            //赋值后,如果当前悬停目标不为空
+            if (hover != null)
+            {
+                //获取当前悬停目标的精灵渲染器组件
+                var spriteRenderer = hover.GetComponent<SpriteRenderer>();
+                //提高其亮度
+                spriteRenderer.material.SetFloat("_SelfIllum", 1.75f);
+            }
+        }
+    }
+
     private void Update()
     {
+        UpdateHover();
         //目标的网格
         Vector3 targetTile;
         //如果当前互动物体不为空
-        if (Usable.hot != null)
+        if (hover != null)
         {
             //目标网格直接取当前互动物体的网格
-            targetTile = Iso.MapToIso(Usable.hot.transform.position);
+            targetTile = Iso.MapToIso(hover.transform.position);
         }
         //当前互动物体为空
         else
@@ -68,7 +114,7 @@ public class PlayerController : MonoBehaviour
         //画目标网格的边框,坐标是targetTile,可通行画绿框,不可通行画红框
         Iso.DebugDrawTile(targetTile, Tilemap.instance[targetTile] ? Color.green : Color.red, 0.1f);
         //生成路径,当前坐标--目标网格
-        Pathing.BuildPath(iso.tilePos, targetTile,character.directionCount);
+        Pathing.BuildPath(iso.tilePos, targetTile,character.directionCount,character.useRange);
 
         //按下F4
         if (Input.GetKeyDown(KeyCode.F4))
@@ -87,10 +133,10 @@ public class PlayerController : MonoBehaviour
         else if (Input.GetMouseButton(0))
         {
             //被玩家关注的互动物体不为空
-            if (Usable.hot != null)
+            if (hover != null)
             {
                 //设置当前为玩家关注
-                character.Use(Usable.hot);
+                character.target = hover;
             }
             //为空就是走路
             else
@@ -116,43 +162,6 @@ public class PlayerController : MonoBehaviour
                     SetCharacter(character);
                     return;
                 }
-            }
-        }
-
-        //>>>>>>>>>>鼠标悬停高亮逻辑代码<<<<<<<<<<<<<<<<
-        //声明鼠标悬停目标
-        GameObject newHover = null;
-        //通过当前相机的渲染获得鼠标当前位置(这里seepseek建议换成Camera.mian主相机,因为当前相机在Update中容易为空)
-        var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //2D射线检测
-        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
-
-        //如射线检测到对象
-        if (hit)
-        {
-            //获取这个对象
-            newHover = hit.collider.gameObject;
-        }
-
-        //如这个对象不等于之前的悬停对象
-        if (newHover != hover)
-        {
-            //如之前的悬停对象不为空
-            if (hover != null)
-            {
-                //获取原有悬停对象的渲染器
-                var spriteRenderer = hover.GetComponent<SpriteRenderer>();
-                //把高亮恢复
-                spriteRenderer.material.SetFloat("_SelfIllum", 1.0f);
-            }
-
-            //更新当前悬停对象
-            hover = newHover;
-            //更新过后悬停对象不为空
-            if(hover != null)
-            {
-                var spriteRenderer = hover.GetComponent<SpriteRenderer>();
-                spriteRenderer.material.SetFloat("_SelfIllum", 1.75f);
             }
         }
 
