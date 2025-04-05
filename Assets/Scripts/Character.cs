@@ -109,6 +109,10 @@ public class Character : MonoBehaviour
     /// </summary>
     int attackAnimation;
     /// <summary>
+    /// 是否正在挨打
+    /// </summary>
+    bool takingDamage = false;
+    /// <summary>
     /// 本角色的目标<物体或其他角色>
     /// </summary>
     GameObject m_Target;
@@ -436,12 +440,22 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
+    /// 挨打
+    /// </summary>
+    public void TakeDamage()
+    {
+        //挨打状态置为true
+        takingDamage = true;
+    }
+
+    /// <summary>
     /// 在动画完成时执行的方法(不是系统的api哈,就是自己取得名字)
     /// </summary>
     void OnAnimationFinish()
     {
-        //是否攻击状态,在攻击状态就置否
-        if (attack) attack = false;
+        //动画完成后,就把攻击状态和挨打状态置为false
+        attack = false;
+        takingDamage = false;
     }
 
     void OnAttack1Finish()

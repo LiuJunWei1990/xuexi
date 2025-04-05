@@ -141,8 +141,6 @@ public class EditorTools : MonoBehaviour
             //0,0.083,0.166,0.25,0.333,0.416,0.5,0.583,0.666,0.75,0.833,0.916,每一帧都是关键帧
             kf.time = i * frameLength;  // 设置关键帧的时间
             kf.value = sprites[i];  // 设置关键帧的值
-            //debug日志:输出帧的名字
-            Debug.Log(sprites[i].name);
             keyFrames[i] = kf;  // 将关键帧添加到关键帧数组中
         }
         //清除当前动画引用中的帧(曲线),注意这是前面新建的一个AnimationClip,这个稳妥起见添加帧之前先清除一遍
