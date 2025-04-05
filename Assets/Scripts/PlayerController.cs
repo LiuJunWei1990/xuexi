@@ -20,6 +20,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     Iso iso;
 
+    Collider2D[] hoverColliders = new Collider2D[4];
+
     private void Awake()
     {
         //如果角色组件为空
@@ -61,13 +63,13 @@ public class PlayerController : MonoBehaviour
         GameObject newHover = null;
         //获取鼠标在世界坐标系中的位置
         var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //打出射线
-        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
+        //打出射线,返回打中的所有碰撞器的数量,并把所有碰撞器存如hoverColliders数组
+        int overlapCount = Physics2D.OverlapPointNonAlloc(mousePos, hoverColliders);
         //如果射线碰撞到物体
-        if (hit)
+        if (overlapCount > 0)
         {
-            //获取碰撞到的物体,便是鼠标悬停的目标
-            newHover = hit.collider.gameObject;
+            //获取碰撞到的最表面的物体,便是鼠标悬停的目标
+            newHover = hoverColliders[0].gameObject;
         }
 
         //如果新悬停目标不等于当前悬停目标
