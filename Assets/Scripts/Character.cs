@@ -167,7 +167,7 @@ public class Character : MonoBehaviour
     public void Use(Usable usable)
     {
         //正在攻击动作中就不能使用,直接返回
-        if (attack) return;
+        if (attack || takingDamage) return;
         //生成路径,止步最小范围是互动范围
         PathTo(usable.GetComponent<Iso>().tilePos, useRange);
         //生成路径后把当前互动物置为现在使用的这个,因为生成路径会重置当前互动物体为空,所以放在后面
@@ -181,7 +181,7 @@ public class Character : MonoBehaviour
     public void GoTo(Vector2 target)
     {
         //如果正在执行攻击动作,则不能走,直接跳出
-        if (attack) return;
+        if (attack || takingDamage) return;
         //生成路径
         PathTo(target);
     }
@@ -192,7 +192,7 @@ public class Character : MonoBehaviour
     /// <param name="target">目标点</param>
     public void Teleport(Vector2 target)
     {
-        if (attack) return;
+        if (attack || takingDamage) return;
         //判断目标网格是否可通行
         if (Tilemap.instance[target])
         {
@@ -268,13 +268,14 @@ public class Character : MonoBehaviour
                 if (Vector2.Distance(usable.GetComponent<Iso>().tilePos, iso.tilePos) <= useRange) usable.Use();
                 //执行完毕后,把目标置空
                 usable = null;
+                m_Target = null;
             }
             //如果目标有角色组件
-            if (targetCharacter)
+            if (targetCharacter && !attack)
             {
                 //如果目标的网格和角色的网格距离小于等于攻击范围,就执行攻击
                 Vector2 target = targetCharacter.GetComponent<Iso>().tilePos;
-                if(Vector2.Distance(target,iso.tilePos) <= attackRange)
+                if (Vector2.Distance(target, iso.tilePos) <= attackRange)
                 {
                     //状态修改为攻击中
                     attack = true;
@@ -283,11 +284,7 @@ public class Character : MonoBehaviour
                     //获取到目标的方向的编号
                     direction = Iso.Direction(iso.tilePos, target, directionCount);
                 }
-                //执行完毕后,把目标置空
-                targetCharacter = null;
             }
-            //所有动作执行完毕后,把目标置空
-            m_Target = null;
         }
         //更新个动画吧
         UpdateAnimation();
@@ -366,14 +363,18 @@ public class Character : MonoBehaviour
             //给动画速度赋值
             animator.speed = attackSpeed;
         }
+        //如果正在挨打
+        else if (takingDamage)
+        {
+            //给动画名称赋值
+            animation = "TakeDamage";
+        }
 
         //没有路径就是待机状态
         else if(path.Count == 0)
         {
             //给动画名赋值
             animation = "Idle";
-            //此动画需要维持,时间进度
-            preserveTime = true;
         }
         //否则就是行走
         else
@@ -387,7 +388,7 @@ public class Character : MonoBehaviour
         }
 
         //如果人物朝向和目标方向不一样,就转向
-        if (!attack && direction != targetDirection)
+        if (!attack && !takingDamage && direction != targetDirection)
         {
 
             //计算当前方向和目标方向的夹角,获取夹角的正负,正数就是顺时针,负数就是逆时针
@@ -426,7 +427,7 @@ public class Character : MonoBehaviour
     public void Attack()
     {
         //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
-        if (!attack && direction == targetDirection && path.Count == 0)
+        if (!attack && !takingDamage && direction == targetDirection && path.Count == 0)
         {
             //进入攻击状态
             attack = true;
@@ -442,7 +443,7 @@ public class Character : MonoBehaviour
     public void Attack(Character targetCharacter)
     {
         //如果正在攻击就返回
-        if (attack) return;
+        if (attack || takingDamage) return;
         //获取目标的Iso组件
         Iso targetIso = targetCharacter.GetComponent<Iso>();
         //行至目标出,以攻击范围做为止步范围
@@ -459,6 +460,26 @@ public class Character : MonoBehaviour
         //挨打状态置为true
         takingDamage = true;
     }
+    /// <summary>
+    /// 在动画播放时执行的方法(不是系统的api哈,就是自己取得名字)
+    /// </summary>
+    void OnAnimationMiddle()
+    {
+        //如果正在攻击
+        if (attack)
+        {
+            //如果目标角色不为空
+            if (targetCharacter)
+            {
+                //就执行攻击
+                targetCharacter.TakeDamage();
+                //执行完毕后,就把目标角色置空
+                targetCharacter = null;
+                //目标也置空
+                m_Target = null;
+            }
+        }
+    }
 
     /// <summary>
     /// 在动画完成时执行的方法(不是系统的api哈,就是自己取得名字)
@@ -468,14 +489,6 @@ public class Character : MonoBehaviour
         //动画完成后,就把攻击状态和挨打状态置为false
         attack = false;
         takingDamage = false;
-    }
-
-    void OnAttack1Finish()
-    {
-
-    }
-    void OnAttack2Finish()
-    {
-
+        UpdateAnimation();
     }
 }

@@ -532,7 +532,7 @@ MonoBehaviour:
   speed: 14
   attackSpeed: 2.5
   useRange: 3
-  attackRange: 2.5
+  attackRange: 3.5
   run: 1
   direction: 0
 --- !u!95 &186345058
@@ -8937,7 +8937,7 @@ MonoBehaviour:
   speed: 5
   attackSpeed: 1
   useRange: 1.5
-  attackRange: 2.5
+  attackRange: 3.5
   run: 0
   direction: 0
 --- !u!4 &2168209859758980924

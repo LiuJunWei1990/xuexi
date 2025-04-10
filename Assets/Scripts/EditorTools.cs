@@ -56,8 +56,6 @@ public class EditorTools : MonoBehaviour
 
         //计算每个方向动作的帧数,由于每个动作帧数是相等的,所以可以直接除以方向数
         int framesPerAnimation = sprites.Length / directionCount;
-        //动画事件名,是动画文件的名字
-        var eventName = texture.name;
 
         //遍历所有方向
         for (int i = 0; i < directionCount; ++i)
@@ -91,7 +89,7 @@ public class EditorTools : MonoBehaviour
             animationClip.name = name;
             animationClip.frameRate = 12;
             //更新动画文件
-            FillAnimationClip(animationClip, animSprites, eventName);
+            FillAnimationClip(animationClip, animSprites);
         }
 
         #endregion
@@ -106,7 +104,7 @@ public class EditorTools : MonoBehaviour
     /// <param name="sprites">精灵数组</param>
     /// <param name="eventName">动画事件</param>
     /// <returns>动画变量AnimationClip,可以生成为动画文件</returns>
-    static private void FillAnimationClip(AnimationClip clip, Sprite[] sprites, string eventName)
+    static private void FillAnimationClip(AnimationClip clip, Sprite[] sprites)
     {
         #region >>>>>>>>>>>>>>>>生成动画文件并赋一些基本的值<<<<<<<<<<<<<<<<<<<<<<
 
@@ -175,9 +173,9 @@ public class EditorTools : MonoBehaviour
             new AnimationEvent()
             {
                 //动画事件的时间是动画长度,那就是末尾
-                time = clip.length,
+                time = clip.length / 2,
                 //事件调用的方法名称functionName
-                functionName = "On"+eventName+"Finish"
+                functionName = "OnAnimationMiddle"
             },
             new AnimationEvent()
             {
