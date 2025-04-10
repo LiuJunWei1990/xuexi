@@ -1,47 +1,47 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Í°×é¼ş
+/// æ¡¶ç»„ä»¶
 /// </summary>
 [RequireComponent(typeof(Usable))]
 public class Barrel : MonoBehaviour
 {
     /// <summary>
-    /// ¶¯»­
+    /// åŠ¨ç”»
     /// </summary>
     Animator animator;
     /// <summary>
-    /// »¥¶¯×é¼ş
+    /// äº’åŠ¨ç»„ä»¶
     /// </summary>
     Usable usable;
     /// <summary>
-    /// ²ÄÖÊ
+    /// æè´¨
     /// </summary>
     SpriteRenderer spriteRenderer;
 
 
     private void Awake()
     {
-        //»ñÈ¡¸÷ÖÖ×é¼ş
+        //è·å–å„ç§ç»„ä»¶
         animator = GetComponent<Animator>();
         usable = GetComponent<Usable>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     /// <summary>
-    /// Ê¹ÓÃ,ËùÓĞ¿É»¥¶¯ÎïÌå¶¼ÓĞµÄ·½·¨,»á±»Usable»¥¶¯×é¼şµ÷ÓÃ
+    /// ä½¿ç”¨,æ‰€æœ‰å¯äº’åŠ¨ç‰©ä½“éƒ½æœ‰çš„æ–¹æ³•,ä¼šè¢«Usableäº’åŠ¨ç»„ä»¶è°ƒç”¨
     /// </summary>
     void OnUse()
     {
-        //²¥·ÅÊ¹ÓÃ¶¯»­
+        //æ’­æ”¾ä½¿ç”¨åŠ¨ç”»
         animator.Play("Use");
-        //Ê¹ÓÃ×é¼şµÄ¼¤»î×Ö¶Î,ÉèÖÃÎª·ñ.ÒòÎªÊ¹ÓÃºóÍ°´òËéÁË
+        //ä½¿ç”¨ç»„ä»¶çš„æ¿€æ´»å­—æ®µ,è®¾ç½®ä¸ºå¦.å› ä¸ºä½¿ç”¨åæ¡¶æ‰“ç¢äº†
         usable.active = false;
-        //Í°ËéÁË,Íø¸ñ×ÔÈ»Ò²¾Í¿ÉÍ¨ĞĞÁË
+        //æ¡¶ç¢äº†,ç½‘æ ¼è‡ªç„¶ä¹Ÿå°±å¯é€šè¡Œäº†
         Tilemap.instance[Iso.MapToIso(transform.position)] = true;
-        //ĞŞ¸ÄÍ¼²ã,ÒÔ±£Ö¤²»»áµ²×¡ÆäËûÎïÌå
+        //ä¿®æ”¹å›¾å±‚,ä»¥ä¿è¯ä¸ä¼šæŒ¡ä½å…¶ä»–ç‰©ä½“
         spriteRenderer.sortingLayerName = "OnFloor";
     }
 }

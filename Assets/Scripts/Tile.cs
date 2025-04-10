@@ -1,42 +1,42 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÍßÆ¬×é¼ş
+/// ç“¦ç‰‡ç»„ä»¶
 /// </summary>
-/// ÍßÆ¬ÊµÀı
-/// ÌØĞÔ:»áÔÚ±à¼­Ä£Ê½ÏÂÔËĞĞ¸Ã½Å±¾
+/// ç“¦ç‰‡å®ä¾‹
+/// ç‰¹æ€§:ä¼šåœ¨ç¼–è¾‘æ¨¡å¼ä¸‹è¿è¡Œè¯¥è„šæœ¬
 [ExecuteInEditMode]
-/// ÌØĞÔ:¸Ã½Å±¾Ğ¯´øIso×é¼ş
+/// ç‰¹æ€§:è¯¥è„šæœ¬æºå¸¦Isoç»„ä»¶
 [RequireComponent(typeof(Iso))]
 public class Tile : MonoBehaviour
 {
     /// <summary>
-    /// ¿É·ñÍ¨ĞĞ
+    /// å¯å¦é€šè¡Œ
     /// </summary>
     public bool passable = true;
 
     /// <summary>
-    /// ÍßÆ¬¿í¶È(µÈ¾àµ¥Î»),Ä¬ÈÏ5¿ÉĞŞ¸Ä
+    /// ç“¦ç‰‡å®½åº¦(ç­‰è·å•ä½),é»˜è®¤5å¯ä¿®æ”¹
     /// </summary>
     public int width = 5;
     /// <summary>
-    /// ÍßÆ¬¸ß¶È(µÈ¾àµ¥Î»),Ä¬ÈÏ5¿ÉĞŞ¸Ä
+    /// ç“¦ç‰‡é«˜åº¦(ç­‰è·å•ä½),é»˜è®¤5å¯ä¿®æ”¹
     /// </summary>
     public int height = 5;
 
     /// <summary>
-    /// ÓÃÓÚµ÷ÕûÍßÆ¬µÄÍø¸ñµÄXÆ«ÒÆ(µÈ¾àµ¥Î»)
+    /// ç”¨äºè°ƒæ•´ç“¦ç‰‡çš„ç½‘æ ¼çš„Xåç§»(ç­‰è·å•ä½)
     /// </summary>
-    /// ÌØĞÔ:»¬¶¯Ìõ
+    /// ç‰¹æ€§:æ»‘åŠ¨æ¡
     [Range(-5, 5)]
     public int offsetX = 0;
 
     /// <summary>
-    /// ÓÃÓÚµ÷ÕûÍßÆ¬µÄÍø¸ñµÄYÆ«ÒÆ(µÈ¾àµ¥Î»)
+    /// ç”¨äºè°ƒæ•´ç“¦ç‰‡çš„ç½‘æ ¼çš„Yåç§»(ç­‰è·å•ä½)
     /// </summary>
-    /// /// ÌØĞÔ:»¬¶¯Ìõ
+    /// /// ç‰¹æ€§:æ»‘åŠ¨æ¡
     [Range(-5, 5)]
     public int offsetY = 0;
 
@@ -50,26 +50,26 @@ public class Tile : MonoBehaviour
     }
 
     /// <summary>
-    /// ÍßÆ¬±»Ñ¡ÖĞÊ±»æÖÆ¸ÃÍßÆ¬µÄÍø¸ñ
+    /// ç“¦ç‰‡è¢«é€‰ä¸­æ—¶ç»˜åˆ¶è¯¥ç“¦ç‰‡çš„ç½‘æ ¼
     /// </summary>
     private void OnDrawGizmosSelected()
     {
-        //»ñÈ¡ÍßÆ¬µÄµÈ¾à×ø±ê
+        //è·å–ç“¦ç‰‡çš„ç­‰è·åæ ‡
         Vector3 pos = Iso.MapToIso(transform.position);
-        //»ñÈ¡ÍßÆ¬µÄ×óÉÏ½Ç×ø±ê
+        //è·å–ç“¦ç‰‡çš„å·¦ä¸Šè§’åæ ‡
         pos.x -= width / 2;
         pos.y -= height / 2;
-        //¼ÓÉÏÍßÆ¬µÄÆ«ÒÆÁ¿
+        //åŠ ä¸Šç“¦ç‰‡çš„åç§»é‡
         pos.x += offsetX;
         pos.y += offsetY;
-        //±éÀúÍßÆ¬µÄÃ¿Ò»¸öÍø¸ñ
+        //éå†ç“¦ç‰‡çš„æ¯ä¸€ä¸ªç½‘æ ¼
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                //¸ù¾İ¿ÉÍ¨ĞĞĞÔÉèÖÃÑÕÉ«
+                //æ ¹æ®å¯é€šè¡Œæ€§è®¾ç½®é¢œè‰²
                 Gizmos.color = passable ? new Color(1, 1, 1, 0.2f) : new Color(1, 0, 0, 0.3f);
-                //»æÖÆÍø¸ñ,´óĞ¡Îª0.9f
+                //ç»˜åˆ¶ç½‘æ ¼,å¤§å°ä¸º0.9f
                 Iso.GizmosDrawTile(pos + new Vector3(x, y), 0.9f);
             }
         }

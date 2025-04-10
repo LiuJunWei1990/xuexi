@@ -1,117 +1,117 @@
-// ÒýÈëÏµÍ³¼¯ºÏÃüÃû¿Õ¼ä£¬ÓÃÓÚÊ¹ÓÃ¼¯ºÏÀàÐÍ
+ï»¿// å¼•å…¥ç³»ç»Ÿé›†åˆå‘½åç©ºé—´ï¼Œç”¨äºŽä½¿ç”¨é›†åˆç±»åž‹
 using System.Collections;
 
-// ÒýÈëÏµÍ³¼¯ºÏ·ºÐÍÃüÃû¿Õ¼ä£¬ÓÃÓÚÊ¹ÓÃ·ºÐÍ¼¯ºÏÀàÐÍ
+// å¼•å…¥ç³»ç»Ÿé›†åˆæ³›åž‹å‘½åç©ºé—´ï¼Œç”¨äºŽä½¿ç”¨æ³›åž‹é›†åˆç±»åž‹
 using System.Collections.Generic;
 
-// ÒýÈë Unity ÒýÇæµÄÃüÃû¿Õ¼ä£¬ÓÃÓÚ·ÃÎÊ Unity µÄºËÐÄ¹¦ÄÜ
+// å¼•å…¥ Unity å¼•æ“Žçš„å‘½åç©ºé—´ï¼Œç”¨äºŽè®¿é—® Unity çš„æ ¸å¿ƒåŠŸèƒ½
 using UnityEngine;
 
 
 
 /// <summary>
-/// ¶¨Òå Iso Àà£¬ÓÃÓÚ´¦ÀíµÈ¾à×ø±êºÍÊÀ½ç×ø±êÖ®¼äµÄ×ª»»,»æÖÆµØÍ¼±êÏß(ÓÃÓÚµ÷ÊÔÄ£Ê½,ºÍÑ°Â·ÕÚµ²)
+/// å®šä¹‰ Iso ç±»ï¼Œç”¨äºŽå¤„ç†ç­‰è·åæ ‡å’Œä¸–ç•Œåæ ‡ä¹‹é—´çš„è½¬æ¢,ç»˜åˆ¶åœ°å›¾æ ‡çº¿(ç”¨äºŽè°ƒè¯•æ¨¡å¼,å’Œå¯»è·¯é®æŒ¡)
 /// </summary>
-/// ÌØÐÔ:»áÔÚ±à¼­Ä£Ê½ÏÂÔËÐÐ¸Ã½Å±¾
+/// ç‰¹æ€§:ä¼šåœ¨ç¼–è¾‘æ¨¡å¼ä¸‹è¿è¡Œè¯¥è„šæœ¬
 [ExecuteInEditMode]
-/// ÌØÐÔ:¸Ã½Å±¾Ð¯´øÒ»¸ö×é¼þ
+/// ç‰¹æ€§:è¯¥è„šæœ¬æºå¸¦ä¸€ä¸ªç»„ä»¶
 [RequireComponent(typeof(SpriteRenderer))]
 public class Iso : MonoBehaviour
 {
 
     /// <summary>
-    /// ¾²Ì¬±äÁ¿£¬ÍßÆ¬µÄ³ß´ç£¨ÊÀ½ç×ø±ê¿í¶È£©
+    /// é™æ€å˜é‡ï¼Œç“¦ç‰‡çš„å°ºå¯¸ï¼ˆä¸–ç•Œåæ ‡å®½åº¦ï¼‰
     /// </summary>
     static public float tileSize = 0.2f;
 
     /// <summary>
-    /// ¾²Ì¬±äÁ¿£¬ÍßÆ¬µÄ³ß´ç£¨ÊÀ½ç×ø±ê¸ß¶È£¬Îª¿í¶ÈµÄÒ»°ë£©
+    /// é™æ€å˜é‡ï¼Œç“¦ç‰‡çš„å°ºå¯¸ï¼ˆä¸–ç•Œåæ ‡é«˜åº¦ï¼Œä¸ºå®½åº¦çš„ä¸€åŠï¼‰
     /// </summary>
     static public float tileSizeY = tileSize / 2;
     /// <summary>
-    /// µ±Ç°¶ÔÏóµÄÎ»ÖÃ£¨µÈ¾à×ø±ê£©
+    /// å½“å‰å¯¹è±¡çš„ä½ç½®ï¼ˆç­‰è·åæ ‡ï¼‰
     /// </summary>
-    [Tooltip("Î»ÖÃ(µÈ¾à)")]
+    [Tooltip("ä½ç½®(ç­‰è·)")]
     public Vector2 pos;
 
     /// <summary>
-    /// µ±Ç°¶ÔÏóµÄµ¥Ôª¸ñ×ø±ê
+    /// å½“å‰å¯¹è±¡çš„å•å…ƒæ ¼åæ ‡
     /// </summary>
-    [Tooltip("ËùÔÚÍø¸ñ×ø±ê")]
+    [Tooltip("æ‰€åœ¨ç½‘æ ¼åæ ‡")]
     public Vector2 tilePos;
 
     /// <summary>
-    /// ¾«Áé²ÄÖÊäÖÈ¾Æ÷
+    /// ç²¾çµæè´¨æ¸²æŸ“å™¨
     /// </summary>
     SpriteRenderer spriteRenderer;
 
     /// <summary>
-    /// ÊÇ·ñÍßÆ¬,ÍßÆ¬ÍÏ¶¯Ê±°´ÍßÆ¬¶ÔÆë,·ñÔò°´Íø¸ñ¶ÔÆë
+    /// æ˜¯å¦ç“¦ç‰‡,ç“¦ç‰‡æ‹–åŠ¨æ—¶æŒ‰ç“¦ç‰‡å¯¹é½,å¦åˆ™æŒ‰ç½‘æ ¼å¯¹é½
     /// </summary>
-    [Tooltip("ÓëÍßÆ¬¶ÔÆë")]
+    [Tooltip("ä¸Žç“¦ç‰‡å¯¹é½")]
     public bool macro = false;
 
     /// <summary>
-    /// ÊÇ·ñÅÅÐò(äÖÈ¾²ã¼¶),Ä¬ÈÏÊÇÅÅÐòµÄ,ÒòÎªÓÐÐ©ÎïÌå²»ÐèÒªÅÅÐò,±ÈÈçµØ°å,Õû¸öÍ¼²ã¶¼ÊÇµØ°å,µØ°åÊÇ²»»áµ²×¡ÆäËûÎïÌåµÄ,ËùÒÔ²»ÐèÒªÅÅÐò
+    /// æ˜¯å¦æŽ’åº(æ¸²æŸ“å±‚çº§),é»˜è®¤æ˜¯æŽ’åºçš„,å› ä¸ºæœ‰äº›ç‰©ä½“ä¸éœ€è¦æŽ’åº,æ¯”å¦‚åœ°æ¿,æ•´ä¸ªå›¾å±‚éƒ½æ˜¯åœ°æ¿,åœ°æ¿æ˜¯ä¸ä¼šæŒ¡ä½å…¶ä»–ç‰©ä½“çš„,æ‰€ä»¥ä¸éœ€è¦æŽ’åº
     /// </summary>
-    [Tooltip("ÓëÍ¬²ã¼¶°´·ÖÊýÅÅÐò")]
+    [Tooltip("ä¸ŽåŒå±‚çº§æŒ‰åˆ†æ•°æŽ’åº")]
     public bool sort = true;
 
 
     /// <summary>
-    /// ½«µÈ¾à×ø±ê×ª»»ÎªÊÀ½ç×ø±ê
+    /// å°†ç­‰è·åæ ‡è½¬æ¢ä¸ºä¸–ç•Œåæ ‡
     /// </summary>
-    /// <param name="iso">µÈ¾à×ø±ê</param>
+    /// <param name="iso">ç­‰è·åæ ‡</param>
     /// <returns></returns>
     static public Vector3 MapToWorld(Vector3 iso)
     {
-        // ¸ù¾ÝµÈ¾à×ø±ê¼ÆËãÊÀ½ç×ø±ê
+        // æ ¹æ®ç­‰è·åæ ‡è®¡ç®—ä¸–ç•Œåæ ‡
         return new Vector3(iso.x - iso.y, (iso.x + iso.y) / 2) * tileSize;
     }
 
     /// <summary>
-    /// ½«ÊÀ½ç×ø±ê×ª»»ÎªµÈ¾à×ø±ê
+    /// å°†ä¸–ç•Œåæ ‡è½¬æ¢ä¸ºç­‰è·åæ ‡
     /// </summary>
-    /// <param name="world">ÊÀ½ç×ø±ê</param>
+    /// <param name="world">ä¸–ç•Œåæ ‡</param>
     /// <returns></returns>
     static public Vector3 MapToIso(Vector3 world)
     {
-        // ¸ù¾ÝÊÀ½ç×ø±ê¼ÆËãµÈ¾à×ø±ê
+        // æ ¹æ®ä¸–ç•Œåæ ‡è®¡ç®—ç­‰è·åæ ‡
         return new Vector3(world.y + world.x / 2, world.y - world.x / 2) / tileSize;
     }
 
     /// <summary>
-    /// »æÖÆ±êÏßµÄµ÷ÊÔÐÅÏ¢£¬´øÓÐÑÕÉ«ºÍÍø¸ñ±ß¾à(Ö÷ÒªÓ¦¸ÃÊÇ»æÖÆÍø¸ñµÄ£¬³¤¶ÈÄ¬ÈÏÊÇ0.5f.µ±È»Òª»æÖÆÍßÆ¬±ß½çÒ²²»ÊÇ²»ÐÐ£¬¸øÆ«ÒÆ¼Ó¸ºÊý³¤¶ÈÊ¹Æä³¬¹ý0.5¾ÍÐÐ)
+    /// ç»˜åˆ¶æ ‡çº¿çš„è°ƒè¯•ä¿¡æ¯ï¼Œå¸¦æœ‰é¢œè‰²å’Œç½‘æ ¼è¾¹è·(ä¸»è¦åº”è¯¥æ˜¯ç»˜åˆ¶ç½‘æ ¼çš„ï¼Œé•¿åº¦é»˜è®¤æ˜¯0.5f.å½“ç„¶è¦ç»˜åˆ¶ç“¦ç‰‡è¾¹ç•Œä¹Ÿä¸æ˜¯ä¸è¡Œï¼Œç»™åç§»åŠ è´Ÿæ•°é•¿åº¦ä½¿å…¶è¶…è¿‡0.5å°±è¡Œ)
     /// </summary>
-    /// <param name="pos">µÈ¾à×ø±ê</param>
-    /// <param name="color">ÏßÌõÑÕÉ«</param>
-    /// <param name="margin">Æ«ÒÆ£¬¾ÍÊÇÍø¸ñÖÐ¼äµÄÐ¡·½¿é£¬A*Ñ°Â·ÓÃµÄÄÇÖÖ</param>
+    /// <param name="pos">ç­‰è·åæ ‡</param>
+    /// <param name="color">çº¿æ¡é¢œè‰²</param>
+    /// <param name="margin">åç§»ï¼Œå°±æ˜¯ç½‘æ ¼ä¸­é—´çš„å°æ–¹å—ï¼ŒA*å¯»è·¯ç”¨çš„é‚£ç§</param>
     static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0)
     {
-        // ½«µÈ¾à×ø±ê×ª»»ÎªÊÀ½ç×ø±ê
+        // å°†ç­‰è·åæ ‡è½¬æ¢ä¸ºä¸–ç•Œåæ ‡
         pos = Iso.MapToWorld(pos);
 
-        // ¼ÆËã±êÏßÍø¸ñµÄÒ»°ë±ß³¤
+        // è®¡ç®—æ ‡çº¿ç½‘æ ¼çš„ä¸€åŠè¾¹é•¿
         float d = 0.5f - margin;
 
-        // »æÖÆÍø¸ñµÄËÄÌõ±ß
+        // ç»˜åˆ¶ç½‘æ ¼çš„å››æ¡è¾¹
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)), color);
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color);
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color);
         Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)), color);
     }
     /// <summary>
-    /// ×¨ÃÅ¸øµ÷ÊÔÄ£Ê½ÓÃµÄ,»æÖÆÍßÆ¬±ß½ç£¬ÑÕÉ«ÓÉGizmosµÄÑÕÉ«¾ö¶¨£¬±ß³¤µÄ¼ÆËã·½Ê½ÓÐµã±ä»¯£¬ÕâÀïÊÇ±ß³¤³ËÒÔ0.5
+    /// ä¸“é—¨ç»™è°ƒè¯•æ¨¡å¼ç”¨çš„,ç»˜åˆ¶ç“¦ç‰‡è¾¹ç•Œï¼Œé¢œè‰²ç”±Gizmosçš„é¢œè‰²å†³å®šï¼Œè¾¹é•¿çš„è®¡ç®—æ–¹å¼æœ‰ç‚¹å˜åŒ–ï¼Œè¿™é‡Œæ˜¯è¾¹é•¿ä¹˜ä»¥0.5
     /// </summary>
     /// <param name="pos"></param>
     /// <param name="size"></param>
     static public void GizmosDrawTile(Vector3 pos,float size = 1.0f)
     {
-        // ½«µÈ¾à×ø±ê×ª»»ÎªÊÀ½ç×ø±ê
+        // å°†ç­‰è·åæ ‡è½¬æ¢ä¸ºä¸–ç•Œåæ ‡
         pos = Iso.MapToWorld(pos);
-        // ¼ÆËã±êÏßÍø¸ñµÄÒ»°ë±ß³¤
+        // è®¡ç®—æ ‡çº¿ç½‘æ ¼çš„ä¸€åŠè¾¹é•¿
         float d = 0.5f * size;
-        // »æÖÆÍø¸ñµÄËÄÌõ±ß
+        // ç»˜åˆ¶ç½‘æ ¼çš„å››æ¡è¾¹
         Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)));
         Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)));
         Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)));
@@ -119,19 +119,19 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// ²»Ìá¹©ÑÕÉ«µÄÖØÔØdebug»­Ïß£¬Ä¬ÈÏÑÕÉ«Îª°×É«
+    /// ä¸æä¾›é¢œè‰²çš„é‡è½½debugç”»çº¿ï¼Œé»˜è®¤é¢œè‰²ä¸ºç™½è‰²
     /// </summary>
-    /// <param name="pos">µÈ¾à×ø±ê</param>
-    /// <param name="margin">Æ«ÒÆ</param>
+    /// <param name="pos">ç­‰è·åæ ‡</param>
+    /// <param name="margin">åç§»</param>
     static public void DebugDrawTile(Vector3 pos, float margin = 0)
     {
         DebugDrawTile(pos, Color.white, margin);
     }
 
     /// <summary>
-    /// ¶Ô×ø±ê½øÐÐÈ¡Õû²Ù×÷
+    /// å¯¹åæ ‡è¿›è¡Œå–æ•´æ“ä½œ
     /// </summary>
-    /// <param name="pos">µÈ¾à×ø±ê</param>
+    /// <param name="pos">ç­‰è·åæ ‡</param>
     /// <returns></returns>
     static public Vector3 Snap(Vector3 pos)
     {
@@ -141,104 +141,104 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// ÓÃ×÷´ó³ß´çÍßÆ¬£¬×ø±êÈ¡Õû
+    /// ç”¨ä½œå¤§å°ºå¯¸ç“¦ç‰‡ï¼Œåæ ‡å–æ•´
     /// </summary>
-    /// °Ñ×ø±ê³ýÒÔ5¡£µ÷ÓÃÕâ¸ö·½·¨µÄ´úÂëºóÃæ»á³ËÒÔ5£¬±£Ö¤×ø±êÒ»Ö±ÊÇ5µÄ±¶Êý£¬´Ó¶ø¶ÔÆëÍßÆ¬×ø±ê
-    /// <param name="pos">µÈ¾à×ø±ê</param>
-    /// <returns>XYÖá·Ö±ð³ýÒÔ5²¢È¡ÕûµÄ½á¹û</returns>
+    /// æŠŠåæ ‡é™¤ä»¥5ã€‚è°ƒç”¨è¿™ä¸ªæ–¹æ³•çš„ä»£ç åŽé¢ä¼šä¹˜ä»¥5ï¼Œä¿è¯åæ ‡ä¸€ç›´æ˜¯5çš„å€æ•°ï¼Œä»Žè€Œå¯¹é½ç“¦ç‰‡åæ ‡
+    /// <param name="pos">ç­‰è·åæ ‡</param>
+    /// <returns>XYè½´åˆ†åˆ«é™¤ä»¥5å¹¶å–æ•´çš„ç»“æžœ</returns>
     static public Vector3 MacroTile(Vector3 pos)
     {
-        //±£³ÖZÖá²»±ä
+        //ä¿æŒZè½´ä¸å˜
         var macroTlie = pos;
-        //X,YÖá³ýÒÔ5ºóÈ¡Õû
+        //X,Yè½´é™¤ä»¥5åŽå–æ•´
         macroTlie.x = Mathf.Round(pos.x / 5);
         macroTlie.y = Mathf.Round(pos.y / 5);
-        //·µ»Ø´¦ÀíºóµÄ×ø±ê
+        //è¿”å›žå¤„ç†åŽçš„åæ ‡
         return macroTlie;
     }
 
     /// <summary>
-    /// »ñÈ¡Á½µãÖ®¼äµÄ·½ÏòµÄË÷Òý(directionCount:8Ïò»òÕß16Ïò)
+    /// èŽ·å–ä¸¤ç‚¹ä¹‹é—´çš„æ–¹å‘çš„ç´¢å¼•(directionCount:8å‘æˆ–è€…16å‘)
     /// </summary>
-    /// <param name="from">À´×Ô</param>
-    /// <param name="target">Ä¿±ê</param>
-    /// <param name="directionCount">8Ïò»òÕß16Ïò</param>
+    /// <param name="from">æ¥è‡ª</param>
+    /// <param name="target">ç›®æ ‡</param>
+    /// <param name="directionCount">8å‘æˆ–è€…16å‘</param>
     /// <returns></returns>
     static public int Direction(Vector2 from, Vector3 target,int directionCount)
     {
-        //ÖÕµã¼õÆðµãµÃµ½Á½µãÖ®¼äµÄÏòÁ¿
+        //ç»ˆç‚¹å‡èµ·ç‚¹å¾—åˆ°ä¸¤ç‚¹ä¹‹é—´çš„å‘é‡
         var dir = target - (Vector3)from;
-        //»ñÈ¡Vector3(-1,-1,-1)(×óÏÂ·½Ïò)ºÍÏòÁ¿dirÖ®¼äµÄ¼Ð½Ç
-        //Mathf.Sign(dir.y - dir.x)ÅÐ¶ÏµÄÊÇ-1,-1,-1µ½1,1,1Ö®¼ä,¸ºÊýÊÇÏÂ°ë,ÕýÊýÊÇÉÏ°ë
-        //¸ø¼Ð½Ç¼ÓÉÏÕý¸ºÊý,¿ÉÒÔ´ú±í360¶ÈÖÐµÄÈÎÒ»½Ç¶È
+        //èŽ·å–Vector3(-1,-1,-1)(å·¦ä¸‹æ–¹å‘)å’Œå‘é‡dirä¹‹é—´çš„å¤¹è§’
+        //Mathf.Sign(dir.y - dir.x)åˆ¤æ–­çš„æ˜¯-1,-1,-1åˆ°1,1,1ä¹‹é—´,è´Ÿæ•°æ˜¯ä¸‹åŠ,æ­£æ•°æ˜¯ä¸ŠåŠ
+        //ç»™å¤¹è§’åŠ ä¸Šæ­£è´Ÿæ•°,å¯ä»¥ä»£è¡¨360åº¦ä¸­çš„ä»»ä¸€è§’åº¦
         var angle = Vector3.Angle(new Vector3(-1,-1,-1), dir)*Mathf.Sign(dir.y - dir.x);
-        //360¡ã³ýÒÔ·½ÏòÊý,µÃµ½Ã¿Ò»¸ö·½ÏòµÄ½Ç¶È
+        //360Â°é™¤ä»¥æ–¹å‘æ•°,å¾—åˆ°æ¯ä¸€ä¸ªæ–¹å‘çš„è§’åº¦
         var directionDegrees = 360.0f / directionCount;
-        //»ñÈ¡·½ÏòË÷Òý
+        //èŽ·å–æ–¹å‘ç´¢å¼•
         return Mathf.RoundToInt((angle + 360) % 360 / directionDegrees) % directionCount;
     }
 
     private void Awake()
     {
-        //»ñÈ¡µ±Ç°¶ÔÏó×ø±ê
+        //èŽ·å–å½“å‰å¯¹è±¡åæ ‡
         pos = MapToIso(transform.position);
-        //È¡Õû
+        //å–æ•´
         tilePos = Snap(pos);
-        //È¡×é¼þ,ÕâºÍÉÏÃæÁ½Ìõ´úÂëÊÇ×¨ÃÅ¸ø»¥¶¯ÎïÌå×¼±¸µÄ,ÎÒ¹À¼ÆºóÃæ»¥¶¯Ïà¹Ø´úÂë»áÑéÖ¤spriteRendererÊÇ·ñÎª¿Õ
+        //å–ç»„ä»¶,è¿™å’Œä¸Šé¢ä¸¤æ¡ä»£ç æ˜¯ä¸“é—¨ç»™äº’åŠ¨ç‰©ä½“å‡†å¤‡çš„,æˆ‘ä¼°è®¡åŽé¢äº’åŠ¨ç›¸å…³ä»£ç ä¼šéªŒè¯spriteRendereræ˜¯å¦ä¸ºç©º
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    // Start ·½·¨£¬ÔÚÓÎÏ·¿ªÊ¼Ê±µ÷ÓÃ
+    // Start æ–¹æ³•ï¼Œåœ¨æ¸¸æˆå¼€å§‹æ—¶è°ƒç”¨
     void Start()
     {
-        // ¿Õ·½·¨£¬Î´ÊµÏÖ¾ßÌåÂß¼­
+        // ç©ºæ–¹æ³•ï¼Œæœªå®žçŽ°å…·ä½“é€»è¾‘
     }
-    // Update ·½·¨£¬Ã¿Ö¡µ÷ÓÃÒ»´Î
+    // Update æ–¹æ³•ï¼Œæ¯å¸§è°ƒç”¨ä¸€æ¬¡
     void Update()
     {
-        // Èç¹ûµ±Ç°¶ÔÏó´¦ÓÚÓÎÏ·×´Ì¬
+        // å¦‚æžœå½“å‰å¯¹è±¡å¤„äºŽæ¸¸æˆçŠ¶æ€
         if (Application.isPlaying)
         {
-            // Ã¿Ö¡½«µ±Ç°¶ÔÏóµÄµÈ¾à×ø±ê×ª»»ÎªÊÀ½ç×ø±ê£¬²¢ÉèÖÃ¶ÔÏóµÄÎ»ÖÃ
+            // æ¯å¸§å°†å½“å‰å¯¹è±¡çš„ç­‰è·åæ ‡è½¬æ¢ä¸ºä¸–ç•Œåæ ‡ï¼Œå¹¶è®¾ç½®å¯¹è±¡çš„ä½ç½®
             transform.position = MapToWorld(pos);
         }
-        // Èç¹ûµ±Ç°¶ÔÏó´¦ÓÚ±à¼­×´Ì¬
+        // å¦‚æžœå½“å‰å¯¹è±¡å¤„äºŽç¼–è¾‘çŠ¶æ€
         else
         {
-            //>>>>>>>>>>ÕâÀï´úÂëµÄ×÷ÓÃÊ±,ÔÚ±à¼­Ä£Ê½ÏÂ,¿ÉÒÔÍÏ¶¯ÓÎÏ·¶ÔÏóÎ»ÖÃ,²¢ÇÒ×Ô¶¯¶ÔÆëÍø¸ñ,Ò»¸ñÒ»¸ñµÄ¶¯<<<<<<<<<<<<
-            //Èç¹ûÊÇ´ó³ß´çÍßÆ¬,Ã¿¸ñ¾ÍÊÇÍßÆ¬´óÐ¡
+            //>>>>>>>>>>è¿™é‡Œä»£ç çš„ä½œç”¨æ—¶,åœ¨ç¼–è¾‘æ¨¡å¼ä¸‹,å¯ä»¥æ‹–åŠ¨æ¸¸æˆå¯¹è±¡ä½ç½®,å¹¶ä¸”è‡ªåŠ¨å¯¹é½ç½‘æ ¼,ä¸€æ ¼ä¸€æ ¼çš„åŠ¨<<<<<<<<<<<<
+            //å¦‚æžœæ˜¯å¤§å°ºå¯¸ç“¦ç‰‡,æ¯æ ¼å°±æ˜¯ç“¦ç‰‡å¤§å°
             if (macro)
             {
-                //MacroTile°ÑµÈ¾à×ø±ê³ýÒÔÎåÖ®ºóÈ¡Õû,ÔÙ³ËÒÔÎå,±£Ö¤×ø±êÒ»Ö±ÊÇ5µÄ±¶Êý,ÕâÑù¾ÍÊÇ´ó³ß´çÍßÆ¬µÄ×ø±êÁË.
+                //MacroTileæŠŠç­‰è·åæ ‡é™¤ä»¥äº”ä¹‹åŽå–æ•´,å†ä¹˜ä»¥äº”,ä¿è¯åæ ‡ä¸€ç›´æ˜¯5çš„å€æ•°,è¿™æ ·å°±æ˜¯å¤§å°ºå¯¸ç“¦ç‰‡çš„åæ ‡äº†.
                 transform.position = MapToWorld(MacroTile(MapToIso(transform.position))) * 5;
             }
-            //Èç¹û²»ÊÇ,Ã¿¸ñ¾ÍÊÇÍø¸ñ´óÐ¡
+            //å¦‚æžœä¸æ˜¯,æ¯æ ¼å°±æ˜¯ç½‘æ ¼å¤§å°
             else
             {
-                // ½«µ±Ç°¶ÔÏóµÄÎ»ÖÃ×ª»»ÎªµÈ¾à×ø±ê£¬²¢È¡ÕûÔÙ×ª»»ÎªÊÀ½ç×ø±ê£¬ÉèÖÃ¶ÔÏóµÄÎ»ÖÃ.(×÷ÓÃÊÇ¶ÔÆëÍø¸ñ)
+                // å°†å½“å‰å¯¹è±¡çš„ä½ç½®è½¬æ¢ä¸ºç­‰è·åæ ‡ï¼Œå¹¶å–æ•´å†è½¬æ¢ä¸ºä¸–ç•Œåæ ‡ï¼Œè®¾ç½®å¯¹è±¡çš„ä½ç½®.(ä½œç”¨æ˜¯å¯¹é½ç½‘æ ¼)
                 transform.position = MapToWorld(Snap(MapToIso(transform.position)));
             }
             
-            //·´¹ýÀ´ÓÉµ±Ç°¶ÔÏóÊÀ½ç×ø±ê×ª»»ÎªµÈ¾à×ø±êÀ´¸üÐÂpos,Ô­±¾ÊÇpos¸üÐÂÈËÎïÎ»ÖÃ,ÏÖÔÚÊÇÈËÎïÎ»ÖÃ¸üÐÂpos,ÒòÎª±à¼­Ä£Ê½ÏÂ,ÈËÎïÎ»ÖÃÊÇ¿ÉÒÔÍÏ¶¯µÄ
+            //åè¿‡æ¥ç”±å½“å‰å¯¹è±¡ä¸–ç•Œåæ ‡è½¬æ¢ä¸ºç­‰è·åæ ‡æ¥æ›´æ–°pos,åŽŸæœ¬æ˜¯posæ›´æ–°äººç‰©ä½ç½®,çŽ°åœ¨æ˜¯äººç‰©ä½ç½®æ›´æ–°pos,å› ä¸ºç¼–è¾‘æ¨¡å¼ä¸‹,äººç‰©ä½ç½®æ˜¯å¯ä»¥æ‹–åŠ¨çš„
             pos = MapToIso(transform.position);
         }
 
-        //ÊÇ·ñÅÅÐò,Ä¬ÈÏÊÇÅÅÐòµÄ,ÒòÎªÓÐÐ©ÎïÌå²»ÐèÒªÅÅÐò,±ÈÈçµØ°å,µØ°åÊÇ²»»áµ²×¡ÆäËûÎïÌåµÄ,ËùÒÔ²»ÐèÒªÅÅÐò
+        //æ˜¯å¦æŽ’åº,é»˜è®¤æ˜¯æŽ’åºçš„,å› ä¸ºæœ‰äº›ç‰©ä½“ä¸éœ€è¦æŽ’åº,æ¯”å¦‚åœ°æ¿,åœ°æ¿æ˜¯ä¸ä¼šæŒ¡ä½å…¶ä»–ç‰©ä½“çš„,æ‰€ä»¥ä¸éœ€è¦æŽ’åº
         if (sort)
         {
-            //¹ÜÀíÎïÌåµÄäÖÈ¾²ã¼¶,ÊýÖµÔ½´óÔ½¿¿Ç°,ÒòÎª¼ÓÁË-ºÅ,±ä³ÉÊýÖµÔ½Ð¡Ô½¿¿Ç°
+            //ç®¡ç†ç‰©ä½“çš„æ¸²æŸ“å±‚çº§,æ•°å€¼è¶Šå¤§è¶Šé å‰,å› ä¸ºåŠ äº†-å·,å˜æˆæ•°å€¼è¶Šå°è¶Šé å‰
             spriteRenderer.sortingOrder = -Mathf.RoundToInt(transform.position.y / tileSizeY);
-            //ºêÍßÆ¬µÄÅÅÐòÖµºêÍßÆ¬ÊÇÏà¶ÔÓÚ¹æÔòµÄµØ°åÍßÆ¬À´ËµµÄ,ÓÃÀ´Ôö¼ÓäÖÈ¾²ã¼¶µÄÊýÖµ²î¾à,Ê¹Æä·Ö¿ªäÖÈ¾,ÒÔ´ÎÀ´ÌáÉýÐÔÄÜ
+            //å®ç“¦ç‰‡çš„æŽ’åºå€¼å®ç“¦ç‰‡æ˜¯ç›¸å¯¹äºŽè§„åˆ™çš„åœ°æ¿ç“¦ç‰‡æ¥è¯´çš„,ç”¨æ¥å¢žåŠ æ¸²æŸ“å±‚çº§çš„æ•°å€¼å·®è·,ä½¿å…¶åˆ†å¼€æ¸²æŸ“,ä»¥æ¬¡æ¥æå‡æ€§èƒ½
             var macroTile = MacroTile(pos);
             int macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
             spriteRenderer.sortingOrder += macroTileOrder * 1000;
         }
     }
 
-    //// ÔÚ Unity ±à¼­Æ÷ÖÐ»æÖÆ Gizmos£¨µ÷ÊÔÐÅÏ¢£©
+    //// åœ¨ Unity ç¼–è¾‘å™¨ä¸­ç»˜åˆ¶ Gizmosï¼ˆè°ƒè¯•ä¿¡æ¯ï¼‰
     //void OnDrawGizmosSelected()
     //{
-    //    // »æÖÆµ±Ç°ÓÎÏ·¶ÔÏóµÄÍø¸ñµ÷ÊÔÐÅÏ¢
+    //    // ç»˜åˆ¶å½“å‰æ¸¸æˆå¯¹è±¡çš„ç½‘æ ¼è°ƒè¯•ä¿¡æ¯
     //    DebugDrawTile(pos);
     //}
 }

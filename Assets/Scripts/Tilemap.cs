@@ -1,63 +1,63 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÍßÆ¬/Íø¸ñµÄÈÝÆ÷
+/// ç“¦ç‰‡/ç½‘æ ¼çš„å®¹å™¨
 /// </summary>
-/// 1.ÍßÆ¬ÊÇµØ°åÄ£ÐÍµÄ´óÐ¡.Íø¸ñÊÇµÈ¾à³¤¶ÈÎª1µÄ¸ñ×Ó,1ÍßÆ¬=5*5Íø¸ñ
-/// 2.ÈÝÆ÷²¢Î´Êµ¼Ê´¢´æÍßÆ¬»òÕßÍø¸ñ,¶øÊÇÍ¨¹ý´¢´æÍø¸ñµÄÍ¨ÐÐ×´Ì¬À´Ó³ÉäÍø¸ñ
-/// 3.Íø¸ñÒ²ÊÇÐéÄâµÄ,ÓÎÏ·»·¾³ÄÚÖ»ÊÇ¸¨ÖúÏß,²¢Ã»ÓÐÊµ¼ÊµÄÓÎÏ·¶ÔÏó
+/// 1.ç“¦ç‰‡æ˜¯åœ°æ¿æ¨¡åž‹çš„å¤§å°.ç½‘æ ¼æ˜¯ç­‰è·é•¿åº¦ä¸º1çš„æ ¼å­,1ç“¦ç‰‡=5*5ç½‘æ ¼
+/// 2.å®¹å™¨å¹¶æœªå®žé™…å‚¨å­˜ç“¦ç‰‡æˆ–è€…ç½‘æ ¼,è€Œæ˜¯é€šè¿‡å‚¨å­˜ç½‘æ ¼çš„é€šè¡ŒçŠ¶æ€æ¥æ˜ å°„ç½‘æ ¼
+/// 3.ç½‘æ ¼ä¹Ÿæ˜¯è™šæ‹Ÿçš„,æ¸¸æˆçŽ¯å¢ƒå†…åªæ˜¯è¾…åŠ©çº¿,å¹¶æ²¡æœ‰å®žé™…çš„æ¸¸æˆå¯¹è±¡
 public class Tilemap : MonoBehaviour
 {
     /// <summary>
-    /// ÀàµÄµ¥Àý
+    /// ç±»çš„å•ä¾‹
     /// </summary>
-    /// ÈÝÆ÷ÀàÐÍ,ÓÃÒ»¸öµ¥ÀýÀ´±£Ö¤²»»á±»¶à´ÎÊµÀý»¯
+    /// å®¹å™¨ç±»åž‹,ç”¨ä¸€ä¸ªå•ä¾‹æ¥ä¿è¯ä¸ä¼šè¢«å¤šæ¬¡å®žä¾‹åŒ–
     static public Tilemap instance;
 
     /// <summary>
-    /// ÈÝÆ÷µÄ³¤
+    /// å®¹å™¨çš„é•¿
     /// </summary>
     private int widht = 1024;
     /// <summary>
-    /// ÈÝÆ÷µÄ¿í
+    /// å®¹å™¨çš„å®½
     /// </summary>
     private int height = 1024;
     /// <summary>
-    /// Ô­µã
+    /// åŽŸç‚¹
     /// </summary>
     private int origin;
     /// <summary>
-    /// ÈÝÆ÷
+    /// å®¹å™¨
     /// </summary>
     private bool[] map;
 
     private void Awake()
     {
-        //³õÊ¼»¯ÈÝÆ÷,ÈÝÁ¿µÈÓÚ³¤³ËÒÔ¿í
+        //åˆå§‹åŒ–å®¹å™¨,å®¹é‡ç­‰äºŽé•¿ä¹˜ä»¥å®½
         map = new bool[widht * height];
-        //³õÊ¼»¯Ô­µã,ÈÝÆ÷×îÖÐ¼äµÄÄÇ¸öÍø¸ñ¾ÍÊÇÔ­µã
+        //åˆå§‹åŒ–åŽŸç‚¹,å®¹å™¨æœ€ä¸­é—´çš„é‚£ä¸ªç½‘æ ¼å°±æ˜¯åŽŸç‚¹
         origin = map.Length / 2;
-        //³õÊ¼»°ÊµÀý
+        //åˆå§‹è¯å®žä¾‹
         instance = this;
     }
 
 
     /// <summary>
-    /// ÍßÆ¬äÖÈ¾²ã¼¶ÅÅÐòÆ÷,×Ô¶¨ÒåÅÅÐòÆ÷
+    /// ç“¦ç‰‡æ¸²æŸ“å±‚çº§æŽ’åºå™¨,è‡ªå®šä¹‰æŽ’åºå™¨
     /// </summary>
-    /// IComparer½Ó¿ÚÓÃÓÚ×Ô¶¨ÒåµÄÅÅÐò
-    /// Êµ¼ÊÊ¹ÓÃlist.Sort(new TileOrderComparer()); ÈÝÆ÷±äÁ¿.Sort(new ×Ô¶¨ÒåÅÅÐòÆ÷ÀàÃû());
+    /// ICompareræŽ¥å£ç”¨äºŽè‡ªå®šä¹‰çš„æŽ’åº
+    /// å®žé™…ä½¿ç”¨list.Sort(new TileOrderComparer()); å®¹å™¨å˜é‡.Sort(new è‡ªå®šä¹‰æŽ’åºå™¨ç±»å());
     class TileOrderComparer : IComparer<Tile>
     {
         /// <summary>
-        /// °´äÖÈ¾²ã¼¶ÅÅÐò
+        /// æŒ‰æ¸²æŸ“å±‚çº§æŽ’åº
         /// </summary>
-        /// <param name="a">AÍßÆ¬</param>
-        /// <param name="b">BÍßÆ¬</param>
-        /// <returns>ÕâÑùµÄ½á¹û¾ÍÊÇ,µØ°å»áÅÅÐòµ½ºóÃæ</returns>
+        /// <param name="a">Aç“¦ç‰‡</param>
+        /// <param name="b">Bç“¦ç‰‡</param>
+        /// <returns>è¿™æ ·çš„ç»“æžœå°±æ˜¯,åœ°æ¿ä¼šæŽ’åºåˆ°åŽé¢</returns>
         public int Compare(Tile a,Tile b)
         {
             bool floor1 = a.GetComponent<SpriteRenderer>().sortingLayerName == "Floor";
@@ -67,30 +67,30 @@ public class Tilemap : MonoBehaviour
     }
     private void Start()
     {
-        //ÕÒµ½ËùÓÐÍßÆ¬
+        //æ‰¾åˆ°æ‰€æœ‰ç“¦ç‰‡
         Tile[] tiles = GameObject.FindObjectsOfType<Tile>();
-        //°´ÕÕÊÇ·ñÍßÆ¬²ã¼¶ÃûÎªFloorÅÅÐò,FloorÅÅºóÃæ,Êý×é²»ÄÜÏñListÒ»ÑùÖ±½ÓSort,ÒªÓÃArray.Sort
+        //æŒ‰ç…§æ˜¯å¦ç“¦ç‰‡å±‚çº§åä¸ºFlooræŽ’åº,FlooræŽ’åŽé¢,æ•°ç»„ä¸èƒ½åƒListä¸€æ ·ç›´æŽ¥Sort,è¦ç”¨Array.Sort
         Array.Sort(tiles, new TileOrderComparer());
 
 
-        //>>>>>>>>>>>±éÀúËùÓÐÍßÆ¬,¸ù¾ÝÍßÆ¬×ø±ê±ê¼ÇÈÝÆ÷ÀïÃæµÄÍø¸ñÊÇ·ñ¿ÉÍ¨ÐÐ<<<<<<<<<<<<
+        //>>>>>>>>>>>éåŽ†æ‰€æœ‰ç“¦ç‰‡,æ ¹æ®ç“¦ç‰‡åæ ‡æ ‡è®°å®¹å™¨é‡Œé¢çš„ç½‘æ ¼æ˜¯å¦å¯é€šè¡Œ<<<<<<<<<<<<
         foreach (Tile tile in tiles)
         {
-            //°Ñpos¶¨Î»µ½ÍßÆ¬×îÏÂ·½µÄÍø¸ñµÄÖÐÐÄµã
-            //µ±Ç°ÍßÆ¬×ø±ê×ªµÈ¾à
+            //æŠŠposå®šä½åˆ°ç“¦ç‰‡æœ€ä¸‹æ–¹çš„ç½‘æ ¼çš„ä¸­å¿ƒç‚¹
+            //å½“å‰ç“¦ç‰‡åæ ‡è½¬ç­‰è·
             Vector3 pos = Iso.MapToIso(tile.transform.position);
-            //»ñÈ¡ÍßÆ¬×îÏÂ·½Íø¸ñµÄµÈ¾à×ø±ê
+            //èŽ·å–ç“¦ç‰‡æœ€ä¸‹æ–¹ç½‘æ ¼çš„ç­‰è·åæ ‡
             pos.x -= tile.width / 2;
             pos.y -= tile.height / 2;
-            //¼ÓÉÏÍø¸ñµÄÆ«ÒÆÁ¿(ÕâÃ¶ÍßÆ¬µÄËùÓÐÍø¸ñÒ»ÆðÆ«ÒÆ)
+            //åŠ ä¸Šç½‘æ ¼çš„åç§»é‡(è¿™æžšç“¦ç‰‡çš„æ‰€æœ‰ç½‘æ ¼ä¸€èµ·åç§»)
             pos.x += tile.offsetX;
             pos.y += tile.offsetY;
-            //±éÀúÍßÆ¬µÄËùÓÐÍø¸ñ
+            //éåŽ†ç“¦ç‰‡çš„æ‰€æœ‰ç½‘æ ¼
             for (int x = 0; x < tile.width; ++x)
             {
                 for (int y = 0; y < tile.height; ++y)
                 {
-                    //¸ù¾ÝÍßÆ¬¿É·ñÍ¨ÐÐ¸øÍø¸ñ´ò¿É·ñÍ¨ÐÐ±ê¼Ç(´´½¨Íø¸ñ)
+                    //æ ¹æ®ç“¦ç‰‡å¯å¦é€šè¡Œç»™ç½‘æ ¼æ‰“å¯å¦é€šè¡Œæ ‡è®°(åˆ›å»ºç½‘æ ¼)
                     Tilemap.instance[pos + new Vector3(x, y)] = tile.passable;
                 }
             }
@@ -102,33 +102,33 @@ public class Tilemap : MonoBehaviour
 
     private void Update()
     {
-        //ÏÂÃæ¶¼ÊÇ»æÖÆÍø¸ñºìÏßµÄ´úÂë
+        //ä¸‹é¢éƒ½æ˜¯ç»˜åˆ¶ç½‘æ ¼çº¢çº¿çš„ä»£ç 
 
-        //×¼±¸ÑÕÉ«,°×
+        //å‡†å¤‡é¢œè‰²,ç™½
         Color color = new Color(1, 1, 1, 0.15f);
-        //×¼±¸ÑÕÉ«,ºì
+        //å‡†å¤‡é¢œè‰²,çº¢
         Color redColor = new Color(1, 0, 0, 0.3f);
 
-        //È¡ÆÁÄ»ÖÐÐÄµãµÄµÈ¾à×ø±ê
+        //å–å±å¹•ä¸­å¿ƒç‚¹çš„ç­‰è·åæ ‡
         Vector3 pos = Iso.Snap(Iso.MapToIso(Camera.main.transform.position));
-        //Éè¶¨³¤¿í
+        //è®¾å®šé•¿å®½
         int debugWidth = 100;
         int debugHeight = 100;
-        //posÔÚÆÁÄ»ÖÐÐÄ,ÕâÀï-=³¤¿í,¾ÍÊÇÈ¡×îµ×²¿×ø±ê
+        //posåœ¨å±å¹•ä¸­å¿ƒ,è¿™é‡Œ-=é•¿å®½,å°±æ˜¯å–æœ€åº•éƒ¨åæ ‡
         pos.x -= debugWidth / 2;
         pos.y -= debugHeight / 2;
 
-        //»æÖÆÍø¸ñ±êÏß,Íø¸ñµÄÐ¡¸ñ×Ó
+        //ç»˜åˆ¶ç½‘æ ¼æ ‡çº¿,ç½‘æ ¼çš„å°æ ¼å­
         for (int x = 1; x < debugWidth; ++x)
         {
             for (int y = 1; y < debugHeight; ++y)
             {
-                //»ñÈ¡µ±Ç°Íø¸ñµÄ¿ÉÍ¨ÐÐ×´Ì¬
+                //èŽ·å–å½“å‰ç½‘æ ¼çš„å¯é€šè¡ŒçŠ¶æ€
                 bool passable = this[pos + new Vector3(x, y)];
-                //Èç¹û²»¿ÉÍ¨ÐÐ,¾Í»æÖÆºìÏß
+                //å¦‚æžœä¸å¯é€šè¡Œ,å°±ç»˜åˆ¶çº¢çº¿
                 if (!passable)
                 {
-                    //ÕâÀï²»Ì«Àí½â,¶¼ÒÑ¾­ifÁËpassable,ÎªÊ²Ã´»¹ÒªÅÐ¶ÏÒ»ÏÂ,²»ÊÇ¶àÓàµÄÂð?ºÃÏñÕâÑùÖ»»á»­ºìÏß
+                    //è¿™é‡Œä¸å¤ªç†è§£,éƒ½å·²ç»ifäº†passable,ä¸ºä»€ä¹ˆè¿˜è¦åˆ¤æ–­ä¸€ä¸‹,ä¸æ˜¯å¤šä½™çš„å—?å¥½åƒè¿™æ ·åªä¼šç”»çº¢çº¿
                     Iso.DebugDrawTile(pos + new Vector3(x, y), passable ? color : redColor, 0.9f);
                 }
             }
@@ -136,55 +136,55 @@ public class Tilemap : MonoBehaviour
     }
 
     /// <summary>
-    /// µØÍ¼×ªË÷Òý
+    /// åœ°å›¾è½¬ç´¢å¼•
     /// </summary>
-    /// <param name="tilePos">Íø¸ñ×ø±ê</param>
-    /// <returns>·µ»ØË÷ÒýÏÂ±ê</returns>
+    /// <param name="tilePos">ç½‘æ ¼åæ ‡</param>
+    /// <returns>è¿”å›žç´¢å¼•ä¸‹æ ‡</returns>
     private int MapToIndex(Vector3 tilePos)
     {
-        //Mathf.RoundËÄÉáÎåÈëÈ¡Õû,±£Ö¤×ø±ê¾«¶È
+        //Mathf.Roundå››èˆäº”å…¥å–æ•´,ä¿è¯åæ ‡ç²¾åº¦
         return origin + (int)Mathf.Round(tilePos.x + tilePos.y * widht);
     }
 
 
 
     /// <summary>
-    /// Ë÷ÒýÆ÷
+    /// ç´¢å¼•å™¨
     /// </summary>
-    /// <param name="tilePos">Íø¸ñ×ø±ê</param>
-    /// <returns>Íø¸ñÍ¨ÐÐ×´Ì¬</returns>
+    /// <param name="tilePos">ç½‘æ ¼åæ ‡</param>
+    /// <returns>ç½‘æ ¼é€šè¡ŒçŠ¶æ€</returns>
     public bool this[Vector3 tilePos]
     {
         get
         {
-            //Í¨¹ýµÈ¾à×ø±ê¼ÆËã³öË÷Òý
+            //é€šè¿‡ç­‰è·åæ ‡è®¡ç®—å‡ºç´¢å¼•
             return map[MapToIndex(tilePos)];
         }
 
         set
         {
-            //Í¨¹ýµÈ¾à×ø±ê¼ÆËã³öË÷Òý
+            //é€šè¿‡ç­‰è·åæ ‡è®¡ç®—å‡ºç´¢å¼•
             map[MapToIndex(tilePos)] = value;
         }
     }
     /// <summary>
-    /// Õâ¸öÊÇ±à¼­Ä£Ê½ºÍÔËÐÐÄ£Ê½¶¼»áµ÷ÓÃµÄ·½·¨,ÓÃÀ´»æÖÆÍø¸ñÏß
+    /// è¿™ä¸ªæ˜¯ç¼–è¾‘æ¨¡å¼å’Œè¿è¡Œæ¨¡å¼éƒ½ä¼šè°ƒç”¨çš„æ–¹æ³•,ç”¨æ¥ç»˜åˆ¶ç½‘æ ¼çº¿
     /// </summary>
     private void OnDrawGizmos()
     {
-        //ÕâÀï°ÑÆÁÄ»ÖÐÐÄµÄµÈ¾à×ø±ê³ýÒÔ5,ºóÃæÔÙ³ýÒÔÍßÆ¬³ß´ç0.2,¾ÍÊÇ³ËÒÔ5.±£Ö¤ËüÒ»¶¨ÊÇ5µÄ±¶Êý,ÕâÑù¾ÍÄÜ±£Ö¤¶ÔÆëÍßÆ¬
+        //è¿™é‡ŒæŠŠå±å¹•ä¸­å¿ƒçš„ç­‰è·åæ ‡é™¤ä»¥5,åŽé¢å†é™¤ä»¥ç“¦ç‰‡å°ºå¯¸0.2,å°±æ˜¯ä¹˜ä»¥5.ä¿è¯å®ƒä¸€å®šæ˜¯5çš„å€æ•°,è¿™æ ·å°±èƒ½ä¿è¯å¯¹é½ç“¦ç‰‡
         var cameraTile = Iso.MacroTile(Iso.MapToIso(Camera.main.transform.position));
-        //ÉèÖÃÑÕÉ«
+        //è®¾ç½®é¢œè‰²
         Gizmos.color = new Color(0.35f, 0.35f, 0.35f);
-        //±éÀú-10µ½9.×÷ÎªÍßÆ¬µÄ±ß¿ò
+        //éåŽ†-10åˆ°9.ä½œä¸ºç“¦ç‰‡çš„è¾¹æ¡†
         for (int x = -10; x < 10; ++x)
         {
             for (int y = -10; y < 10; ++y)
             {
-                //²»Ì«Ã÷°×ÔõÃ´ËãµÄ,·´ÕýÊÇ»­ÍßÆ¬µÄËÄÌõ±ß
-                //Ëã³öÍßÆ¬µÄÖÐÐÄµã£¬È»ºó×ª»»ÎªÊÀ½ç×ø±ê£¬ÔÙ³ýÒÔÍßÆ¬³¤¶È
+                //ä¸å¤ªæ˜Žç™½æ€Žä¹ˆç®—çš„,åæ­£æ˜¯ç”»ç“¦ç‰‡çš„å››æ¡è¾¹
+                //ç®—å‡ºç“¦ç‰‡çš„ä¸­å¿ƒç‚¹ï¼Œç„¶åŽè½¬æ¢ä¸ºä¸–ç•Œåæ ‡ï¼Œå†é™¤ä»¥ç“¦ç‰‡é•¿åº¦
                 var pos = Iso.MapToWorld(cameraTile + new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
-                //»æÖÆÍßÆ¬µÄËÄÌõ±ß
+                //ç»˜åˆ¶ç“¦ç‰‡çš„å››æ¡è¾¹
                 Gizmos.DrawLine(pos, pos + new Vector3(20, 10));
                 Gizmos.DrawLine(pos, pos + new Vector3(20, -10));
             }

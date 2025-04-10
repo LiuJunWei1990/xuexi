@@ -1,51 +1,51 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÈªË®×é¼ş
+/// æ³‰æ°´ç»„ä»¶
 /// </summary>
 public class Spring : MonoBehaviour
 {
     /// <summary>
-    /// [Range(0, 2)]´ú±ífullnessÊÇÒ»¸ö´Ó0-2µÄ»¬¶¯Ìõ
-    /// ×Ö¶ÎÊÇ´ú±íÈªË®ÊÇ·ñÂú/Ò»°ë/¿Õ
+    /// [Range(0, 2)]ä»£è¡¨fullnessæ˜¯ä¸€ä¸ªä»0-2çš„æ»‘åŠ¨æ¡
+    /// å­—æ®µæ˜¯ä»£è¡¨æ³‰æ°´æ˜¯å¦æ»¡/ä¸€åŠ/ç©º
     /// </summary>
     [Range(0, 2)]
     public int fullness = 2;
     /// <summary>
-    /// ¶¯»­
+    /// åŠ¨ç”»
     /// </summary>
     Animator animator;
     /// <summary>
-    /// »¥¶¯×é¼ş
+    /// äº’åŠ¨ç»„ä»¶
     /// </summary>
     Usable usable;
 
     private void Awake()
     {
-        //»ñÈ¡×é¼ş
+        //è·å–ç»„ä»¶
         animator = GetComponent<Animator>();
         usable = GetComponent<Usable>();
     }
 
     private void Start()
     {
-        //ÂúÖµ²»µÈÓÚ0,Ôò¼¤»î
+        //æ»¡å€¼ä¸ç­‰äº0,åˆ™æ¿€æ´»
         usable.active = fullness != 0;
-        //¸ù¾İÂúµÄ³Ì¶È²¥·Å¶ÔÓ¦¶¯»­
+        //æ ¹æ®æ»¡çš„ç¨‹åº¦æ’­æ”¾å¯¹åº”åŠ¨ç”»
         animator.Play(fullness.ToString());
     }
     /// <summary>
-    /// ÓÃÈªË®
+    /// ç”¨æ³‰æ°´
     /// </summary>
     void OnUse()
     {
-        //Âú³Ì¶È-1
+        //æ»¡ç¨‹åº¦-1
         fullness -= 1;
-        //²¥·Å¶ÔÓ¦Âú³Ì¶ÈµÄ¶Ô»°
+        //æ’­æ”¾å¯¹åº”æ»¡ç¨‹åº¦çš„å¯¹è¯
         animator.Play(fullness.ToString());
-        //ÇĞ»»³ÉÏàÓ¦µÄ¼¤»î×´Ì¬
+        //åˆ‡æ¢æˆç›¸åº”çš„æ¿€æ´»çŠ¶æ€
         usable.active = fullness != 0;
     }
 }

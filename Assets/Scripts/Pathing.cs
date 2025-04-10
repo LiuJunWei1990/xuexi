@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,7 +6,7 @@ using UnityEngine;
 public class Pathing
 {
     /// <summary>
-    /// ²½×Ó,°ÑÃ¿Ò»²½¾ßÏó³ÉÒ»¸ö½á¹¹,°üº¬·½ÏòºÍ×ø±ê,·½ÏòË÷Òı
+    /// æ­¥å­,æŠŠæ¯ä¸€æ­¥å…·è±¡æˆä¸€ä¸ªç»“æ„,åŒ…å«æ–¹å‘å’Œåæ ‡,æ–¹å‘ç´¢å¼•
     /// </summary>
     public struct Step
     {
@@ -16,113 +16,113 @@ public class Pathing
     }
 
     /// <summary>
-    /// Â·¾¶,´æ´¢ËùÓĞµÄ²½×Ó
+    /// è·¯å¾„,å­˜å‚¨æ‰€æœ‰çš„æ­¥å­
     /// </summary>
     static private List<Step> path = new List<Step>();
 
     /// <summary>
-    /// ½ÚµãÀà,A*Ëã·¨µÄ½Úµã
+    /// èŠ‚ç‚¹ç±»,A*ç®—æ³•çš„èŠ‚ç‚¹
     /// </summary>
-    //IEquatable,==ÏàµÈÔËËã·û.IComparable,><±È½ÏÔËËã·û
+    //IEquatable,==ç›¸ç­‰è¿ç®—ç¬¦.IComparable,><æ¯”è¾ƒè¿ç®—ç¬¦
     class Node : IEquatable<Node>, IComparable<Node>
     {
-        public float gScore;                    // ½ÚµãµÄÒÆ¶¯³É±¾
-        public float score;                      // ½ÚµãµÄÆÀ·Ö(³É±¾ + Æô·¢Ê½¾àÀë)
-        public Vector2 pos;                      // ½ÚµãµÄÎ»ÖÃ
-        public Node parent;                      // ¸¸½Úµã
-        public Vector2 direction;                // ÒÆ¶¯·½Ïò
-        public int dirctionIndex;                // ·½ÏòË÷Òı
+        public float gScore;                    // èŠ‚ç‚¹çš„ç§»åŠ¨æˆæœ¬
+        public float score;                      // èŠ‚ç‚¹çš„è¯„åˆ†(æˆæœ¬ + å¯å‘å¼è·ç¦»)
+        public Vector2 pos;                      // èŠ‚ç‚¹çš„ä½ç½®
+        public Node parent;                      // çˆ¶èŠ‚ç‚¹
+        public Vector2 direction;                // ç§»åŠ¨æ–¹å‘
+        public int dirctionIndex;                // æ–¹å‘ç´¢å¼•
 
         private Node()
         {
         }
 
         /// <summary>
-        /// ÊµÏÖ IComparable ½Ó¿Ú£¬ÓÃÓÚÅÅĞò
+        /// å®ç° IComparable æ¥å£ï¼Œç”¨äºæ’åº
         /// </summary>
-        /// <param name="other">ÓÃÀ´±È½ÏµÄ½Úµã</param>
-        /// <returns>´óĞ¡-1,0,1</returns>
+        /// <param name="other">ç”¨æ¥æ¯”è¾ƒçš„èŠ‚ç‚¹</param>
+        /// <returns>å¤§å°-1,0,1</returns>
         public int CompareTo(Node other)
         {
             return score.CompareTo(other.score);
         }
 
         /// <summary>
-        /// ÊµÏÖ IEquatable ½Ó¿Ú£¬ÓÃÓÚ±È½Ï½Úµã
+        /// å®ç° IEquatable æ¥å£ï¼Œç”¨äºæ¯”è¾ƒèŠ‚ç‚¹
         /// </summary>
-        /// <param name="other">ÓÃÀ´±È½ÏµÄ½Úµã</param>
-        /// <returns>ÊÇ·ñÏàÍ¬</returns>
+        /// <param name="other">ç”¨æ¥æ¯”è¾ƒçš„èŠ‚ç‚¹</param>
+        /// <returns>æ˜¯å¦ç›¸åŒ</returns>
         public bool Equals(Node other)
         {
             return this.pos == other.pos;
         }
 
         /// <summary>
-        /// ½Úµã³Ø,½öÓÃÓÚÓÅ»¯ÄÚ´æ·ÖÅä,Ã»ÓĞÊµ¼ÊÓÃÍ¾
+        /// èŠ‚ç‚¹æ± ,ä»…ç”¨äºä¼˜åŒ–å†…å­˜åˆ†é…,æ²¡æœ‰å®é™…ç”¨é€”
         /// </summary>
         static private List<Node> pool = new List<Node>();
 
         /// <summary>
-        /// »ñÈ¡³ØÀïµÄµÚÒ»¸ö½Úµã
+        /// è·å–æ± é‡Œçš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹
         /// </summary>
-        /// <returns>·µ»ØµÚÒ»¸ö½Úµã</returns>
+        /// <returns>è¿”å›ç¬¬ä¸€ä¸ªèŠ‚ç‚¹</returns>
         static public Node Get()
         {
-            //³Ø²»Îª¿Õ,¾Í¿ªÊ¼»ñÈ¡
+            //æ± ä¸ä¸ºç©º,å°±å¼€å§‹è·å–
             if (pool.Count > 0)
             {
-                //»ñÈ¡µÚÒ»¸ö½Úµã
+                //è·å–ç¬¬ä¸€ä¸ªèŠ‚ç‚¹
                 Node node = pool[0];
-                //³ØÀïÉ¾³ıµôÕâ¸ö½Úµã
+                //æ± é‡Œåˆ é™¤æ‰è¿™ä¸ªèŠ‚ç‚¹
                 pool.RemoveAt(0);
-                //·µ»Ø
+                //è¿”å›
                 return node;
             }
-            //Èç¹û³ØÎª¿Õ¾Í·µ»ØÒ»¸öĞÂµÄ¿Õ½Úµã
+            //å¦‚æœæ± ä¸ºç©ºå°±è¿”å›ä¸€ä¸ªæ–°çš„ç©ºèŠ‚ç‚¹
             else return new Node();
         }
 
         /// <summary>
-        /// »ØÊÕ(ÁĞ±í)
+        /// å›æ”¶(åˆ—è¡¨)
         /// </summary>
-        /// <param name="nodes">½ÚµãÁĞ±í</param>
+        /// <param name="nodes">èŠ‚ç‚¹åˆ—è¡¨</param>
         static public void Recycle(List<Node> nodes)
         {
-            //°ÑÁĞ±íÖĞµÄ½Úµã¶¼ÊÕµ½³ØÀï,²¢Çå¿Õ¸ÃÁĞ±í
+            //æŠŠåˆ—è¡¨ä¸­çš„èŠ‚ç‚¹éƒ½æ”¶åˆ°æ± é‡Œ,å¹¶æ¸…ç©ºè¯¥åˆ—è¡¨
             pool.AddRange(nodes);
             nodes.Clear();
         }
 
         /// <summary>
-        /// »ØÊÕ(¸öÌå)
+        /// å›æ”¶(ä¸ªä½“)
         /// </summary>
         public void Recycle()
         {
-            //µ¥¸ö½ÚµãÊÕµ½³ØÀï
+            //å•ä¸ªèŠ‚ç‚¹æ”¶åˆ°æ± é‡Œ
             pool.Add(this);
         }
     }
 
-    //A*Ëã·¨Ïà¹Ø±äÁ¿
+    //A*ç®—æ³•ç›¸å…³å˜é‡
     /// <summary>
-    /// Ä¿±êÎ»ÖÃ
+    /// ç›®æ ‡ä½ç½®
     /// </summary>
     static private Vector2 target;
     /// <summary>
-    /// ¿ª·ÅÁĞ±í
+    /// å¼€æ”¾åˆ—è¡¨
     /// </summary>
     static private List<Node> openNodes = new List<Node>();
     /// <summary>
-    /// ¹Ø±ÕÁĞ±í
+    /// å…³é—­åˆ—è¡¨
     /// </summary>
     static private List<Node> closeNodes = new List<Node>();
 
     /// <summary>
-    /// ĞèÒª±éÀúµÄ¿ÉÄÜÒÆ¶¯µÄ·½Ïò,¸ü¾ßÅĞ¶ÏÌõ¼ş±»¸³ÖµÎª8»ò16¸ö·½Ïò
+    /// éœ€è¦éå†çš„å¯èƒ½ç§»åŠ¨çš„æ–¹å‘,æ›´å…·åˆ¤æ–­æ¡ä»¶è¢«èµ‹å€¼ä¸º8æˆ–16ä¸ªæ–¹å‘
     /// </summary>
     static private Vector2[] directions;
     /// <summary>
-    /// 8¸ö¿ÉÄÜµÄÒÆ¶¯·½Ïò
+    /// 8ä¸ªå¯èƒ½çš„ç§»åŠ¨æ–¹å‘
     /// </summary>
     static private Vector2[] directions8 =
     {
@@ -135,7 +135,7 @@ public class Pathing
         new Vector2(1, -1),
         new Vector2(0, -1) };
     /// <summary>
-    /// 16¸ö¿ÉÄÜµÄÒÆ¶¯·½Ïò
+    /// 16ä¸ªå¯èƒ½çš„ç§»åŠ¨æ–¹å‘
     /// </summary>
     static private Vector2[] directions16 =
     {
@@ -159,151 +159,151 @@ public class Pathing
     };
 
     /// <summary>
-    /// ×ßÏò...(±éÀú¿ÉÄÜ·½Ïò)
+    /// èµ°å‘...(éå†å¯èƒ½æ–¹å‘)
     /// </summary>
-    /// <param name="node">½Úµã</param>
+    /// <param name="node">èŠ‚ç‚¹</param>
     static private void StepTo(Node node)
     {
-        //½ÚµãÌí¼Óµ½¹Ø±Õ½ÚµãÁĞ±íÀï
+        //èŠ‚ç‚¹æ·»åŠ åˆ°å…³é—­èŠ‚ç‚¹åˆ—è¡¨é‡Œ
         closeNodes.Add(node);
-        //Ìí¼ÓÒ»¸ö¿ÕµÄ½Úµã¶ÔÏó,×öÎªĞÂ½Úµã
+        //æ·»åŠ ä¸€ä¸ªç©ºçš„èŠ‚ç‚¹å¯¹è±¡,åšä¸ºæ–°èŠ‚ç‚¹
         Node newNode = null;
-        //±éÀ÷¿ÉÄÜµÄ·½ÏòµÄÂ·¾¶
+        //éå‰å¯èƒ½çš„æ–¹å‘çš„è·¯å¾„
         for(int i = 0;i < directions.Length;++i)
         {
             Vector2 direction = directions[i];
-            //ÖĞĞÄ½Úµã+Ä³Ò»·½ÏòÂ·¾¶,µÈÓÚ¸Ã·½ÏòµÄ½Úµã×ø±ê(ÓÃµÄÊÇµÈ¾à×ø±ê)
+            //ä¸­å¿ƒèŠ‚ç‚¹+æŸä¸€æ–¹å‘è·¯å¾„,ç­‰äºè¯¥æ–¹å‘çš„èŠ‚ç‚¹åæ ‡(ç”¨çš„æ˜¯ç­‰è·åæ ‡)
             Vector2 pos = node.pos + direction;
 
-            //Íø¸ñ¿âÊµÀıµÄË÷ÒıÆ÷¾ÍÊÇÈ¡°´×ø±ê¶ÔÓ¦µÄÍø¸ñ,»ñÈ¡µÄÊÇÒ»¸öbool,´ú±íÍø¸ñÊÇ·ñ¿ÉÍ¨ĞĞ,²»Í¨ĞĞ¾Í²»Ìí¼Ó½ø¿ª·ÅÁĞ±í
+            //ç½‘æ ¼åº“å®ä¾‹çš„ç´¢å¼•å™¨å°±æ˜¯å–æŒ‰åæ ‡å¯¹åº”çš„ç½‘æ ¼,è·å–çš„æ˜¯ä¸€ä¸ªbool,ä»£è¡¨ç½‘æ ¼æ˜¯å¦å¯é€šè¡Œ,ä¸é€šè¡Œå°±ä¸æ·»åŠ è¿›å¼€æ”¾åˆ—è¡¨
             if (Tilemap.instance[pos])
             {
-                //Ç°ÃæÄÇ¸ö¿Õ½Úµã,ÒªÊÇ»¹Îª¿Õ,¾ÍÈ¡½Úµã³ØÀïÃæµÄµÚÒ»¸ö½Úµã,²»Îª¿Õ¾Í²»×öÕâÒ»²½
+                //å‰é¢é‚£ä¸ªç©ºèŠ‚ç‚¹,è¦æ˜¯è¿˜ä¸ºç©º,å°±å–èŠ‚ç‚¹æ± é‡Œé¢çš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹,ä¸ä¸ºç©ºå°±ä¸åšè¿™ä¸€æ­¥
                 if (newNode == null) newNode = Node.Get();
 
-                //ĞÂ½ÚµãµÄ×ø±ê¸³Öµ,¾ÍÊÇµ±Ç°Õâ¸ö·½ÏòµÄ½Úµã×ø±ê
+                //æ–°èŠ‚ç‚¹çš„åæ ‡èµ‹å€¼,å°±æ˜¯å½“å‰è¿™ä¸ªæ–¹å‘çš„èŠ‚ç‚¹åæ ‡
                 newNode.pos = pos;
 
-                //Contains:ÁĞ±íÖĞÊÇ·ñ°üº¬ĞÎ²Î,ÕâÀï¾ÍÊÇÅĞ¶ÏÁ½¸öÁĞ±íÖĞÊÇ·ñ¶¼Ã»ÓĞnewNode,¶¼Ã»ÓĞ¾ÍÖ´ĞĞ´úÂë
+                //Contains:åˆ—è¡¨ä¸­æ˜¯å¦åŒ…å«å½¢å‚,è¿™é‡Œå°±æ˜¯åˆ¤æ–­ä¸¤ä¸ªåˆ—è¡¨ä¸­æ˜¯å¦éƒ½æ²¡æœ‰newNode,éƒ½æ²¡æœ‰å°±æ‰§è¡Œä»£ç 
                 if (!closeNodes.Contains(newNode) && !openNodes.Contains(newNode))
                 {
-                    //ÖĞĞÄµãÎªĞÂ½ÚµãµÄ¸¸½Úµã
+                    //ä¸­å¿ƒç‚¹ä¸ºæ–°èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹
                     newNode.parent = node;
-                    //·½Ïò,ÒòÎªÖ»ÒÆ¶¯1µÄ¾àÀë,·½ÏòºÍÂ·¾¶ÊÇÒ»ÑùµÄ
+                    //æ–¹å‘,å› ä¸ºåªç§»åŠ¨1çš„è·ç¦»,æ–¹å‘å’Œè·¯å¾„æ˜¯ä¸€æ ·çš„
                     newNode.direction = direction;
                     newNode.dirctionIndex = i;
-                    //>>>>>½ÚµãÆÀ·Ö:ÒÆ¶¯³É±¾+Æô·¢Ê½¾àÀë<<<<<<<<<<
-                    //ÒÆ¶¯³É±¾ÊÇ×Ô¼ºÌîĞ´µÄg·ÖÊı+ÕâÒ»²½µÄ¾àÀë,ÒòÎªÃ¿´ÎÖ»±éÀúÖĞĞÄµãÖÜÎ§Ò»È¦µÄ¾àÀë
+                    //>>>>>èŠ‚ç‚¹è¯„åˆ†:ç§»åŠ¨æˆæœ¬+å¯å‘å¼è·ç¦»<<<<<<<<<<
+                    //ç§»åŠ¨æˆæœ¬æ˜¯è‡ªå·±å¡«å†™çš„gåˆ†æ•°+è¿™ä¸€æ­¥çš„è·ç¦»,å› ä¸ºæ¯æ¬¡åªéå†ä¸­å¿ƒç‚¹å‘¨å›´ä¸€åœˆçš„è·ç¦»
                     newNode.gScore = node.gScore + direction.magnitude;
-                    //ÒÆ¶¯³É±¾+Æô·¢Ê½¾àÀë(Ä¿±êµãºÍĞÂ½ÚµãµÄ¾àÀë)
+                    //ç§»åŠ¨æˆæœ¬+å¯å‘å¼è·ç¦»(ç›®æ ‡ç‚¹å’Œæ–°èŠ‚ç‚¹çš„è·ç¦»)
                     newNode.score = newNode.gScore + Vector2.Distance(target,newNode.pos);
-                    //Ìí¼Óµ½¿ª·Å½ÚµãÖĞ
+                    //æ·»åŠ åˆ°å¼€æ”¾èŠ‚ç‚¹ä¸­
                     openNodes.Add(newNode);
-                    //ĞÂ½ÚµãÖÃ¿Õ
+                    //æ–°èŠ‚ç‚¹ç½®ç©º
                     newNode = null;
                 }
             }
         }
-        //·½Ïò¶¼±éÀúÍêÁËÖ®ºó,Èç¹ûĞÂ½Úµã»¹Î´ÖÃ¿Õ¾Í»ØÊÕ¸Ã½Úµã,¾ÍÊÇÌí¼Óµ½pool½Úµã³ØÀïÃæ.
+        //æ–¹å‘éƒ½éå†å®Œäº†ä¹‹å,å¦‚æœæ–°èŠ‚ç‚¹è¿˜æœªç½®ç©ºå°±å›æ”¶è¯¥èŠ‚ç‚¹,å°±æ˜¯æ·»åŠ åˆ°poolèŠ‚ç‚¹æ± é‡Œé¢.
         if (newNode != null) newNode.Recycle();
     }
 
 
     /// <summary>
-    /// ´ÓÄ¿±ê½Úµã»ØËİ,Éú³ÉÂ·¾¶
+    /// ä»ç›®æ ‡èŠ‚ç‚¹å›æº¯,ç”Ÿæˆè·¯å¾„
     /// </summary>
-    /// <param name="node">A*Ñ°Â·µÄ×îÖÕ½Úµã</param>
+    /// <param name="node">A*å¯»è·¯çš„æœ€ç»ˆèŠ‚ç‚¹</param>
     static private void TraverseBack(Node node)
     {
-        //ÕÒ¸¸½Úµã,¸¸½Úµã²»Îª¿Õ¾ÍÖ´ĞĞ´úÂë
+        //æ‰¾çˆ¶èŠ‚ç‚¹,çˆ¶èŠ‚ç‚¹ä¸ä¸ºç©ºå°±æ‰§è¡Œä»£ç 
         while (node.parent != null)
         {
-            //ĞÂ½¨Ò»¸ö²½×Ó
+            //æ–°å»ºä¸€ä¸ªæ­¥å­
             Step step = new Step();
-            //°Ñ½ÚµãµÄÊôĞÔ¸³Öµ¸ø²½×Ó
+            //æŠŠèŠ‚ç‚¹çš„å±æ€§èµ‹å€¼ç»™æ­¥å­
             step.direction = node.direction;
             step.directionIndex = node.dirctionIndex;
             step.pos = node.pos;
-            //°Ñ²½×Ó²åÈëµ½Â·¾¶µÄµÚÒ»¸ö
+            //æŠŠæ­¥å­æ’å…¥åˆ°è·¯å¾„çš„ç¬¬ä¸€ä¸ª
             path.Insert(0, step);
-            //°Ñ¸¸½Úµã¸³¹ıÀ´,µİ½ø
+            //æŠŠçˆ¶èŠ‚ç‚¹èµ‹è¿‡æ¥,é€’è¿›
             node = node.parent;
         }
     }
 
     /// <summary>
-    /// A*Ëã·¨Â·¾¶Éú³É
+    /// A*ç®—æ³•è·¯å¾„ç”Ÿæˆ
     /// </summary>
-    /// <param name="from">À´×Ô</param>
-    /// <param name="target">Ä¿±ê</param>
-    /// <returns>·µ»ØÂ·¾¶ÁĞ±í</returns>
+    /// <param name="from">æ¥è‡ª</param>
+    /// <param name="target">ç›®æ ‡</param>
+    /// <returns>è¿”å›è·¯å¾„åˆ—è¡¨</returns>
     static public List<Step> BuildPath(Vector2 from, Vector2 target, int directionCount = 8, float minRange = 0.1f)
     {
-        //////////Ç°ÆÚ×¼±¸
-        //ÅĞ¶ÏÊÇ8·½Ïò»¹ÊÇ16·½Ïò
+        //////////å‰æœŸå‡†å¤‡
+        //åˆ¤æ–­æ˜¯8æ–¹å‘è¿˜æ˜¯16æ–¹å‘
         directions = directionCount == 8 ? directions8 : directions16;
-        //ÏÈ°ÑÄ¿±êµã¸³¸øÀàÖĞµÄÄ¿±êµã
+        //å…ˆæŠŠç›®æ ‡ç‚¹èµ‹ç»™ç±»ä¸­çš„ç›®æ ‡ç‚¹
         Pathing.target = target;
-        //»ØÊÕÄÚ´æ,¿ª·Å½ÚµãºÍ¹Ø±Õ½ÚµãµÄ
+        //å›æ”¶å†…å­˜,å¼€æ”¾èŠ‚ç‚¹å’Œå…³é—­èŠ‚ç‚¹çš„
         Node.Recycle(openNodes);
         Node.Recycle(closeNodes);
-        //Çå¿ÕÂ·¾¶ÁĞ±í,×¼±¸Éú³ÉĞÂµÄÂ·¾¶
+        //æ¸…ç©ºè·¯å¾„åˆ—è¡¨,å‡†å¤‡ç”Ÿæˆæ–°çš„è·¯å¾„
         path.Clear();
-        //À´×ÔºÍÄ¿±êÖØºÏ¾Í²»ÓÃÑ°ÁË,Ö±½Ó·µ»Ø¿ÕÂ·¾¶°É.
+        //æ¥è‡ªå’Œç›®æ ‡é‡åˆå°±ä¸ç”¨å¯»äº†,ç›´æ¥è¿”å›ç©ºè·¯å¾„å§.
         if (from == target) return path;
-        //´´½¨ÆğÊ¼½Úµã,´Ó³ØÀïÃæÈ¡½Úµã,ÓÅ»¯ÄÚ´æ·ÖÅä
+        //åˆ›å»ºèµ·å§‹èŠ‚ç‚¹,ä»æ± é‡Œé¢å–èŠ‚ç‚¹,ä¼˜åŒ–å†…å­˜åˆ†é…
         Node startNode = Node.Get();
-        //¸øÆğÊ¼½Úµã³õÊ¼»¯,¸÷ÖÖ¸³Öµ,ÌíÈë¿ª·ÅÁĞ±í
+        //ç»™èµ·å§‹èŠ‚ç‚¹åˆå§‹åŒ–,å„ç§èµ‹å€¼,æ·»å…¥å¼€æ”¾åˆ—è¡¨
         startNode.parent = null;
         startNode.pos = from;
         startNode.gScore = 0;
-        startNode.score = 999; //ÕâÊÇµÚÒ»¸ö½Úµã,ÆÀ·ÖÎŞËùÎ½,¸ø¸ö×î¸ß·Ö¾ÍĞĞ,ÒòÎªËüÊÇ×îÔ¶µÄ
+        startNode.score = 999; //è¿™æ˜¯ç¬¬ä¸€ä¸ªèŠ‚ç‚¹,è¯„åˆ†æ— æ‰€è°“,ç»™ä¸ªæœ€é«˜åˆ†å°±è¡Œ,å› ä¸ºå®ƒæ˜¯æœ€è¿œçš„
         openNodes.Add(startNode);
 
 
-        ////////////¿ªÊ¼Éú³É
-        //Ñ­»·¼ÆÊıÆ÷,±ÜÃâËÀÑ­»·µÄ
+        ////////////å¼€å§‹ç”Ÿæˆ
+        //å¾ªç¯è®¡æ•°å™¨,é¿å…æ­»å¾ªç¯çš„
         int iterCount = 0;
-        //¿ª·ÅÁĞ±í²»Îª¿Õ,¾Í¿ªÊ¼°É
+        //å¼€æ”¾åˆ—è¡¨ä¸ä¸ºç©º,å°±å¼€å§‹å§
         while (openNodes.Count > 0)
         {
-            //¿ª·ÅÁĞ±íÅÅĞò,Ê¹ÓÃIComparable¶Ë¿Ú,±È½ÏµÄÊÇscore½ÚµãÆÀ·Ö,¾ÍÊÇ°´ÆÀ·Ö´ÓĞ¡µ½´óÅÅĞò
+            //å¼€æ”¾åˆ—è¡¨æ’åº,ä½¿ç”¨IComparableç«¯å£,æ¯”è¾ƒçš„æ˜¯scoreèŠ‚ç‚¹è¯„åˆ†,å°±æ˜¯æŒ‰è¯„åˆ†ä»å°åˆ°å¤§æ’åº
             openNodes.Sort();
-            //´¦ÀíµÚÒ»¸ö,´¦ÀíÍêµÄ»áÒÆÖÁ¹Ø±ÕÁĞ±í,ËùÒÔ,ÓÀÔ¶¶¼ÊÇ´¦ÀíµÚÒ»¸ö
+            //å¤„ç†ç¬¬ä¸€ä¸ª,å¤„ç†å®Œçš„ä¼šç§»è‡³å…³é—­åˆ—è¡¨,æ‰€ä»¥,æ°¸è¿œéƒ½æ˜¯å¤„ç†ç¬¬ä¸€ä¸ª
             Node node = openNodes[0];
-            //Èç¹ûÄ¿±ê²»¿ÉÍ¨ĞĞ ²¢ÇÒ ½ÚµãÓĞ¸¸½Úµã ²¢ÇÒ ½ÚµãµÄÆÀ·Ö´óÓÚµÈÓÚ¸¸½Úµã(Ô½Ñ°Ô½Ô¶ÁË)
+            //å¦‚æœç›®æ ‡ä¸å¯é€šè¡Œ å¹¶ä¸” èŠ‚ç‚¹æœ‰çˆ¶èŠ‚ç‚¹ å¹¶ä¸” èŠ‚ç‚¹çš„è¯„åˆ†å¤§äºç­‰äºçˆ¶èŠ‚ç‚¹(è¶Šå¯»è¶Šè¿œäº†)
             if (!Tilemap.instance[target] && node.parent != null && node.score > node.parent.score)
             {
-                //ÄÇ»¹Ñ°¸öÆ¨,»ØËİ,Éú³ÉÂ·¾¶
+                //é‚£è¿˜å¯»ä¸ªå±,å›æº¯,ç”Ÿæˆè·¯å¾„
                 TraverseBack(node.parent);
-                //Ìø³ö
+                //è·³å‡º
                 break;
             }
 
-            //µ½Ä¿±êµãµÄÍ£Ö¹¾àÀë¾Í½áÊøÁË,¿ªÊ¼»ØËİÂ·¾¶,È»ºóÌø³öÑ­»·
+            //åˆ°ç›®æ ‡ç‚¹çš„åœæ­¢è·ç¦»å°±ç»“æŸäº†,å¼€å§‹å›æº¯è·¯å¾„,ç„¶åè·³å‡ºå¾ªç¯
             if (Vector2.Distance(node.pos,target) <= minRange)
             {
                 TraverseBack(node);
                 break;
             }
 
-            //»¹Ã»µ½Ä¿±êµã¡£¾ÍÉ¾µô¿ª·ÅÁĞ±íµÄµ±Ç°½Úµã,²¢°ÑËü¼ÓÈë¹Ø±ÕÁĞ±í
+            //è¿˜æ²¡åˆ°ç›®æ ‡ç‚¹ã€‚å°±åˆ æ‰å¼€æ”¾åˆ—è¡¨çš„å½“å‰èŠ‚ç‚¹,å¹¶æŠŠå®ƒåŠ å…¥å…³é—­åˆ—è¡¨
             openNodes.RemoveAt(0);
-            //Õâ¸ö·½·¨»á°Ñnode¼ÓÈë¹Ø±ÕÁĞ±í,²¢ÇÒ°ÑËüµÄËùÓĞ·½Ïò½Úµã¼ÓÈë¿ª·ÅÁĞ±í
+            //è¿™ä¸ªæ–¹æ³•ä¼šæŠŠnodeåŠ å…¥å…³é—­åˆ—è¡¨,å¹¶ä¸”æŠŠå®ƒçš„æ‰€æœ‰æ–¹å‘èŠ‚ç‚¹åŠ å…¥å¼€æ”¾åˆ—è¡¨
             StepTo(node);
 
             iterCount += 1;
             if (iterCount > 100)
             {
-                //Ñ°Â·Ñ­»·³¬¹ı100´Î,¾Í»ØËİ,Éú³ÉÂ·¾¶,±ÜÃâÏİÈëËÀÑ­»·
+                //å¯»è·¯å¾ªç¯è¶…è¿‡100æ¬¡,å°±å›æº¯,ç”Ÿæˆè·¯å¾„,é¿å…é™·å…¥æ­»å¾ªç¯
                 TraverseBack(node);
-                //Ìø³ö
+                //è·³å‡º
                 break;
             }
         }
 
-        ///////////»­Ïß
-        //»æÖÆ¹Ø±ÕÁĞ±íºÍ¿ª·ÅÁĞ±íÖĞµÄ½Úµã
+        ///////////ç”»çº¿
+        //ç»˜åˆ¶å…³é—­åˆ—è¡¨å’Œå¼€æ”¾åˆ—è¡¨ä¸­çš„èŠ‚ç‚¹
         foreach (Node node in closeNodes)
         {
             Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
@@ -313,17 +313,17 @@ public class Pathing
             Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
         }
 
-        //·µ»ØÂ·¾¶
+        //è¿”å›è·¯å¾„
         return path;
     }
 
-    //»æÖÆÂ·¾¶Ïß
+    //ç»˜åˆ¶è·¯å¾„çº¿
     static public void DebugDrawPath(List<Step> path)
     {
-        //±éÀúËùÓĞÂ·¾¶
+        //éå†æ‰€æœ‰è·¯å¾„
         for (int i = 0; i < path.Count - 1; ++i)
         {
-            //»­Ïß´Óµ±Ç°µãµ½ÏÂÒ»²½µã
+            //ç”»çº¿ä»å½“å‰ç‚¹åˆ°ä¸‹ä¸€æ­¥ç‚¹
             Debug.DrawLine(Iso.MapToWorld(path[i].pos), Iso.MapToWorld(path[i+1].pos));
         }
     }

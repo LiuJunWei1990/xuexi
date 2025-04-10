@@ -1,22 +1,25 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Íæ¼Ò¿ØÖÆÆ÷×é¼ş
+/// ç©å®¶æ§åˆ¶å™¨ç»„ä»¶
 /// </summary>
+/// è„šæœ¬å®ç°åŠŸèƒ½æµç¨‹å¦‚ä¸‹ï¼š
+/// 1.æ‚¬åœ->UpdateHover->æ¯å¸§æ›´æ–°ï¼ŒæŒ‡å“ªä¸ªå“ªä¸ªäº®->èµ‹å€¼hover
+/// 2.å¤–è®¾æŒ‰é’®äº‹ä»¶->é€šè¿‡ä¸åŒçš„æ“ä½œåˆ†åˆ«å‡ºå‘ï¼Œè·¯å¾„ç”»çº¿ï¼Œæ”»å‡»ï¼Œäº’åŠ¨ï¼Œèµ°è·¯ï¼Œç¬ç§»ï¼Œæ³¨è§†çš„åŠŸèƒ½
 public class PlayerController : MonoBehaviour
 {
     /// <summary>
-    /// ½ÇÉ«×é¼ş
+    /// è§’è‰²ç»„ä»¶
     /// </summary>
     public Character character;
-    //µ±Ç°Êó±êĞüÍ£µÄÓÎÏ·¶ÔÏó
-    //ÌØĞÔ:²»ÏÔÊ¾ÔÚÃæ°åÉÏ
+    //å½“å‰é¼ æ ‡æ‚¬åœçš„æ¸¸æˆå¯¹è±¡
+    //ç‰¹æ€§:ä¸æ˜¾ç¤ºåœ¨é¢æ¿ä¸Š
     [HideInInspector]
     static public GameObject hover;
     /// <summary>
-    /// µÈ¾à×ø±ê×é¼ş
+    /// ç­‰è·åæ ‡ç»„ä»¶
     /// </summary>
     Iso iso;
 
@@ -24,13 +27,13 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        //Èç¹û½ÇÉ«×é¼şÎª¿Õ
+        //å¦‚æœè§’è‰²ç»„ä»¶ä¸ºç©º
         if (character == null)
         {
-            //Í¨¹ıTagÕÒµ½½ÇÉ«×é¼ş
+            //é€šè¿‡Tagæ‰¾åˆ°è§’è‰²ç»„ä»¶
             character = GameObject.FindWithTag("Player").GetComponent<Character>();
         }
-        //ÉèÖÃ½ÇÉ«
+        //è®¾ç½®è§’è‰²
         SetCharacter(character);
     }
 
@@ -40,57 +43,57 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Éè¶¨½ÇÉ«
+    /// è®¾å®šè§’è‰²
     /// </summary>
-    /// <param name="character">Ä¿±ê½ÇÉ«</param>
+    /// <param name="character">ç›®æ ‡è§’è‰²</param>
     void SetCharacter(Character character)
     {
-        //½«Ä¿±êµÄ½ÇÉ«×é¼ş¸³Öµ¸øµ±Ç°½ÇÉ«×é¼ş
+        //å°†ç›®æ ‡çš„è§’è‰²ç»„ä»¶èµ‹å€¼ç»™å½“å‰è§’è‰²ç»„ä»¶
         this.character = character;
-        //»ñµÃÄ¿±ê½ÇÉ«¶ÔÏóµÄµÈ¾à×ø±ê×é¼ş
+        //è·å¾—ç›®æ ‡è§’è‰²å¯¹è±¡çš„ç­‰è·åæ ‡ç»„ä»¶
         iso = character.GetComponent<Iso>();
     }
 
     /// <summary>
-    /// ¸üĞÂÊó±êĞüÍ£µÄÄ¿±ê
+    /// æ›´æ–°é¼ æ ‡æ‚¬åœçš„ç›®æ ‡
     /// </summary>
     void UpdateHover()
     {
-        //Êó±ê×ó¼ü°´ÏÂÊ±²»¸üĞÂ
+        //é¼ æ ‡å·¦é”®æŒ‰ä¸‹æ—¶ä¸æ›´æ–°
         if (Input.GetMouseButton(0)) return;
 
-        //´æĞÂĞüÍ£Ä¿±êµÄ±äÁ¿
+        //å­˜æ–°æ‚¬åœç›®æ ‡çš„å˜é‡
         GameObject newHover = null;
-        //»ñÈ¡Êó±êÔÚÊÀ½ç×ø±êÏµÖĞµÄÎ»ÖÃ
+        //è·å–é¼ æ ‡åœ¨ä¸–ç•Œåæ ‡ç³»ä¸­çš„ä½ç½®
         var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //´ò³öÉäÏß,·µ»Ø´òÖĞµÄËùÓĞÅö×²Æ÷µÄÊıÁ¿,²¢°ÑËùÓĞÅö×²Æ÷´æÈçhoverCollidersÊı×é
+        //æ‰“å‡ºå°„çº¿,è¿”å›æ‰“ä¸­çš„æ‰€æœ‰ç¢°æ’å™¨çš„æ•°é‡,å¹¶æŠŠæ‰€æœ‰ç¢°æ’å™¨å­˜å¦‚hoverCollidersæ•°ç»„
         int overlapCount = Physics2D.OverlapPointNonAlloc(mousePos, hoverColliders);
-        //Èç¹ûÉäÏßÅö×²µ½ÎïÌå
+        //å¦‚æœå°„çº¿ç¢°æ’åˆ°ç‰©ä½“
         if (overlapCount > 0)
         {
-            //»ñÈ¡Åö×²µ½µÄ×î±íÃæµÄÎïÌå,±ãÊÇÊó±êĞüÍ£µÄÄ¿±ê
+            //è·å–ç¢°æ’åˆ°çš„æœ€è¡¨é¢çš„ç‰©ä½“,ä¾¿æ˜¯é¼ æ ‡æ‚¬åœçš„ç›®æ ‡
             newHover = hoverColliders[0].gameObject;
         }
 
-        //Èç¹ûĞÂĞüÍ£Ä¿±ê²»µÈÓÚµ±Ç°ĞüÍ£Ä¿±ê
+        //å¦‚æœæ–°æ‚¬åœç›®æ ‡ä¸ç­‰äºå½“å‰æ‚¬åœç›®æ ‡
         if (newHover != hover)
         {
-            //Èç¹ûµ±Ç°ĞüÍ£Ä¿±ê²»Îª¿Õ
+            //å¦‚æœå½“å‰æ‚¬åœç›®æ ‡ä¸ä¸ºç©º
             if (hover != null)
             {
-                //»ñÈ¡µ±Ç°ĞüÍ£Ä¿±êµÄ¾«ÁéäÖÈ¾Æ÷×é¼ş
+                //è·å–å½“å‰æ‚¬åœç›®æ ‡çš„ç²¾çµæ¸²æŸ“å™¨ç»„ä»¶
                 var spriteRenderer = hover.GetComponent<SpriteRenderer>();
-                //»¹Ô­ÆäÁÁ¶È
+                //è¿˜åŸå…¶äº®åº¦
                 spriteRenderer.material.SetFloat("_SelfIllum", 1.0f);
             }
-            //°ÑĞÂĞüÍ£Ä¿±ê¸³Öµ¸øµ±Ç°ĞüÍ£Ä¿±ê
+            //æŠŠæ–°æ‚¬åœç›®æ ‡èµ‹å€¼ç»™å½“å‰æ‚¬åœç›®æ ‡
             hover = newHover;
-            //¸³Öµºó,Èç¹ûµ±Ç°ĞüÍ£Ä¿±ê²»Îª¿Õ
+            //èµ‹å€¼å,å¦‚æœå½“å‰æ‚¬åœç›®æ ‡ä¸ä¸ºç©º
             if (hover != null)
             {
-                //»ñÈ¡µ±Ç°ĞüÍ£Ä¿±êµÄ¾«ÁéäÖÈ¾Æ÷×é¼ş
+                //è·å–å½“å‰æ‚¬åœç›®æ ‡çš„ç²¾çµæ¸²æŸ“å™¨ç»„ä»¶
                 var spriteRenderer = hover.GetComponent<SpriteRenderer>();
-                //Ìá¸ßÆäÁÁ¶È
+                //æé«˜å…¶äº®åº¦
                 spriteRenderer.material.SetFloat("_SelfIllum", 1.75f);
             }
         }
@@ -99,48 +102,48 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         UpdateHover();
-        //Ä¿±êµÄÍø¸ñ
+        //ç›®æ ‡çš„ç½‘æ ¼
         Vector3 targetTile;
-        //Èç¹ûµ±Ç°»¥¶¯ÎïÌå²»Îª¿Õ
+        //å¦‚æœå½“å‰äº’åŠ¨ç‰©ä½“ä¸ä¸ºç©º
         if (hover != null)
         {
-            //Ä¿±êÍø¸ñÖ±½ÓÈ¡µ±Ç°»¥¶¯ÎïÌåµÄÍø¸ñ
+            //ç›®æ ‡ç½‘æ ¼ç›´æ¥å–å½“å‰äº’åŠ¨ç‰©ä½“çš„ç½‘æ ¼
             targetTile = Iso.MapToIso(hover.transform.position);
         }
-        //µ±Ç°»¥¶¯ÎïÌåÎª¿Õ
+        //å½“å‰äº’åŠ¨ç‰©ä½“ä¸ºç©º
         else
         {
-            //Ä¿±êÈ¡Êó±êÎ»ÖÃµÄÍø¸ñ
+            //ç›®æ ‡å–é¼ æ ‡ä½ç½®çš„ç½‘æ ¼
             targetTile = IsoInput.mouseTile;
         }
-        //»­Ä¿±êÍø¸ñµÄ±ß¿ò,×ø±êÊÇtargetTile,¿ÉÍ¨ĞĞ»­ÂÌ¿ò,²»¿ÉÍ¨ĞĞ»­ºì¿ò
+        //ç”»ç›®æ ‡ç½‘æ ¼çš„è¾¹æ¡†,åæ ‡æ˜¯targetTile,å¯é€šè¡Œç”»ç»¿æ¡†,ä¸å¯é€šè¡Œç”»çº¢æ¡†
         Iso.DebugDrawTile(targetTile, Tilemap.instance[targetTile] ? Color.green : Color.red, 0.1f);
-        //Éú³ÉÂ·¾¶,µ±Ç°×ø±ê--Ä¿±êÍø¸ñ
+        //ç”Ÿæˆè·¯å¾„,å½“å‰åæ ‡--ç›®æ ‡ç½‘æ ¼ï¼Œæ³¨æ„è¿™ä»…ä»…æ˜¯ç”Ÿæˆè·¯å¾„ï¼Œå°±æ˜¯ä¼šæœ‰debugé‚£æ¡çº¿ï¼Œæ²¡æœ‰åŠ å…¥Characterçš„pathå±æ€§æ˜¯ä¸ä¼šæ‰§è¡Œçš„
         Pathing.BuildPath(iso.tilePos, targetTile,character.directionCount,character.useRange);
 
-        //°´ÏÂF4
+        //æŒ‰ä¸‹F4
         if (Input.GetKeyDown(KeyCode.F4))
         {
-            //µ÷ÓÃË²ÒÆ·½·¨
+            //è°ƒç”¨ç¬ç§»æ–¹æ³•
             character.Teleport(IsoInput.mouseTile);
         } 
-        //µ¥»÷ÓÒ¼ü »òÕß µ¥»÷×ó¼ü+×óShift
+        //å•å‡»å³é”® æˆ–è€… å•å‡»å·¦é”®+å·¦Shift
         if (Input.GetMouseButton(1) || (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0)))
             {
-            //Ö´ĞĞ¹¥»÷
+            //æ‰§è¡Œæ”»å‡»
             character.Attack();
         }
 
-        //µ¥»÷×ó¼ü
+        //å•å‡»å·¦é”®
         else if (Input.GetMouseButton(0))
         {
-            //±»Íæ¼Ò¹Ø×¢µÄ»¥¶¯ÎïÌå²»Îª¿Õ
+            //è¢«ç©å®¶å…³æ³¨çš„äº’åŠ¨ç‰©ä½“ä¸ä¸ºç©º
             if (hover != null)
             {
-                //ÉèÖÃµ±Ç°ÎªÍæ¼Ò¹Ø×¢
+                //è®¾ç½®å½“å‰ä¸ºç©å®¶å…³æ³¨
                 character.target = hover;
             }
-            //Îª¿Õ¾ÍÊÇ×ßÂ·
+            //ä¸ºç©ºå°±æ˜¯èµ°è·¯
             else
             {
                 character.GoTo(targetTile);
@@ -151,16 +154,16 @@ public class PlayerController : MonoBehaviour
 
 
         character.LookAt(IsoInput.mousePosition);
-        //°´ÏÂTab¼ü
+        //æŒ‰ä¸‹Tabé”®
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            //±éÀú³¡¾°ÖĞµÄËùÓĞ½ÇÉ«
+            //éå†åœºæ™¯ä¸­çš„æ‰€æœ‰è§’è‰²
             foreach (Character character in GameObject.FindObjectsOfType<Character>())
             {
-                //Èç¹ûµ±Ç°½ÇÉ«²»ÊÇÍæ¼Ò¿ØÖÆÆ÷µÄ½ÇÉ«
+                //å¦‚æœå½“å‰è§’è‰²ä¸æ˜¯ç©å®¶æ§åˆ¶å™¨çš„è§’è‰²
                 if (this.character != character)
                 {
-                    //Éè¶¨ĞÂ½ÇÉ«
+                    //è®¾å®šæ–°è§’è‰²
                     SetCharacter(character);
                     return;
                 }

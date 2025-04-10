@@ -1,24 +1,24 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 /// <summary>
-/// »¥¶¯
+/// äº’åŠ¨
 /// </summary>
 public class Usable : MonoBehaviour
 {
     /// <summary>
-    /// ¼¤»î
+    /// æ¿€æ´»
     /// </summary>
     public bool active = true;
 
     /// <summary>
-    /// Ê¹ÓÃ,ÀıÈç´òËéÍ°µÄ¶¯×÷
+    /// ä½¿ç”¨,ä¾‹å¦‚æ‰“ç¢æ¡¶çš„åŠ¨ä½œ
     /// </summary>
     public void Use()
     {
-        //´¥·¢µ±Ç°ÓÎÏ·¶ÔÏóÉÏµÄOnUse·½·¨
+        //è§¦å‘å½“å‰æ¸¸æˆå¯¹è±¡ä¸Šçš„OnUseæ–¹æ³•
         SendMessage("OnUse");
     }
 }

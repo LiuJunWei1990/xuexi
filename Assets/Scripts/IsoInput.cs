@@ -1,28 +1,28 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÊµÊ±»ñÈ¡Êó±êÔÚµÈ¾à×ø±êÖĞµÄÎ»ÖÃ
+/// å®æ—¶è·å–é¼ æ ‡åœ¨ç­‰è·åæ ‡ä¸­çš„ä½ç½®
 /// </summary>
 public class IsoInput : MonoBehaviour
 {
     /// <summary>
-    /// Êó±êÔÚµÈ¾à×ø±êÖĞµÄÎ»ÖÃ
+    /// é¼ æ ‡åœ¨ç­‰è·åæ ‡ä¸­çš„ä½ç½®
     /// </summary>
     static public Vector2 mousePosition;
     /// <summary>
-    /// Êó±êÖ¸ÏòµÄÍßÆ¬×ø±ê
+    /// é¼ æ ‡æŒ‡å‘çš„ç“¦ç‰‡åæ ‡
     /// </summary>
     static public Vector2 mouseTile;
 
     void Update()
     {
-        //»ñÈ¡Êó±êÔÚÊÀ½ç×ø±êÖĞµÄÎ»ÖÃ
+        //è·å–é¼ æ ‡åœ¨ä¸–ç•Œåæ ‡ä¸­çš„ä½ç½®
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //×ª»»ÎªµÈ¾à×ø±ê
+        //è½¬æ¢ä¸ºç­‰è·åæ ‡
         mousePosition = Iso.MapToIso(mousePos);
-        //È¡Õû,µÃµ½Êó±êÖ¸ÏòµÄÍßÆ¬×ø±ê
+        //å–æ•´,å¾—åˆ°é¼ æ ‡æŒ‡å‘çš„ç“¦ç‰‡åæ ‡
         mouseTile = Iso.Snap(mousePosition);
     }
 }

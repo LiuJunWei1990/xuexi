@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,89 +8,89 @@ using UnityEngine;
 public class EditorTools : MonoBehaviour
 {
     /// <summary>
-    /// Ìí¼Ó²Ëµ¥ÏîÄ¿:´´½¨16Ïò¶¯»­
+    /// æ·»åŠ èœå•é¡¹ç›®:åˆ›å»º16å‘åŠ¨ç”»
     /// </summary>
-    [MenuItem("Assets/Create/16Ïò¶¯»­")]
+    [MenuItem("Assets/Create/16å‘åŠ¨ç”»")]
     static public void CreateAnimation16Way()
     {
         CreateAnimation(16);
     }
 
     /// <summary>
-    /// Ìí¼Ó²Ëµ¥ÏîÄ¿:´´½¨8Ïò¶¯»­
+    /// æ·»åŠ èœå•é¡¹ç›®:åˆ›å»º8å‘åŠ¨ç”»
     /// </summary>
-    [MenuItem("Assets/Create/8Ïò¶¯»­")]
+    [MenuItem("Assets/Create/8å‘åŠ¨ç”»")]
     static public void CreateAnimation8Way()
     {
         CreateAnimation(8);
     }
     /// <summary>
-    /// Éú³É¶¯»­
+    /// ç”ŸæˆåŠ¨ç”»
     /// </summary>
-    /// <param name="directionCount">XÏò¶¯»­</param>
+    /// <param name="directionCount">Xå‘åŠ¨ç”»</param>
     static public void CreateAnimation(int directionCount)
     {
 
         
-        #region >>>>>>>>>>>>>½«Í¼Æ¬×ÊÔ´ÌáÈ¡Îª¾«ÁéÊı×é<<<<<<<<<<<<<<<<<<<
+        #region >>>>>>>>>>>>>å°†å›¾ç‰‡èµ„æºæå–ä¸ºç²¾çµæ•°ç»„<<<<<<<<<<<<<<<<<<<
 
-        //1.ÒıÓÃ±à¼­Æ÷ÖĞÑ¡ÖĞµÄ¶ÔÏó,Ç¿×ªÎªÍ¼Æ¬ÀàĞÍ,Èç¹ûÑ¡ÖĞµÄ²»ÊÇÍ¼Æ¬,·µ»Ønull
+        //1.å¼•ç”¨ç¼–è¾‘å™¨ä¸­é€‰ä¸­çš„å¯¹è±¡,å¼ºè½¬ä¸ºå›¾ç‰‡ç±»å‹,å¦‚æœé€‰ä¸­çš„ä¸æ˜¯å›¾ç‰‡,è¿”å›null
         var texture = Selection.activeObject as Texture2D;
-        //2.»ñÈ¡Í¼Æ¬¶ÔÏóµÄÎÄ¼şÂ·¾¶
+        //2.è·å–å›¾ç‰‡å¯¹è±¡çš„æ–‡ä»¶è·¯å¾„
         var texturePath = AssetDatabase.GetAssetPath(texture);
-        //·Ö¸îÂ·¾¶×Ö·û´®,»ñÈ¡ÎÄ¼ş¼ĞÃû(ÕâÒ»²½µ½×îºó²ÅÓÃµ½)
+        //åˆ†å‰²è·¯å¾„å­—ç¬¦ä¸²,è·å–æ–‡ä»¶å¤¹å(è¿™ä¸€æ­¥åˆ°æœ€åæ‰ç”¨åˆ°)
         string dir = texturePath.Split('/')[2];
-        //3.¼ÓÔØÂ·¾¶ÏÂµÄËùÓĞ×ÊÔ´,²¢×ª»»ÎªSpriteÀàĞÍµÄÊı×é
-        //Ïê½âÒ»ÏÂÃ¿¶Î´úÂë
-        //AssetDatabase.LoadAllAssetsAtPath(texturePath)¶ÁtexturePathÂ·¾¶ÏÂËùÓĞÎÄ¼ş,°üÀ¨Í¼Æ¬ÎÄ¼şÏÂËùÓĞ¾«Áé
-        //OfType<Sprite>()Ö§È¡ËùÓĞÎÄ¼şÖĞµÄ¾«Áé
-        //OrderBy(s => s.name.Length)Ö÷ÅÅĞò,°´¾«ÁéµÄÃû×ÖµÄ³¤¶È
-        //.ThenBy(s => s.name)´ÎÅÅĞò,Ãû×Ö³¤¶ÈÒ»ÖÂµÄ°´Ãû×ÖÅÅĞò(×ÖÄ¸Ë³Ğò)
+        //3.åŠ è½½è·¯å¾„ä¸‹çš„æ‰€æœ‰èµ„æº,å¹¶è½¬æ¢ä¸ºSpriteç±»å‹çš„æ•°ç»„
+        //è¯¦è§£ä¸€ä¸‹æ¯æ®µä»£ç 
+        //AssetDatabase.LoadAllAssetsAtPath(texturePath)è¯»texturePathè·¯å¾„ä¸‹æ‰€æœ‰æ–‡ä»¶,åŒ…æ‹¬å›¾ç‰‡æ–‡ä»¶ä¸‹æ‰€æœ‰ç²¾çµ
+        //OfType<Sprite>()æ”¯å–æ‰€æœ‰æ–‡ä»¶ä¸­çš„ç²¾çµ
+        //OrderBy(s => s.name.Length)ä¸»æ’åº,æŒ‰ç²¾çµçš„åå­—çš„é•¿åº¦
+        //.ThenBy(s => s.name)æ¬¡æ’åº,åå­—é•¿åº¦ä¸€è‡´çš„æŒ‰åå­—æ’åº(å­—æ¯é¡ºåº)
         Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(texturePath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
 
         #endregion
 
 
 
-        #region >>>>>>>>>>>>>>>°ÑÕû¸ö¾«ÁéÊı×é·Ö¸î³É¶à¸ö³¯Ïò,ĞĞÎªµÄ¶¯»­ÎÄ¼ş<<<<<<<<<<<<<<<<<<
+        #region >>>>>>>>>>>>>>>æŠŠæ•´ä¸ªç²¾çµæ•°ç»„åˆ†å‰²æˆå¤šä¸ªæœå‘,è¡Œä¸ºçš„åŠ¨ç”»æ–‡ä»¶<<<<<<<<<<<<<<<<<<
 
-        //¼ÆËãÃ¿¸ö·½Ïò¶¯×÷µÄÖ¡Êı,ÓÉÓÚÃ¿¸ö¶¯×÷Ö¡ÊıÊÇÏàµÈµÄ,ËùÒÔ¿ÉÒÔÖ±½Ó³ıÒÔ·½ÏòÊı
+        //è®¡ç®—æ¯ä¸ªæ–¹å‘åŠ¨ä½œçš„å¸§æ•°,ç”±äºæ¯ä¸ªåŠ¨ä½œå¸§æ•°æ˜¯ç›¸ç­‰çš„,æ‰€ä»¥å¯ä»¥ç›´æ¥é™¤ä»¥æ–¹å‘æ•°
         int framesPerAnimation = sprites.Length / directionCount;
-        //¶¯»­ÊÂ¼şÃû,ÊÇ¶¯»­ÎÄ¼şµÄÃû×Ö
+        //åŠ¨ç”»äº‹ä»¶å,æ˜¯åŠ¨ç”»æ–‡ä»¶çš„åå­—
         var eventName = texture.name;
 
-        //±éÀúËùÓĞ·½Ïò
+        //éå†æ‰€æœ‰æ–¹å‘
         for (int i = 0; i < directionCount; ++i)
         {
-            //¸ø¶¯»­ÎÄ¼şÈ¡¸öÃû×Ö£¬²ÄÖÊÎÄ¼şÃû+·½Ïò±àºÅ,ÀıÈçwalk_0
+            //ç»™åŠ¨ç”»æ–‡ä»¶å–ä¸ªåå­—ï¼Œæè´¨æ–‡ä»¶å+æ–¹å‘ç¼–å·,ä¾‹å¦‚walk_0
             var name = texture.name + "_" + i.ToString();
-            //·½Ïò±àºÅ¸³Öµ
+            //æ–¹å‘ç¼–å·èµ‹å€¼
             int direction = i;
-            //Èç¹ûÊÇ8Ïò¶¯»­£¬¾«ÁéµÄË³Ğò£¬ĞèÒª½«¶¯»­·´×ª¡£
-            //ÊµÏÖ·½·¨¾ÍÊÇ¼ÓÒ»°ëÒ²¾ÍÊÇ4£¬È»ºóÔÙ³ıÒÔ±¾ÉíÒ²¾ÍÊÇ8È¡Óà¡£
-            //0--4,1--5,2--6,3--7,4--0,5--1,6--2,7--3,¸ÕºÃÊÇ·´×ªµÄĞ§¹û
+            //å¦‚æœæ˜¯8å‘åŠ¨ç”»ï¼Œç²¾çµçš„é¡ºåºï¼Œéœ€è¦å°†åŠ¨ç”»åè½¬ã€‚
+            //å®ç°æ–¹æ³•å°±æ˜¯åŠ ä¸€åŠä¹Ÿå°±æ˜¯4ï¼Œç„¶åå†é™¤ä»¥æœ¬èº«ä¹Ÿå°±æ˜¯8å–ä½™ã€‚
+            //0--4,1--5,2--6,3--7,4--0,5--1,6--2,7--3,åˆšå¥½æ˜¯åè½¬çš„æ•ˆæœ
             if (directionCount == 8) direction = (direction + 4) % directionCount;
-            //»ñÈ¡µ±Ç°·½ÏòµÄËùÓĞ¶¯»­Ö¡
-            //sprites.Skip(direction * framesPerAnimation) --- Ìø¹ıĞÎ²ÎÊıÁ¿µÄÔªËØ,ĞÎ²ÎÊÇ·½Ïò±àºÅ³ËÒÔÖ¡Êı,¾ÍÊÇµ±Ç°·½ÏòµÄµÚÒ»Ö¡
-            //Take(framesPerAnimation) --- È¡³öĞÎ²ÎÊıÁ¿µÄÔªËØ,¾ÍÊÇµ±Ç°·½ÏòµÄËùÓĞÖ¡
-            //ToArray() --- ×ª»»ÎªÊı×é
+            //è·å–å½“å‰æ–¹å‘çš„æ‰€æœ‰åŠ¨ç”»å¸§
+            //sprites.Skip(direction * framesPerAnimation) --- è·³è¿‡å½¢å‚æ•°é‡çš„å…ƒç´ ,å½¢å‚æ˜¯æ–¹å‘ç¼–å·ä¹˜ä»¥å¸§æ•°,å°±æ˜¯å½“å‰æ–¹å‘çš„ç¬¬ä¸€å¸§
+            //Take(framesPerAnimation) --- å–å‡ºå½¢å‚æ•°é‡çš„å…ƒç´ ,å°±æ˜¯å½“å‰æ–¹å‘çš„æ‰€æœ‰å¸§
+            //ToArray() --- è½¬æ¢ä¸ºæ•°ç»„
             Sprite[] animSprites = sprites.Skip(direction * framesPerAnimation).Take(framesPerAnimation).ToArray();
-            //Éú³É²»Í¬³¯ÏòµÄ¶¯»­Â·¾¶
+            //ç”Ÿæˆä¸åŒæœå‘çš„åŠ¨ç”»è·¯å¾„
             var assetPath = "Assets/Animations/" + dir + "/" + name + ".anim";
-            //¼ÓÔØÂ·¾¶ÏÂµÄAnimationClipÎÄ¼ş²¢¸³Öµ¸øanimationClip,ÕâÊÇ¼ÓÔØµ¥¸öÎÄ¼şµÄ,ÓëÉÏÃæ¼ÓÔØÒ»¶ÑÎÄ¼şµÄ²»Í¬
+            //åŠ è½½è·¯å¾„ä¸‹çš„AnimationClipæ–‡ä»¶å¹¶èµ‹å€¼ç»™animationClip,è¿™æ˜¯åŠ è½½å•ä¸ªæ–‡ä»¶çš„,ä¸ä¸Šé¢åŠ è½½ä¸€å †æ–‡ä»¶çš„ä¸åŒ
             var animationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath);
-            //Îª¿Õ,´ú±í¼ÓÔØÊ§°ÜÁË,Òª´´½¨Ò»¸öĞÂµÄ
+            //ä¸ºç©º,ä»£è¡¨åŠ è½½å¤±è´¥äº†,è¦åˆ›å»ºä¸€ä¸ªæ–°çš„
             if(animationClip == null)
             {
-                //³õÊ¼»¯
+                //åˆå§‹åŒ–
                 animationClip = new AnimationClip();
-                //ÔÚÂ·¾¶ÏÂÉú³ÉÕâ¸öÎÄ¼ş
+                //åœ¨è·¯å¾„ä¸‹ç”Ÿæˆè¿™ä¸ªæ–‡ä»¶
                 AssetDatabase.CreateAsset(animationClip, assetPath);
             }
-            //¸ø¸³Öµ
+            //ç»™èµ‹å€¼
             animationClip.name = name;
             animationClip.frameRate = 12;
-            //¸üĞÂ¶¯»­ÎÄ¼ş
+            //æ›´æ–°åŠ¨ç”»æ–‡ä»¶
             FillAnimationClip(animationClip, animSprites, eventName);
         }
 
@@ -98,58 +98,58 @@ public class EditorTools : MonoBehaviour
     }
 
     /// <summary>
-    /// ¸üĞÂ¾«Áé¶¯»­¼ô¼­,¾ÍÊÇ¶¯»­ÎÄ¼ş
+    /// æ›´æ–°ç²¾çµåŠ¨ç”»å‰ªè¾‘,å°±æ˜¯åŠ¨ç”»æ–‡ä»¶
     /// </summary>
-    /// ÕâÀïÉú³ÉµÄÊÇÒ»¸ö¶¯»­¶¯×÷,±ÈÈçwalk_0,walk_1,walk_2,walk_3,walk_4,walk_5
-    /// AnimationClip¾ÍÊÇUnityµÄ¶¯»­ÎÄ¼ş,¿ÉÒÔÓÃÓÚ²¥·Å¶¯»­,ÎÄ¼şºó×ºÊÇ.anim
-    /// <param name="clip">¶¯»­ÎÄ¼şµÄÀàĞÍ</param>
-    /// <param name="sprites">¾«ÁéÊı×é</param>
-    /// <param name="eventName">¶¯»­ÊÂ¼ş</param>
-    /// <returns>¶¯»­±äÁ¿AnimationClip,¿ÉÒÔÉú³ÉÎª¶¯»­ÎÄ¼ş</returns>
+    /// è¿™é‡Œç”Ÿæˆçš„æ˜¯ä¸€ä¸ªåŠ¨ç”»åŠ¨ä½œ,æ¯”å¦‚walk_0,walk_1,walk_2,walk_3,walk_4,walk_5
+    /// AnimationClipå°±æ˜¯Unityçš„åŠ¨ç”»æ–‡ä»¶,å¯ä»¥ç”¨äºæ’­æ”¾åŠ¨ç”»,æ–‡ä»¶åç¼€æ˜¯.anim
+    /// <param name="clip">åŠ¨ç”»æ–‡ä»¶çš„ç±»å‹</param>
+    /// <param name="sprites">ç²¾çµæ•°ç»„</param>
+    /// <param name="eventName">åŠ¨ç”»äº‹ä»¶</param>
+    /// <returns>åŠ¨ç”»å˜é‡AnimationClip,å¯ä»¥ç”Ÿæˆä¸ºåŠ¨ç”»æ–‡ä»¶</returns>
     static private void FillAnimationClip(AnimationClip clip, Sprite[] sprites, string eventName)
     {
-        #region >>>>>>>>>>>>>>>>Éú³É¶¯»­ÎÄ¼ş²¢¸³Ò»Ğ©»ù±¾µÄÖµ<<<<<<<<<<<<<<<<<<<<<<
+        #region >>>>>>>>>>>>>>>>ç”ŸæˆåŠ¨ç”»æ–‡ä»¶å¹¶èµ‹ä¸€äº›åŸºæœ¬çš„å€¼<<<<<<<<<<<<<<<<<<<<<<
 
-        //¼ÆËãÖ¡Êı,¾ÍÊÇÊı×éµÄ³¤¶È
+        //è®¡ç®—å¸§æ•°,å°±æ˜¯æ•°ç»„çš„é•¿åº¦
         int frameCount = sprites.Length;
-        //1³ıÒÔ¶¯»­Ö¡Êı,µÈµ½Ã¿Ö¡µÄÊ±¼ä³¤¶È
+        //1é™¤ä»¥åŠ¨ç”»å¸§æ•°,ç­‰åˆ°æ¯å¸§çš„æ—¶é—´é•¿åº¦
         float frameLength = 1f / clip.frameRate;
 
         #endregion
 
 
 
-        #region >>>>>>>>>>>>>>>>È·¶¨¶¯»­ÎÄ¼ş¿ÉÒÔ°ó¶¨µÄÊôĞÔ(¾ÍÊÇÃæ°åÊôĞÔÀïµÄ¿ò¿ò,¿ÉÒÔÖ±½ÓÍÏÎÄ¼şÉÏÈ¥µÄÄÇ¸ö)<<<<<<<<<<<<<<<<<<<<<<
+        #region >>>>>>>>>>>>>>>>ç¡®å®šåŠ¨ç”»æ–‡ä»¶å¯ä»¥ç»‘å®šçš„å±æ€§(å°±æ˜¯é¢æ¿å±æ€§é‡Œçš„æ¡†æ¡†,å¯ä»¥ç›´æ¥æ‹–æ–‡ä»¶ä¸Šå»çš„é‚£ä¸ª)<<<<<<<<<<<<<<<<<<<<<<
 
-        //EditorCurveBinding´ú±í±à¼­Æ÷Ãæ°åÉÏµÄÒ»¸öÊôĞÔ,¿ÉÒÔ°ó¶¨¶¯»­ÎÄ¼ş
+        //EditorCurveBindingä»£è¡¨ç¼–è¾‘å™¨é¢æ¿ä¸Šçš„ä¸€ä¸ªå±æ€§,å¯ä»¥ç»‘å®šåŠ¨ç”»æ–‡ä»¶
         EditorCurveBinding curveBinding = new EditorCurveBinding();
-        //ÉèÖÃ°ó¶¨µÄ¶ÔÏó(×é¼ş)
+        //è®¾ç½®ç»‘å®šçš„å¯¹è±¡(ç»„ä»¶)
         curveBinding.type = typeof(SpriteRenderer);
-        //ÉèÖÃ°ó¶¨µÄÊôĞÔ
+        //è®¾ç½®ç»‘å®šçš„å±æ€§
         curveBinding.propertyName = "m_Sprite";
 
 
-        #region >>>>>>>>>>>>>>>>Éè¶¨¶¯»­µÄ¹Ø¼üÖ¡(Êµ¼ÊÃ¿Ò»Ö¡¶¼Éè¶¨ÁË)<<<<<<<<<<<<<<<<<<<<<<
+        #region >>>>>>>>>>>>>>>>è®¾å®šåŠ¨ç”»çš„å…³é”®å¸§(å®é™…æ¯ä¸€å¸§éƒ½è®¾å®šäº†)<<<<<<<<<<<<<<<<<<<<<<
 
-        //ÉùÃ÷Ò»¸ö¹Ø¼üÖ¡Êı×é,³¤¶È¾ÍÊÇÖ¡Êı³¤¶È
+        //å£°æ˜ä¸€ä¸ªå…³é”®å¸§æ•°ç»„,é•¿åº¦å°±æ˜¯å¸§æ•°é•¿åº¦
         ObjectReferenceKeyframe[] keyFrames = new ObjectReferenceKeyframe[frameCount];
 
         for (int i = 0; i < frameCount; i++)
         {
-            //ÉùÃ÷Ò»¸ö¹Ø¼üÖ¡
+            //å£°æ˜ä¸€ä¸ªå…³é”®å¸§
             ObjectReferenceKeyframe kf = new ObjectReferenceKeyframe();
-            //0,0.083,0.166,0.25,0.333,0.416,0.5,0.583,0.666,0.75,0.833,0.916,Ã¿Ò»Ö¡¶¼ÊÇ¹Ø¼üÖ¡
-            kf.time = i * frameLength;  // ÉèÖÃ¹Ø¼üÖ¡µÄÊ±¼ä
-            kf.value = sprites[i];  // ÉèÖÃ¹Ø¼üÖ¡µÄÖµ
-            keyFrames[i] = kf;  // ½«¹Ø¼üÖ¡Ìí¼Óµ½¹Ø¼üÖ¡Êı×éÖĞ
+            //0,0.083,0.166,0.25,0.333,0.416,0.5,0.583,0.666,0.75,0.833,0.916,æ¯ä¸€å¸§éƒ½æ˜¯å…³é”®å¸§
+            kf.time = i * frameLength;  // è®¾ç½®å…³é”®å¸§çš„æ—¶é—´
+            kf.value = sprites[i];  // è®¾ç½®å…³é”®å¸§çš„å€¼
+            keyFrames[i] = kf;  // å°†å…³é”®å¸§æ·»åŠ åˆ°å…³é”®å¸§æ•°ç»„ä¸­
         }
-        //Çå³ıµ±Ç°¶¯»­ÒıÓÃÖĞµÄÖ¡(ÇúÏß),×¢ÒâÕâÊÇÇ°ÃæĞÂ½¨µÄÒ»¸öAnimationClip,Õâ¸öÎÈÍ×Æğ¼ûÌí¼ÓÖ¡Ö®Ç°ÏÈÇå³ıÒ»±é
+        //æ¸…é™¤å½“å‰åŠ¨ç”»å¼•ç”¨ä¸­çš„å¸§(æ›²çº¿),æ³¨æ„è¿™æ˜¯å‰é¢æ–°å»ºçš„ä¸€ä¸ªAnimationClip,è¿™ä¸ªç¨³å¦¥èµ·è§æ·»åŠ å¸§ä¹‹å‰å…ˆæ¸…é™¤ä¸€é
         clip.ClearCurves();
-        //½«¹Ø¼üÖ¡Êı×é°ó¶¨µ½¶¯»­ÎÄ¼şÉÏ
-        //AnimationUtility.SetObjectReferenceCurveÊÇ Unity ¶¯»­ÏµÍ³µÄºËĞÄ·½·¨Ö®Ò»£¬ÓÃÓÚ½«¶ÔÏóÒıÓÃÀàĞÍµÄ¹Ø¼üÖ¡£¨Èç Sprite¡¢Material µÈ£©°ó¶¨µ½¶¯»­
-        //clip    AnimationClip ÒªĞŞ¸ÄµÄÄ¿±ê¶¯»­ÎÄ¼ş
-        //curveBinding EditorCurveBinding  ÊôĞÔ°ó¶¨ĞÅÏ¢£¨¿ÉÒÔ°ó¶¨ÄÄ¸ö¶ÔÏóµÄÊ²Ã´ÊôĞÔ£©
-        //keyFrames ObjectReferenceKeyframe[]   ¶ÔÏóÒıÓÃ¹Ø¼üÖ¡Êı×é
+        //å°†å…³é”®å¸§æ•°ç»„ç»‘å®šåˆ°åŠ¨ç”»æ–‡ä»¶ä¸Š
+        //AnimationUtility.SetObjectReferenceCurveæ˜¯ Unity åŠ¨ç”»ç³»ç»Ÿçš„æ ¸å¿ƒæ–¹æ³•ä¹‹ä¸€ï¼Œç”¨äºå°†å¯¹è±¡å¼•ç”¨ç±»å‹çš„å…³é”®å¸§ï¼ˆå¦‚ Spriteã€Material ç­‰ï¼‰ç»‘å®šåˆ°åŠ¨ç”»
+        //clip    AnimationClip è¦ä¿®æ”¹çš„ç›®æ ‡åŠ¨ç”»æ–‡ä»¶
+        //curveBinding EditorCurveBinding  å±æ€§ç»‘å®šä¿¡æ¯ï¼ˆå¯ä»¥ç»‘å®šå“ªä¸ªå¯¹è±¡çš„ä»€ä¹ˆå±æ€§ï¼‰
+        //keyFrames ObjectReferenceKeyframe[]   å¯¹è±¡å¼•ç”¨å…³é”®å¸§æ•°ç»„
         AnimationUtility.SetObjectReferenceCurve(clip, curveBinding, keyFrames);
 
         #endregion
@@ -158,30 +158,30 @@ public class EditorTools : MonoBehaviour
         #endregion
 
 
-        #region >>>>>>>>>>>>>>>>>>>´¦Àí¶¯»­ÎÄ¼şµÄÒş²ØÊôĞÔ,Õı³£ÊôĞÔÆäÊµÒ²¿ÉÒÔÉèÖÃ¶¼°üº¬ÁË<<<<<<<<<<<<<<<<<<<<<<<<
-        //SerializedObject·ÃÎÊÒş²Ø/Õı³£ÊôĞÔ
-        //ĞŞ¸Ä Unity ÄÚÖÃ×é¼şµÄÒş²ØµÄ²ÎÊı£¨Èç m_IsActive£©
+        #region >>>>>>>>>>>>>>>>>>>å¤„ç†åŠ¨ç”»æ–‡ä»¶çš„éšè—å±æ€§,æ­£å¸¸å±æ€§å…¶å®ä¹Ÿå¯ä»¥è®¾ç½®éƒ½åŒ…å«äº†<<<<<<<<<<<<<<<<<<<<<<<<
+        //SerializedObjectè®¿é—®éšè—/æ­£å¸¸å±æ€§
+        //ä¿®æ”¹ Unity å†…ç½®ç»„ä»¶çš„éšè—çš„å‚æ•°ï¼ˆå¦‚ m_IsActiveï¼‰
         SerializedObject serializedClip = new SerializedObject(clip);
-        //×Ô¶¨ÒåÀàÓÃÓÚ´¦Àí¶¯»­ÎÄ¼şµÄÉèÖÃ
-        //ĞÎ²Î·µ»ØÁËÒ»¸öSerializedProperty¶ÔÏó,Õâ¸ö¶ÔÏóÊÇ¶¯»­ÎÄ¼şµÄÊôĞÔ
+        //è‡ªå®šä¹‰ç±»ç”¨äºå¤„ç†åŠ¨ç”»æ–‡ä»¶çš„è®¾ç½®
+        //å½¢å‚è¿”å›äº†ä¸€ä¸ªSerializedPropertyå¯¹è±¡,è¿™ä¸ªå¯¹è±¡æ˜¯åŠ¨ç”»æ–‡ä»¶çš„å±æ€§
         AnimationClipSettings clipSettings = new AnimationClipSettings(serializedClip.FindProperty("m_AnimationClipSettings"));
-        clipSettings.loopTime = true; // ÉèÖÃÑ­»·Ê±¼ä
-        serializedClip.ApplyModifiedProperties(); // Ó¦ÓÃĞŞ¸Ä
+        clipSettings.loopTime = true; // è®¾ç½®å¾ªç¯æ—¶é—´
+        serializedClip.ApplyModifiedProperties(); // åº”ç”¨ä¿®æ”¹
         #endregion
 
-        //Õâ¸ö·½·¨µÄ×÷ÓÃÊÇ,°ÑÊÂ¼şÌí¼Óµ½¶¯»­ÎÄ¼ş,»¹¿ÉÒÔÏñÏÂÃæÕâÑùĞ´³ÉÊı×éµÄ·½Ê½Ìí¼Ó¶à¸öÊÂ¼ş
+        //è¿™ä¸ªæ–¹æ³•çš„ä½œç”¨æ˜¯,æŠŠäº‹ä»¶æ·»åŠ åˆ°åŠ¨ç”»æ–‡ä»¶,è¿˜å¯ä»¥åƒä¸‹é¢è¿™æ ·å†™æˆæ•°ç»„çš„æ–¹å¼æ·»åŠ å¤šä¸ªäº‹ä»¶
         AnimationUtility.SetAnimationEvents(clip, new[]
         {
             new AnimationEvent()
             {
-                //¶¯»­ÊÂ¼şµÄÊ±¼äÊÇ¶¯»­³¤¶È,ÄÇ¾ÍÊÇÄ©Î²
+                //åŠ¨ç”»äº‹ä»¶çš„æ—¶é—´æ˜¯åŠ¨ç”»é•¿åº¦,é‚£å°±æ˜¯æœ«å°¾
                 time = clip.length,
-                //ÊÂ¼şµ÷ÓÃµÄ·½·¨Ãû³ÆfunctionName
+                //äº‹ä»¶è°ƒç”¨çš„æ–¹æ³•åç§°functionName
                 functionName = "On"+eventName+"Finish"
             },
             new AnimationEvent()
             {
-                //Í¬ÉÏ
+                //åŒä¸Š
                 time = clip.length,
                 functionName = "OnAnimationFinish"
             },
@@ -192,133 +192,133 @@ public class EditorTools : MonoBehaviour
 
 
 /// <summary>
-/// ¶¨ÒåÒ»¸ö AnimationClipSettings Àà£¬ÓÃÓÚ²Ù×÷¶¯»­¼ô¼­µÄÉèÖÃ
+/// å®šä¹‰ä¸€ä¸ª AnimationClipSettings ç±»ï¼Œç”¨äºæ“ä½œåŠ¨ç”»å‰ªè¾‘çš„è®¾ç½®
 /// </summary>
-/// ĞòÁĞ»¯ÊôĞÔ:UnityµÄÊôĞÔÃæ°åÉÏµÄÊôĞÔ,¿ÉÒÔÍ¨¹ıSerializedObjectÀàÀ´·ÃÎÊ
+/// åºåˆ—åŒ–å±æ€§:Unityçš„å±æ€§é¢æ¿ä¸Šçš„å±æ€§,å¯ä»¥é€šè¿‡SerializedObjectç±»æ¥è®¿é—®
 class AnimationClipSettings
 {
-    #region >>>>>>>>>>>>>>>>>³õÊ¼»¯µÄ²¿·Ö,ÔÚÕâÍê³ÉÁË¸ùÊôĞÔµÄÒıÓÃ<<<<<<<<<<<<<<<<<<<<<<
+    #region >>>>>>>>>>>>>>>>>åˆå§‹åŒ–çš„éƒ¨åˆ†,åœ¨è¿™å®Œæˆäº†æ ¹å±æ€§çš„å¼•ç”¨<<<<<<<<<<<<<<<<<<<<<<
 
-    // ÒıÓÃÁË¶¯»­ÎÄ¼şµÄm_AnimationClipSettingsÊôĞÔ,ËüÊÇËùÓĞÊôĞÔµÄ¸ùÊôĞÔ
+    // å¼•ç”¨äº†åŠ¨ç”»æ–‡ä»¶çš„m_AnimationClipSettingså±æ€§,å®ƒæ˜¯æ‰€æœ‰å±æ€§çš„æ ¹å±æ€§
     SerializedProperty m_Property;
 
     /// <summary>
-    /// »ñÈ¡Ö¸¶¨ÊôĞÔ,Èçm_StartTime,m_StopTimeµÈ,ÓÃÔÚÀàĞÍÊôĞÔµÄgetºÍset·½·¨Àï
+    /// è·å–æŒ‡å®šå±æ€§,å¦‚m_StartTime,m_StopTimeç­‰,ç”¨åœ¨ç±»å‹å±æ€§çš„getå’Œsetæ–¹æ³•é‡Œ
     /// </summary>
     /// <param name="property"></param>
     /// <returns></returns>
     private SerializedProperty Get(string property)
     {
-        //Í¨¹ı¸ùÊôĞÔ£¬ÓÃÓÚ²éÕÒÇ¶Ì×ÊôĞÔ
+        //é€šè¿‡æ ¹å±æ€§ï¼Œç”¨äºæŸ¥æ‰¾åµŒå¥—å±æ€§
         return m_Property.FindPropertyRelative(property);
     }
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı,ÕâÒ»¸öÒıÓÃµÄ¸ùÊôĞÔ
+    /// æ„é€ å‡½æ•°,è¿™ä¸€ä¸ªå¼•ç”¨çš„æ ¹å±æ€§
     /// </summary>
-    /// <param name="prop">serializedClip.FindProperty("m_AnimationClipSettings")ÓÃÀ´ÕÒ¸ùÊôĞÔ</param>
+    /// <param name="prop">serializedClip.FindProperty("m_AnimationClipSettings")ç”¨æ¥æ‰¾æ ¹å±æ€§</param>
     public AnimationClipSettings(SerializedProperty prop)
     {
-        m_Property = prop; // ´æ´¢¸ùÊôĞÔÒıÓÃ£¬ºóĞøËùÓĞ²Ù×÷¶¼»ùÓÚÕâ¸öÊôĞÔ
+        m_Property = prop; // å­˜å‚¨æ ¹å±æ€§å¼•ç”¨ï¼Œåç»­æ‰€æœ‰æ“ä½œéƒ½åŸºäºè¿™ä¸ªå±æ€§
     }
 
     #endregion
 
-    #region ¸÷ÖÖ¸ùÊôĞÔµÄ»ñÈ¡ºÍÉèÖÃ
-    // === Ê±¼ä¿ØÖÆÊôĞÔ ===
+    #region å„ç§æ ¹å±æ€§çš„è·å–å’Œè®¾ç½®
+    // === æ—¶é—´æ§åˆ¶å±æ€§ ===
     public float startTime
     {
-        get { return Get("m_StartTime").floatValue; } // »ñÈ¡ÆğÊ¼Ê±¼ä
-        set { Get("m_StartTime").floatValue = value; } // ÉèÖÃÆğÊ¼Ê±¼ä
+        get { return Get("m_StartTime").floatValue; } // è·å–èµ·å§‹æ—¶é—´
+        set { Get("m_StartTime").floatValue = value; } // è®¾ç½®èµ·å§‹æ—¶é—´
     }
 
     public float stopTime
     {
-        get { return Get("m_StopTime").floatValue; }  // »ñÈ¡½áÊøÊ±¼ä
-        set { Get("m_StopTime").floatValue = value; } // ÉèÖÃ½áÊøÊ±¼ä
+        get { return Get("m_StopTime").floatValue; }  // è·å–ç»“æŸæ—¶é—´
+        set { Get("m_StopTime").floatValue = value; } // è®¾ç½®ç»“æŸæ—¶é—´
     }
 
-    // === ¶¯»­Æ«ÒÆÊôĞÔ ===
+    // === åŠ¨ç”»åç§»å±æ€§ ===
     public float orientationOffsetY
     {
-        get { return Get("m_OrientationOffsetY").floatValue; } // »ñÈ¡YÖáĞı×ªÆ«ÒÆ
-        set { Get("m_OrientationOffsetY").floatValue = value; } // ÉèÖÃYÖáĞı×ªÆ«ÒÆ
+        get { return Get("m_OrientationOffsetY").floatValue; } // è·å–Yè½´æ—‹è½¬åç§»
+        set { Get("m_OrientationOffsetY").floatValue = value; } // è®¾ç½®Yè½´æ—‹è½¬åç§»
     }
 
     public float level
     {
-        get { return Get("m_Level").floatValue; } // »ñÈ¡²ã¼¶Öµ
-        set { Get("m_Level").floatValue = value; } // ÉèÖÃ²ã¼¶Öµ
+        get { return Get("m_Level").floatValue; } // è·å–å±‚çº§å€¼
+        set { Get("m_Level").floatValue = value; } // è®¾ç½®å±‚çº§å€¼
     }
 
     public float cycleOffset
     {
-        get { return Get("m_CycleOffset").floatValue; } // »ñÈ¡Ñ­»·Æ«ÒÆ
-        set { Get("m_CycleOffset").floatValue = value; } // ÉèÖÃÑ­»·Æ«ÒÆ
+        get { return Get("m_CycleOffset").floatValue; } // è·å–å¾ªç¯åç§»
+        set { Get("m_CycleOffset").floatValue = value; } // è®¾ç½®å¾ªç¯åç§»
     }
 
-    // === Ñ­»·¿ØÖÆÊôĞÔ ===
+    // === å¾ªç¯æ§åˆ¶å±æ€§ ===
     public bool loopTime
     {
-        get { return Get("m_LoopTime").boolValue; } // »ñÈ¡ÊÇ·ñÑ­»·
-        set { Get("m_LoopTime").boolValue = value; } // ÉèÖÃÊÇ·ñÑ­»·
+        get { return Get("m_LoopTime").boolValue; } // è·å–æ˜¯å¦å¾ªç¯
+        set { Get("m_LoopTime").boolValue = value; } // è®¾ç½®æ˜¯å¦å¾ªç¯
     }
 
     public bool loopBlend
     {
-        get { return Get("m_LoopBlend").boolValue; } // »ñÈ¡ÊÇ·ñ»ìºÏÑ­»·
-        set { Get("m_LoopBlend").boolValue = value; } // ÉèÖÃÊÇ·ñ»ìºÏÑ­»·
+        get { return Get("m_LoopBlend").boolValue; } // è·å–æ˜¯å¦æ··åˆå¾ªç¯
+        set { Get("m_LoopBlend").boolValue = value; } // è®¾ç½®æ˜¯å¦æ··åˆå¾ªç¯
     }
 
-    // === »ìºÏÄ£Ê½ÊôĞÔ ===
+    // === æ··åˆæ¨¡å¼å±æ€§ ===
     public bool loopBlendOrientation
     {
-        get { return Get("m_LoopBlendOrientation").boolValue; } // »ñÈ¡·½Ïò»ìºÏ
-        set { Get("m_LoopBlendOrientation").boolValue = value; } // ÉèÖÃ·½Ïò»ìºÏ
+        get { return Get("m_LoopBlendOrientation").boolValue; } // è·å–æ–¹å‘æ··åˆ
+        set { Get("m_LoopBlendOrientation").boolValue = value; } // è®¾ç½®æ–¹å‘æ··åˆ
     }
 
     public bool loopBlendPositionY
     {
-        get { return Get("m_LoopBlendPositionY").boolValue; } // »ñÈ¡YÖáÎ»ÖÃ»ìºÏ
-        set { Get("m_LoopBlendPositionY").boolValue = value; } // ÉèÖÃYÖáÎ»ÖÃ»ìºÏ
+        get { return Get("m_LoopBlendPositionY").boolValue; } // è·å–Yè½´ä½ç½®æ··åˆ
+        set { Get("m_LoopBlendPositionY").boolValue = value; } // è®¾ç½®Yè½´ä½ç½®æ··åˆ
     }
 
     public bool loopBlendPositionXZ
     {
-        get { return Get("m_LoopBlendPositionXZ").boolValue; } // »ñÈ¡XZÆ½ÃæÎ»ÖÃ»ìºÏ
-        set { Get("m_LoopBlendPositionXZ").boolValue = value; } // ÉèÖÃXZÆ½ÃæÎ»ÖÃ»ìºÏ
+        get { return Get("m_LoopBlendPositionXZ").boolValue; } // è·å–XZå¹³é¢ä½ç½®æ··åˆ
+        set { Get("m_LoopBlendPositionXZ").boolValue = value; } // è®¾ç½®XZå¹³é¢ä½ç½®æ··åˆ
     }
 
-    // === Ô­Ê¼×´Ì¬±£ÁôÊôĞÔ ===
+    // === åŸå§‹çŠ¶æ€ä¿ç•™å±æ€§ ===
     public bool keepOriginalOrientation
     {
-        get { return Get("m_KeepOriginalOrientation").boolValue; } // »ñÈ¡ÊÇ·ñ±£ÁôÔ­Ê¼Ğı×ª
-        set { Get("m_KeepOriginalOrientation").boolValue = value; } // ÉèÖÃÊÇ·ñ±£ÁôÔ­Ê¼Ğı×ª
+        get { return Get("m_KeepOriginalOrientation").boolValue; } // è·å–æ˜¯å¦ä¿ç•™åŸå§‹æ—‹è½¬
+        set { Get("m_KeepOriginalOrientation").boolValue = value; } // è®¾ç½®æ˜¯å¦ä¿ç•™åŸå§‹æ—‹è½¬
     }
 
     public bool keepOriginalPositionY
     {
-        get { return Get("m_KeepOriginalPositionY").boolValue; } // »ñÈ¡ÊÇ·ñ±£ÁôÔ­Ê¼YÎ»ÖÃ
-        set { Get("m_KeepOriginalPositionY").boolValue = value; } // ÉèÖÃÊÇ·ñ±£ÁôÔ­Ê¼YÎ»ÖÃ
+        get { return Get("m_KeepOriginalPositionY").boolValue; } // è·å–æ˜¯å¦ä¿ç•™åŸå§‹Yä½ç½®
+        set { Get("m_KeepOriginalPositionY").boolValue = value; } // è®¾ç½®æ˜¯å¦ä¿ç•™åŸå§‹Yä½ç½®
     }
 
     public bool keepOriginalPositionXZ
     {
-        get { return Get("m_KeepOriginalPositionXZ").boolValue; } // »ñÈ¡ÊÇ·ñ±£ÁôÔ­Ê¼XZÎ»ÖÃ
-        set { Get("m_KeepOriginalPositionXZ").boolValue = value; } // ÉèÖÃÊÇ·ñ±£ÁôÔ­Ê¼XZÎ»ÖÃ
+        get { return Get("m_KeepOriginalPositionXZ").boolValue; } // è·å–æ˜¯å¦ä¿ç•™åŸå§‹XZä½ç½®
+        set { Get("m_KeepOriginalPositionXZ").boolValue = value; } // è®¾ç½®æ˜¯å¦ä¿ç•™åŸå§‹XZä½ç½®
     }
 
-    // === ÌØÊâĞ§¹ûÊôĞÔ ===
+    // === ç‰¹æ®Šæ•ˆæœå±æ€§ ===
     public bool heightFromFeet
     {
-        get { return Get("m_HeightFromFeet").boolValue; } // »ñÈ¡ÊÇ·ñ´Ó½Å²¿¼ÆËã¸ß¶È
-        set { Get("m_HeightFromFeet").boolValue = value; } // ÉèÖÃÊÇ·ñ´Ó½Å²¿¼ÆËã¸ß¶È
+        get { return Get("m_HeightFromFeet").boolValue; } // è·å–æ˜¯å¦ä»è„šéƒ¨è®¡ç®—é«˜åº¦
+        set { Get("m_HeightFromFeet").boolValue = value; } // è®¾ç½®æ˜¯å¦ä»è„šéƒ¨è®¡ç®—é«˜åº¦
     }
 
     public bool mirror
     {
-        get { return Get("m_Mirror").boolValue; } // »ñÈ¡ÊÇ·ñ¾µÏñ¶¯»­
-        set { Get("m_Mirror").boolValue = value; } // ÉèÖÃÊÇ·ñ¾µÏñ¶¯»­
+        get { return Get("m_Mirror").boolValue; } // è·å–æ˜¯å¦é•œåƒåŠ¨ç”»
+        set { Get("m_Mirror").boolValue = value; } // è®¾ç½®æ˜¯å¦é•œåƒåŠ¨ç”»
     }
 
     #endregion

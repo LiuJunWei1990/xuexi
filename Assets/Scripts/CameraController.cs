@@ -1,45 +1,45 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Ïà»ú¿ØÖÆÆ÷×é¼ş
+/// ç›¸æœºæ§åˆ¶å™¨ç»„ä»¶
 /// </summary>
 public class CameraController : MonoBehaviour
 {
     /// <summary>
-    /// Ä¿±ê
+    /// ç©å®¶æ§åˆ¶å™¨ç»„ä»¶
     /// </summary>
     PlayerController playerController;
 
     private void Awake()
     {
-        //»ñÈ¡Ä¿±ê,°´TAGÕÒ
+        //è·å–ç›®æ ‡,æŒ‰TAGæ‰¾
         playerController = GameObject.FindObjectOfType<PlayerController>();
-        //¸üĞÂÒ»ÏÂ×ø±ê
+        //æ›´æ–°ä¸€ä¸‹åæ ‡
         transform.position = CalcTargetPos();
     }
 
     private void LateUpdate()
     {
-        //Ã¿Ö¡¸üĞÂ×ø±ê,±ÈUpdateÍí
+        //æ¯å¸§æ›´æ–°åæ ‡,æ¯”Updateæ™š
         transform.position = CalcTargetPos();
     }
 
     /// <summary>
-    /// ´¦ÀíÒ»ÏÂÏà»úµÄ¸úËæ×ø±ê,ÒòÎªZÖá²»ÓÃ¶¯
+    /// è®¡ç®—ç›®æ ‡åæ ‡,ç›®æ ‡å°±æ˜¯ç©å®¶
     /// </summary>
-    /// <returns>·µ»Ø´¦ÀíºÃµÄ×ø±ê,ÓÃÓÚ¸üĞÂÉãÏñ»ú×ø±êÎ»ÖÃ</returns>
+    /// <returns>è¿”å›å¤„ç†å¥½çš„åæ ‡,ç”¨äºæ›´æ–°æ‘„åƒæœºåæ ‡ä½ç½®</returns>
     private Vector3 CalcTargetPos()
     {
-        //±£´æÄ¿±ê×ø±ê
+        //ä¿å­˜ç›®æ ‡åæ ‡
         Vector3 targetPos = playerController.character.transform.position;
 
-        //ĞŞ¸Ä±£´æ×ø±êµÄZÖá,Êµ¼Ê¾ÍÊÇZ²»¶¯
+        //ä¿®æ”¹ä¿å­˜åæ ‡çš„Zè½´,å®é™…å°±æ˜¯Zä¸åŠ¨
         targetPos.z = transform.position.z;
 
-        //·µ»Ø±£´æµÄ×ø±ê
+        //è¿”å›ä¿å­˜çš„åæ ‡
         return targetPos;
     }
 }

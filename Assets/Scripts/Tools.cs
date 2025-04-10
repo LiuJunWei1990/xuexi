@@ -1,12 +1,12 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Tools
 {
     /// <summary>
-    /// È¡Ä£,È¡ÓàÊı
-    /// Mathf.FloorÊÇÏòÏÂÈ¡Õû,¾ÍÊÇÖ±½ÓÈ¥µôĞ¡Êı²¿·Ö
+    /// å–æ¨¡,å–ä½™æ•°
+    /// Mathf.Flooræ˜¯å‘ä¸‹å–æ•´,å°±æ˜¯ç›´æ¥å»æ‰å°æ•°éƒ¨åˆ†
     /// </summary>
     /// <param name="a"></param>
     /// <param name="b"></param>
@@ -17,7 +17,7 @@ public class Tools
     }
 
     /// <summary>
-    /// ×î¶Ì¾àÀë,ÓÃÀ´Ëã½Ç¶ÈµÄ
+    /// æœ€çŸ­è·ç¦»,ç”¨æ¥ç®—è§’åº¦çš„
     /// </summary>
     /// <param name="a"></param>
     /// <param name="b"></param>
