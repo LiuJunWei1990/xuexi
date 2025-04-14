@@ -1,52 +1,63 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+//这个命名空间会使脚本只在编辑器模式下运行,在游戏打包后不会被打包进游戏
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.Animations;
 
+/// <summary>
+/// Unity 编辑器扩展工具集
+/// </summary>
 public class EditorTools : MonoBehaviour
 {
-    /// <summary>
-    /// 添加菜单项目:创建16向动画
-    /// </summary>
-    [MenuItem("Assets/Create/16向动画")]
-    static public void CreateAnimation16Way()
-    {
-        CreateAnimation(16);
-    }
+    ///// <summary>
+    ///// 添加菜单项目:创建16向动画
+    ///// </summary>
+    //[MenuItem("Assets/Create/16向动画")]
+    //static public void CreateAnimation16Way()
+    //{
+    //    CreateAnimation(16);
+    //}
+
+    ///// <summary>
+    ///// 添加菜单项目:创建8向动画
+    ///// </summary>
+    //[MenuItem("Assets/Create/8向动画")]
+    //static public void CreateAnimation8Way()
+    //{
+    //    CreateAnimation(8);
+    //}
+
 
     /// <summary>
-    /// 添加菜单项目:创建8向动画
+    /// 生成动画文件
     /// </summary>
-    [MenuItem("Assets/Create/8向动画")]
-    static public void CreateAnimation8Way()
-    {
-        CreateAnimation(8);
-    }
-    /// <summary>
-    /// 生成动画
-    /// </summary>
-    /// <param name="directionCount">X向动画</param>
-    static public void CreateAnimation(int directionCount)
+    /// <param name="texture"></param>
+    /// <param name="spritesPath">精灵文件路径</param>
+    /// <param name="directionCount">朝向数</param>
+    /// <param name="dirOffset">朝向偏移</param>
+    /// <param name="loop">动画是否循环</param>
+    /// <returns>动画切片数组,动画切片就是资源里那个三角型的动画文件,是一个动画动作(如:向右下角攻击)</returns>
+    static public AnimationClip[] CreateAnimation(Texture2D texture,string spritesPath,int directionCount, int dirOffset, bool loop)
     {
 
         
         #region >>>>>>>>>>>>>将图片资源提取为精灵数组<<<<<<<<<<<<<<<<<<<
 
-        //1.引用编辑器中选中的对象,强转为图片类型,如果选中的不是图片,返回null
-        var texture = Selection.activeObject as Texture2D;
-        //2.获取图片对象的文件路径
-        var texturePath = AssetDatabase.GetAssetPath(texture);
-        //分割路径字符串,获取文件夹名(这一步到最后才用到)
-        string dir = texturePath.Split('/')[2];
+        //1.新建一个切片数组
+        var clips = new AnimationClip[directionCount];
+        //把精灵(?)文件路径按'/'分割成数组,取出第3段(可能是职业,等下打个断点看下)
+        string dir = spritesPath.Split('/')[2];
         //3.加载路径下的所有资源,并转换为Sprite类型的数组
         //详解一下每段代码
-        //AssetDatabase.LoadAllAssetsAtPath(texturePath)读texturePath路径下所有文件,包括图片文件下所有精灵
-        //OfType<Sprite>()支取所有文件中的精灵
+        //AssetDatabase.LoadAllAssetsAtPath(texturePath)读spritesPath路径下所有文件,包括图片文件下所有精灵(返回GameObject)
+        //OfType<Sprite>()筛选出Sprite类型的文件,返回Sprite类型的数组
         //OrderBy(s => s.name.Length)主排序,按精灵的名字的长度
         //.ThenBy(s => s.name)次排序,名字长度一致的按名字排序(字母顺序)
-        Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(texturePath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
+        Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(spritesPath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
 
         #endregion
 
@@ -57,42 +68,32 @@ public class EditorTools : MonoBehaviour
         //计算每个方向动作的帧数,由于每个动作帧数是相等的,所以可以直接除以方向数
         int framesPerAnimation = sprites.Length / directionCount;
 
+        //取路径的文件名
+        string textureName = ExtractFileName(spritesPath);
         //遍历所有方向
         for (int i = 0; i < directionCount; ++i)
         {
             //给动画文件取个名字，材质文件名+方向编号,例如walk_0
-            var name = texture.name + "_" + i.ToString();
-            //方向编号赋值
-            int direction = i;
-            //如果是8向动画，精灵的顺序，需要将动画反转。
-            //实现方法就是加一半也就是4，然后再除以本身也就是8取余。
-            //0--4,1--5,2--6,3--7,4--0,5--1,6--2,7--3,刚好是反转的效果
-            if (directionCount == 8) direction = (direction + 4) % directionCount;
+            var name = textureName + "_" + i.ToString();
+
+            //生成方向编号,dirOffset是偏移量,比如是8方向,加上偏移量余出来也是0-7,八个方向
+            int direction = (i + dirOffset) % directionCount;
             //获取当前方向的所有动画帧
             //sprites.Skip(direction * framesPerAnimation) --- 跳过形参数量的元素,形参是方向编号乘以帧数,就是当前方向的第一帧
             //Take(framesPerAnimation) --- 取出形参数量的元素,就是当前方向的所有帧
             //ToArray() --- 转换为数组
             Sprite[] animSprites = sprites.Skip(direction * framesPerAnimation).Take(framesPerAnimation).ToArray();
-            //生成不同朝向的动画路径
-            var assetPath = "Assets/Animations/" + dir + "/" + name + ".anim";
-            //加载路径下的AnimationClip文件并赋值给animationClip,这是加载单个文件的,与上面加载一堆文件的不同
-            var animationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(assetPath);
-            //为空,代表加载失败了,要创建一个新的
-            if(animationClip == null)
-            {
-                //初始化
-                animationClip = new AnimationClip();
-                //在路径下生成这个文件
-                AssetDatabase.CreateAsset(animationClip, assetPath);
-            }
+            clips[i] = new AnimationClip();
+            var animationClip = clips[i];
             //给赋值
             animationClip.name = name;
             animationClip.frameRate = 12;
             //更新动画文件
-            FillAnimationClip(animationClip, animSprites);
+            FillAnimationClip(animationClip, animSprites,loop);
         }
 
         #endregion
+        return clips;
     }
 
     /// <summary>
@@ -104,7 +105,7 @@ public class EditorTools : MonoBehaviour
     /// <param name="sprites">精灵数组</param>
     /// <param name="eventName">动画事件</param>
     /// <returns>动画变量AnimationClip,可以生成为动画文件</returns>
-    static private void FillAnimationClip(AnimationClip clip, Sprite[] sprites)
+    static private void FillAnimationClip(AnimationClip clip, Sprite[] sprites,bool loop)
     {
         #region >>>>>>>>>>>>>>>>生成动画文件并赋一些基本的值<<<<<<<<<<<<<<<<<<<<<<
 
@@ -163,7 +164,7 @@ public class EditorTools : MonoBehaviour
         //自定义类用于处理动画文件的设置
         //形参返回了一个SerializedProperty对象,这个对象是动画文件的属性
         AnimationClipSettings clipSettings = new AnimationClipSettings(serializedClip.FindProperty("m_AnimationClipSettings"));
-        clipSettings.loopTime = true; // 设置循环时间
+        clipSettings.loopTime = loop; // 设置循环播放
         serializedClip.ApplyModifiedProperties(); // 应用修改
         #endregion
 
@@ -186,8 +187,44 @@ public class EditorTools : MonoBehaviour
         }
         );
     }
-}
+    /// <summary>
+    /// 取文件名
+    /// </summary>
+    /// <param name="path">文件路径</param>
+    /// <returns>文件名</returns>
+    static public string ExtractFileName(string path)
+    {
+        //提取文件名,去掉路径
+        //按'/'分割路径,Last()是取最后一段,再按'.'分割,取第0段,就是文件名
+        return path.Split('/').Last().Split('.')[0];
+    }
 
+    [MenuItem("Assets/Create/Iso Animation动画切片生成器")]
+    static public void CreateAnimation()
+    {
+       ScriptableObjectUtility.CreateAsset<IsoAnimation>();
+    }
+}
+/// <summary>
+/// 定义一个IsoAnimation类,用于存储动画相关的属性
+/// 它继承自ScriptableObject(编辑对象类),这个类对应资源文件，用来储存参数类似于XML，不过它可以直接调用，还会在Inspector面板上显示
+/// 这个类可以直接在Inspector面板上显示,可以直接在Inspector面板上修改属性,但是要在Editor文件夹下
+/// 这里没有放在Editor下，而是用特性实现了相同的效果
+/// </summary>
+//特性:字段会显示在Inspector面板上
+[System.Serializable]
+class IsoAnimation : ScriptableObject
+{
+    //朝向数量
+    public int directionCount = 8;
+    //朝向偏移
+    public int directionOffset = 0;
+    //是否循环播放动画
+    public bool loop = true;
+    //
+    public int newParameter = 456;
+    public Texture2D texture;
+}
 
 /// <summary>
 /// 定义一个 AnimationClipSettings 类，用于操作动画剪辑的设置
@@ -320,4 +357,124 @@ class AnimationClipSettings
     }
 
     #endregion
+}
+/// <summary>
+/// 编辑对象工具包
+/// 定义一个ScriptableObjectUtility类,用于创建ScriptableObject资源
+/// </summary>
+public static class ScriptableObjectUtility
+{
+    /// <summary>
+    /// 创建一个ScriptableObject资源
+    /// </summary>
+    /// <typeparam name="T">资源类型</typeparam>
+    /// <returns>返回创建的资源</returns>
+    public static T CreateAsset<T>() where T : ScriptableObject
+    {
+        //创建一个ScriptableObject资源实例
+        T asset = ScriptableObject.CreateInstance<T>();
+        //获取路径，形参是编辑器当前选中的目标
+        string path = AssetDatabase.GetAssetPath(Selection.activeObject);
+        //如果没有选中对象,就创建到Assets根目录下
+        if (path == "")
+        {
+            path = "Assets";
+        }
+        //返回路径的文件扩展名后缀 如果没有后缀,就返回空字符串
+        //不为空就代表选中目标是个文件
+        else if (Path.GetExtension(path) != "")
+        {
+            //把路径的文件名去掉,只剩下路径
+            //AssetDatabase.GetAssetPath(Selection.activeObject)>>获取当前目标路径
+            //Path.GetFileName>>获取路径的文件名(包括后缀)
+            //path.Replace>>替换成空字符串
+            path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
+        }
+        //>>>>如果上面的if都不成立,说明选中的是文件夹,就直接返回路径<<<<<
+
+        
+        //创建文件路径,尝试创建一个路径,如果路径存在就给文件名后面加个1,2,3.....
+        string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New" + typeof(T).ToString() + ".asset");
+        //>>>>>下面是创建文件的四个必要步骤
+        //创建资源文件(文件的变量,文件路径)
+        AssetDatabase.CreateAsset(asset, assetPathAndName);
+        //确保写入磁盘
+        AssetDatabase.SaveAssets();
+        //刷新资源,保证新文件正确显示
+        AssetDatabase.Refresh();
+        //激活资源窗口
+        EditorUtility.FocusProjectWindow();
+        //当前选择项改为刚才创建的文件
+        Selection.activeObject = asset;
+        //返回创建的资源 
+        return asset;
+    }
+}
+
+/// <summary>
+/// IosAnimation的编辑器
+/// 给IosAnimation添加一个编辑器
+/// 编辑器类型Editor
+/// 用来给资产添加选项,例子就是图片文件的选项那样,不是脚本,是直接在资源文件上添加选项
+/// </summary>
+[CustomEditor(typeof(IsoAnimation))]
+public class IsoAnimationEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        //绘制默认面板
+        //就是把IsoAnimation的public属性都加到面板上
+        DrawDefaultInspector(); 
+        //获取当前正在被编辑的IsoAnimation
+        var isoAnimation = target as IsoAnimation; 
+        //添加一个生成按钮,按钮宽度占满
+        if(GUILayout.Button("生成", GUILayout.ExpandWidth(true)))
+        {
+            //获取IsoAnimation文件的路径
+            var assetPath = AssetDatabase.GetAssetPath(isoAnimation);
+            //获取IsoAnimation文件中的图片文件路径
+            var spritesPath = AssetDatabase.GetAssetPath(isoAnimation.texture);
+            //新建字典,映射了动画文件和名字
+            var existingClips = new Dictionary<string, AnimationClip>();
+            //遍历IsoAnimation文件中的所有动画文件,并添加到字典中
+            //读取isoAnimation文件同路径下的所有文件,范围Object[]
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+            {
+                //强转赋值
+                var clip = obj as AnimationClip;
+                //如果clip不为空,就添加到字典中(强转失败就是空)
+                if(clip) existingClips.Add(clip.name,clip);
+            }
+
+            //返回动画文件数组,通过形参给的对象生成动画文件数组,遍历这个数组
+            foreach(var clip in EditorTools.CreateAnimation(isoAnimation.texture,spritesPath,isoAnimation.directionCount,isoAnimation.directionOffset,isoAnimation.loop))
+            {
+                //如果字典中有这个动画
+                if(existingClips.ContainsKey(clip.name))
+                {
+                    //把新动画文件的参数覆盖字典中文件的参数
+                    //这个方法的作用是仅复制序列化对象的值,就和在编辑器界面右键复制属性一样
+                    EditorUtility.CopySerialized(clip,existingClips[clip.name]);
+                    //删除字典中这个动画,不太懂为什么刚复制完还要删除
+                    existingClips.Remove(clip.name);
+                }
+                else
+                {
+                    //如果字典中没有这个动画,就创建这个动画文件
+                    //把clip对象添加到isoAnimation文件(当前正在编辑的这个)中,就和图片切完精灵后,图片箭头后面就有一串精灵一样
+                    AssetDatabase.AddObjectToAsset(clip, isoAnimation);
+                    //强制重新导入Clip文件,确保它在Unity中生效.就是刷新一下刚刚修改的文件
+                    //通常与AddObjectToAsset配合使用，确保子资源正确挂载
+                    AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(clip));
+                }
+            }
+            //遍历字典,删除字典中剩下的动画文件
+            foreach(var clip in existingClips.Values)
+            {
+                DestroyImmediate(clip,true);
+            }
+            //刷新一下IosAnimation文件,确保它在Unity中生效
+            AssetDatabase.ImportAsset(assetPath);
+        }
+    }  
 }
