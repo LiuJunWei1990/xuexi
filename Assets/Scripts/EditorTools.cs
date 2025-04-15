@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,21 +36,19 @@ public class EditorTools : MonoBehaviour
     /// 生成动画文件
     /// </summary>
     /// <param name="texture"></param>
-    /// <param name="spritesPath">精灵文件路径</param>
     /// <param name="directionCount">朝向数</param>
     /// <param name="dirOffset">朝向偏移</param>
     /// <param name="loop">动画是否循环</param>
     /// <returns>动画切片数组,动画切片就是资源里那个三角型的动画文件,是一个动画动作(如:向右下角攻击)</returns>
-    static public AnimationClip[] CreateAnimation(Texture2D texture,string spritesPath,int directionCount, int dirOffset, bool loop)
+    static public AnimationClip[] CreateAnimation(Texture2D texture,int directionCount, int dirOffset, bool loop)
     {
 
         
         #region >>>>>>>>>>>>>将图片资源提取为精灵数组<<<<<<<<<<<<<<<<<<<
-
+        //1.get图片文件的路径
+        var spritesPath = AssetDatabase.GetAssetPath(texture);
         //1.新建一个切片数组
         var clips = new AnimationClip[directionCount];
-        //把精灵(?)文件路径按'/'分割成数组,取出第3段(可能是职业,等下打个断点看下)
-        string dir = spritesPath.Split('/')[2];
         //3.加载路径下的所有资源,并转换为Sprite类型的数组
         //详解一下每段代码
         //AssetDatabase.LoadAllAssetsAtPath(texturePath)读spritesPath路径下所有文件,包括图片文件下所有精灵(返回GameObject)
@@ -221,9 +219,10 @@ class IsoAnimation : ScriptableObject
     public int directionOffset = 0;
     //是否循环播放动画
     public bool loop = true;
-    //
-    public int newParameter = 456;
-    public Texture2D texture;
+    //动画文件引用(编辑器面板上那个框框)
+    public Texture2D[] texture;
+    //动画状态机引用(编辑器面板上那个框框)
+    public AnimatorController controller;
 }
 
 /// <summary>
@@ -428,16 +427,14 @@ public class IsoAnimationEditor : Editor
         //获取当前正在被编辑的IsoAnimation
         var isoAnimation = target as IsoAnimation; 
         //添加一个生成按钮,按钮宽度占满
-        if(GUILayout.Button("生成", GUILayout.ExpandWidth(true)))
+        if(GUILayout.Button("生成"))
         {
             //获取IsoAnimation文件的路径
             var assetPath = AssetDatabase.GetAssetPath(isoAnimation);
-            //获取IsoAnimation文件中的图片文件路径
-            var spritesPath = AssetDatabase.GetAssetPath(isoAnimation.texture);
             //新建字典,映射了动画文件和名字
             var existingClips = new Dictionary<string, AnimationClip>();
             //遍历IsoAnimation文件中的所有动画文件,并添加到字典中
-            //读取isoAnimation文件同路径下的所有文件,范围Object[]
+            //AssetDatabase.LoadAllAssetsAtPath(assetPath)读取isoAnimation文件同路径下的所有文件,范围Object[]
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 //强转赋值
@@ -445,27 +442,38 @@ public class IsoAnimationEditor : Editor
                 //如果clip不为空,就添加到字典中(强转失败就是空)
                 if(clip) existingClips.Add(clip.name,clip);
             }
-
-            //返回动画文件数组,通过形参给的对象生成动画文件数组,遍历这个数组
-            foreach(var clip in EditorTools.CreateAnimation(isoAnimation.texture,spritesPath,isoAnimation.directionCount,isoAnimation.directionOffset,isoAnimation.loop))
+            //如果动画状态机为空,就在指定路径新建一个动画状态机
+            if(isoAnimation.controller == null) isoAnimation.controller = AnimatorController.CreateAnimatorControllerAtPath("Assets/Animations/" + isoAnimation.name + ".controller");
+            //修改动画状态机的名字,使其和IsoAnimation文件的名字一致
+            isoAnimation.controller.name = isoAnimation.name;
+            //如果动画状态机没有层,就添加一个层(状态机里面那个图层)
+            if(isoAnimation.controller.layers.Length < 1) isoAnimation.controller.AddLayer("Layer 1");
+            //遍历IsoAnimation文件的texture数组(Texture2D图片文件数组),并生成动画文件
+            foreach(var texture in isoAnimation.texture)
             {
-                //如果字典中有这个动画
-                if(existingClips.ContainsKey(clip.name))
+                //读取每个图片文件下的精灵,生成动画文件,返回动画文件数组
+                var clips = EditorTools.CreateAnimation(texture,isoAnimation.directionCount,isoAnimation.directionOffset,isoAnimation.loop);
+                //遍历动画文件数组
+                foreach(var clip in clips)
                 {
-                    //把新动画文件的参数覆盖字典中文件的参数
-                    //这个方法的作用是仅复制序列化对象的值,就和在编辑器界面右键复制属性一样
-                    EditorUtility.CopySerialized(clip,existingClips[clip.name]);
-                    //删除字典中这个动画,不太懂为什么刚复制完还要删除
-                    existingClips.Remove(clip.name);
-                }
-                else
-                {
-                    //如果字典中没有这个动画,就创建这个动画文件
-                    //把clip对象添加到isoAnimation文件(当前正在编辑的这个)中,就和图片切完精灵后,图片箭头后面就有一串精灵一样
-                    AssetDatabase.AddObjectToAsset(clip, isoAnimation);
-                    //强制重新导入Clip文件,确保它在Unity中生效.就是刷新一下刚刚修改的文件
-                    //通常与AddObjectToAsset配合使用，确保子资源正确挂载
-                    AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(clip));
+
+                    //如果字典中有这个动画
+                    if(existingClips.ContainsKey(clip.name))
+                    {
+                        //把新动画文件的参数覆盖字典中文件的参数
+                        //这个方法的作用是仅复制序列化对象的值,就和在编辑器界面右键复制属性一样
+                        EditorUtility.CopySerialized(clip,existingClips[clip.name]);
+                        //删除字典中这个动画,不太懂为什么刚复制完还要删除
+                        existingClips.Remove(clip.name);
+                    }
+                    else
+                    {
+                        //如果字典中没有这个动画,就创建这个动画文件
+                        //把clip对象添加到isoAnimation文件(当前正在编辑的这个)中,就和图片切完精灵后,图片箭头后面就有一串精灵一样
+                        AssetDatabase.AddObjectToAsset(clip, assetPath);
+                    }
+                    //把动画文件添加到动画状态机中,返回这个状态机的状态,形参1是动画文件,形参2是状态机的图层索引
+                    var state = isoAnimation.controller.AddMotion(clip, 0);
                 }
             }
             //遍历字典,删除字典中剩下的动画文件
