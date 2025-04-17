@@ -11,7 +11,7 @@ public class Barrel : MonoBehaviour
     /// <summary>
     /// 动画
     /// </summary>
-    Animator animator;
+    IsoAnimator animator;
     /// <summary>
     /// 互动组件
     /// </summary>
@@ -25,7 +25,7 @@ public class Barrel : MonoBehaviour
     private void Awake()
     {
         //获取各种组件
-        animator = GetComponent<Animator>();
+        animator = GetComponent<IsoAnimator>();
         usable = GetComponent<Usable>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
@@ -36,7 +36,7 @@ public class Barrel : MonoBehaviour
     void OnUse()
     {
         //播放使用动画
-        animator.Play("Use");
+        animator.SetState("Use");
         //使用组件的激活字段,设置为否.因为使用后桶打碎了
         usable.active = false;
         //桶碎了,网格自然也就可通行了

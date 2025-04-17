@@ -489,10 +489,10 @@ GameObject:
   m_Component:
   - component: {fileID: 186345060}
   - component: {fileID: 186345059}
-  - component: {fileID: 186345058}
   - component: {fileID: 186345057}
   - component: {fileID: 186345056}
   - component: {fileID: 186345061}
+  - component: {fileID: 186345062}
   m_Layer: 0
   m_Name: Barbarian
   m_TagString: Player
@@ -535,27 +535,6 @@ MonoBehaviour:
   attackRange: 3.5
   run: 1
   direction: 0
---- !u!95 &186345058
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 186345055}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 327693af27311214db81492ebadb62ec, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!212 &186345059
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -668,6 +647,20 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.075, y: 1.2125}
   m_EdgeRadius: 0
+--- !u!114 &186345062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186345055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc9431eb08be064c870c8210c22cbe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 11400000, guid: 7adfed699389b544784d119f36dc3387, type: 2}
+  speed: 1
 --- !u!1 &252095058
 GameObject:
   m_ObjectHideFlags: 0
@@ -2723,8 +2716,8 @@ GameObject:
   - component: {fileID: 923392649}
   - component: {fileID: 923392648}
   - component: {fileID: 923392647}
-  - component: {fileID: 923392646}
   - component: {fileID: 923392645}
+  - component: {fileID: 923392652}
   m_Layer: 0
   m_Name: Barrel (1)
   m_TagString: Untagged
@@ -2759,27 +2752,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61e575b2a63b36949874f1fa0b7c458f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!95 &923392646
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 923392643}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 427452b81cb73f140b097d52f6f5cb01, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &923392647
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2923,6 +2895,20 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &923392652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 923392643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc9431eb08be064c870c8210c22cbe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 11400000, guid: 7dc72647ab838684dbcaa027d49ad6b4, type: 2}
+  speed: 1
 --- !u!1 &1162807580
 GameObject:
   m_ObjectHideFlags: 0
@@ -3056,8 +3042,8 @@ GameObject:
   - component: {fileID: 1186434013}
   - component: {fileID: 1186434012}
   - component: {fileID: 1186434011}
-  - component: {fileID: 1186434010}
   - component: {fileID: 1186434017}
+  - component: {fileID: 1186434018}
   m_Layer: 0
   m_Name: Barrel
   m_TagString: Untagged
@@ -3065,27 +3051,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!95 &1186434010
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1186434009}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 427452b81cb73f140b097d52f6f5cb01, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1186434011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3256,6 +3221,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61e575b2a63b36949874f1fa0b7c458f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1186434018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186434009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc9431eb08be064c870c8210c22cbe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 11400000, guid: 7dc72647ab838684dbcaa027d49ad6b4, type: 2}
+  speed: 1
 --- !u!1 &1190589355
 GameObject:
   m_ObjectHideFlags: 0
@@ -5402,27 +5381,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!95 &161820207539385634
-Animator:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4324776978931104413}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 64041e9355a99be46a3b6a86584783b1, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &167002538313060382
 GameObject:
   m_ObjectHideFlags: 0
@@ -13508,10 +13466,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6502407595855946064}
   - component: {fileID: 7302601229467192783}
-  - component: {fileID: 161820207539385634}
   - component: {fileID: 2146595291273887619}
   - component: {fileID: 764371558314534014}
   - component: {fileID: 7302601229467192784}
+  - component: {fileID: 7302601229467192785}
   m_Layer: 0
   m_Name: Goatman
   m_TagString: Untagged
@@ -19211,6 +19169,20 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.875, y: 0.975}
   m_EdgeRadius: 0
+--- !u!114 &7302601229467192785
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4324776978931104413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc9431eb08be064c870c8210c22cbe8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 11400000, guid: b821c3c5aa7ae1348a8749ee8e3be0d4, type: 2}
+  speed: 1
 --- !u!4 &7313345458042661646
 Transform:
   m_ObjectHideFlags: 0

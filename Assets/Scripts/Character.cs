@@ -95,7 +95,7 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 动画组件
     /// </summary>
-    Animator animator;
+    IsoAnimator animator;
 
     /// <summary>
     /// 路径,表现为一个装坐标的容器
@@ -141,7 +141,7 @@ public class Character : MonoBehaviour
     {
         //获取两个组件
         iso = GetComponent<Iso>();
-        animator = GetComponent<Animator>();
+        animator = GetComponent<IsoAnimator>();
     }
 
     /// <summary>
@@ -349,8 +349,6 @@ public class Character : MonoBehaviour
     /// </summary>
     private void UpdateAnimation()
     {
-        //是否维持动画的时间进度,就是重新播放当前动画时,按照之前的进度继续播放
-        bool preserveTime = false;
         //动画名称
         string animation;
         //给动画组件赋初始值
@@ -381,8 +379,6 @@ public class Character : MonoBehaviour
         {
             //通过奔跑标签判断是跑还是走
             animation = run ? "Run" : "Walk";
-            //此动画需要维持,时间进度
-            preserveTime = true;
             //目标方向是路径的第一步的方向
             targetDirection = path[0].directionIndex;
         }
@@ -396,19 +392,7 @@ public class Character : MonoBehaviour
             //平滑的更新当前方向,确保方向值在 [0, directionCount - 1] 范围内
             direction = (direction + diff + directionCount) % directionCount;
         }
-        //动画名称加上方向的字符串
-        animation += "_" + direction.ToString();
-        //GetCurrentAnimatorStateInfo(0),返回动画状态的信息,0是层的索引,0层就是默认层,是当前动画的状态信息
-        //IsName()判断当前动画名是否与形参相同,这里形参隐式转换为动画名
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName(animation))
-        {
-            //如果要播放动画,与当前动画不同就播放
-            //如果是维持动画进度的,就用这行,会按照先前的动画进度播放
-            //形参1:动画名,形参2:层的索引(0就是当前动画),形参3:动画的归一化时间(就是当前播放进度了)
-            if (preserveTime) animator.Play(animation, 0, animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
-            //不需要维持播放进度的动画,直接就从头开始播
-            else animator.Play(animation);
-        }
+        animator.SetState(animation);
     }
 
     /// <summary>
