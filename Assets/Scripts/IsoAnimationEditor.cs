@@ -35,8 +35,10 @@ public class IsoAnimationEditor : Editor
             //如果state的texture图片文件不为空,就继续
             if(state.texture)
             {
-                //state的名字 = IsoAnimation文件中引用texture文件的名字
-                state.name = state.texture.name;
+                //如果state的名字为空或者名字长度为0,就继续
+                if(state.name == null || state.name.Length == 0)
+                    //state的名字 = IsoAnimation文件中引用texture文件的名字
+                    state.name = state.texture.name;
                 //获取IsoAnimation文件中引用texture文件的路径
                 var assetPath = AssetDatabase.GetAssetPath(state.texture);
                 //加载路径下的所有资源,并先按照名字长度排序,次按照名字首字母排序,然后转成数组,赋值给state的sprites数组

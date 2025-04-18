@@ -116,10 +116,6 @@ public class Character : MonoBehaviour
     /// </summary>
     bool attack = false;
     /// <summary>
-    /// 攻击动画(编号)
-    /// </summary>
-    int attackAnimation;
-    /// <summary>
     /// 是否正在挨打
     /// </summary>
     bool takingDamage = false;
@@ -279,8 +275,6 @@ public class Character : MonoBehaviour
                 {
                     //状态修改为攻击中
                     attack = true;
-                    //随机赋值1-3用于选择攻击动画
-                    attackAnimation = Random.Range(1, 3);
                     //获取到目标的方向的编号
                     direction = Iso.Direction(iso.tilePos, target, directionCount);
                 }
@@ -357,7 +351,7 @@ public class Character : MonoBehaviour
         if (attack)
         {
             //给动画名称赋值
-            animation = "Attack" + attackAnimation;
+            animation = "Attack";
             //给动画速度赋值
             animator.speed = attackSpeed;
         }
@@ -415,8 +409,6 @@ public class Character : MonoBehaviour
         {
             //进入攻击状态
             attack = true;
-            //随一个攻击动画,编号
-            attackAnimation = Random.Range(1, 3);
         }
     }
 
