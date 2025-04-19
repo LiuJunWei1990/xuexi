@@ -12,26 +12,44 @@ using UnityEngine;
 [System.Serializable]
 public class IsoAnimation : ScriptableObject
 {
-    //状态(人物状态,就是动画,比如 idle,run,jump...)
+    /// <summary>
+    /// 状态(人物状态,就是动画,比如 idle,run,jump...)
+    /// </summary>
     //特性:字段会显示在Inspector面板上
     [System.Serializable]
     public class State
     {
-        //状态名字(跑,待命,挨打等)
+        /// <summary>
+        /// 状态名字(跑,待命,挨打等)
+        /// </summary>
         public string name;
-        //是否循环播放动画
+        /// <summary>
+        /// 是否循环播放动画
+        /// </summary>
         public bool loop = true;
-        //动画文件引用(编辑器面板上那个框框),需要自己赋值,赋值这个texture后,会自动生成sprites数组
+        /// <summary>
+        /// 动画文件引用(编辑器面板上那个框框),需要自己赋值,赋值这个texture后,会自动生成sprites数组
+        /// </summary>
         public Texture2D texture; 
-        //texture的精灵文件数组,由生成按钮生成,不需要自己赋值
+        /// <summary>
+        /// 动画文件的fps
+        /// </summary>
+        public float fps = 12.0f;
+        /// <summary>
+        /// texture的精灵文件数组,由生成按钮生成,不需要自己赋值
+        /// </summary>
         public Sprite[] sprites;
     }
-    //动画文件的fps
-    public float fps = 12.0f;
-    //朝向数量
+    /// <summary>
+    /// 朝向数量
+    /// </summary>
     public int directionCount = 8;
-    //朝向偏移
+    /// <summary>
+    /// 朝向偏移量
+    /// </summary>
     public int directionOffset = 0;
-    //需手动添加
+    /// <summary>
+    /// 状态数组,需手动添加
+    /// </summary>
     public State[] states;
 }

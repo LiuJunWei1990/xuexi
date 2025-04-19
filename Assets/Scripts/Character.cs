@@ -120,6 +120,14 @@ public class Character : MonoBehaviour
     /// </summary>
     bool takingDamage = false;
     /// <summary>
+    /// 是否正在死亡(播放死亡动画中)
+    /// </summary>
+    bool dying = false;
+    /// <summary>
+    /// 是否死亡(死亡动画播放完)
+    /// </summary>
+    bool dead = false;
+    /// <summary>
     /// 本角色的目标<物体或其他角色>
     /// </summary>
     GameObject m_Target;
@@ -132,6 +140,18 @@ public class Character : MonoBehaviour
     /// 目标角色组件
     /// </summary>
     Character targetCharacter;
+    /// <summary>
+    /// 攻击力
+    /// </summary>
+    int attackDamage = 30;
+    /// <summary>
+    /// 生命值
+    /// </summary>
+    int health = 100;
+    /// <summary>
+    /// 最大生命值
+    /// </summary>
+    int maxHealth = 100;
 
     private void Start()
     {
@@ -347,8 +367,14 @@ public class Character : MonoBehaviour
         string animation;
         //给动画组件赋初始值
         animator.speed = 1.0f;
+        //如果死亡
+        if (dying || dead)
+        {
+            //给动画名称赋值
+            animation = "Death";
+        }
         //如果正在攻击
-        if (attack)
+        else if (attack)
         {
             //给动画名称赋值
             animation = "Attack";
@@ -431,10 +457,30 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 挨打
     /// </summary>
-    public void TakeDamage()
+    /// <param name="originator">打人者</param>
+    /// <param name="damage">伤害</param>
+    public void TakeDamage(Character originator,int damage)
     {
-        //挨打状态置为true
-        takingDamage = true;
+        //每次动画播放时执行该方法
+
+        //生命减去伤害
+        health -= damage;
+        //如果还有生命
+        if (health > 0)
+        {
+            //挨打状态置是
+            takingDamage = true;
+        }
+        //如果生命打光了
+        else
+        {
+            //人物朝向(索引) = 当前对象 向着 打人者的方向(索引)
+            direction = Iso.Direction(iso.tilePos,originator.iso.tilePos,directionCount);
+            //目标方向=人物方向
+            targetDirection = direction;
+            //死亡状态置是
+            dying = true;
+        }
     }
     /// <summary>
     /// 在动画播放时执行的方法(不是系统的api哈,就是自己取得名字)
@@ -447,8 +493,8 @@ public class Character : MonoBehaviour
             //如果目标角色不为空
             if (targetCharacter)
             {
-                //就执行攻击
-                targetCharacter.TakeDamage();
+                //就执行攻击,形参1打人者,是自己,形参2是伤害,是自己的攻击伤害
+                targetCharacter.TakeDamage(this, attackDamage);
                 //执行完毕后,就把目标角色置空
                 targetCharacter = null;
                 //目标也置空
@@ -465,6 +511,12 @@ public class Character : MonoBehaviour
         //动画完成后,就把攻击状态和挨打状态置为false
         attack = false;
         takingDamage = false;
+        //如果是死亡中(动画播放中),这是动画结束事件,所以就转入死亡状态
+        if (dying)
+        {
+            //死亡状态置为true
+            dead = true;
+        }
         UpdateAnimation();
     }
 }

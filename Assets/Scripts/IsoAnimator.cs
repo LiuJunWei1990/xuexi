@@ -110,8 +110,6 @@ public class IsoAnimator : MonoBehaviour
         }
 
         SetState(firstState);
-        //计算每帧动画持续时间
-        frameDuration = 1.0f / anim.fps;
     }
 
     void Update()
@@ -207,7 +205,8 @@ public class IsoAnimator : MonoBehaviour
         //重新计算没个朝向的精灵数量
         spritesPerDirection = variation.sprites.Length / anim.directionCount;
         //怕有空引用导致乘以0，所以如果是0 至少赋值个1保底
-        if (spritesPerDirection == 0)
-            spritesPerDirection = 1;
+        if (spritesPerDirection == 0) spritesPerDirection = 1;
+        //计算每帧动画持续时间
+        frameDuration = 1.0f / variation.fps;
     }
 }
