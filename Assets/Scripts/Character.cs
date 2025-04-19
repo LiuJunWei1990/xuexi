@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -44,7 +45,17 @@ public class Character : MonoBehaviour
     /// </summary>
     [Tooltip("是否奔跑")]
     public bool run = false;
+    /// <summary>
+    /// 受到伤害委托
+    /// </summary>
+    /// <param name="orginator">施暴者</param>
+    /// <param name="damage">伤害</param>
+    public delegate void TakeDamageHandler(Character orginator, int damage);
 
+    /// <summary>
+    /// 受到伤害事件
+    /// </summary>
+    public event TakeDamageHandler OnTakeDamage;
     /// <summary>
     /// 角色的目标(属性)
     /// </summary>
@@ -82,6 +93,7 @@ public class Character : MonoBehaviour
             m_Target = value;
         }
     }
+
     /// <summary>
     /// 方向
     /// </summary>
@@ -143,7 +155,7 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 攻击力
     /// </summary>
-    int attackDamage = 30;
+    public int attackDamage = 30;
     /// <summary>
     /// 生命值
     /// </summary>
@@ -153,7 +165,7 @@ public class Character : MonoBehaviour
     /// </summary>
     int maxHealth = 100;
 
-    private void Start()
+    private void Awake()
     {
         //获取两个组件
         iso = GetComponent<Iso>();
@@ -197,11 +209,10 @@ public class Character : MonoBehaviour
     public void GoTo(Vector2 target)
     {
         //如果正在执行攻击动作,则不能走,直接跳出
-        if (attack || takingDamage) return;
+        if (attack || takingDamage || dying || dead) return;
         //生成路径
         PathTo(target);
     }
-
     /// <summary>
     /// 瞬移
     /// </summary>
@@ -404,7 +415,7 @@ public class Character : MonoBehaviour
         }
 
         //如果人物朝向和目标方向不一样,就转向
-        if (!attack && !takingDamage && direction != targetDirection)
+        if (!dead && !dying && !attack && !takingDamage && direction != targetDirection)
         {
 
             //计算当前方向和目标方向的夹角,获取夹角的正负,正数就是顺时针,负数就是逆时针
@@ -431,7 +442,7 @@ public class Character : MonoBehaviour
     public void Attack()
     {
         //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
-        if (!attack && !takingDamage && direction == targetDirection && path.Count == 0)
+        if (!dead && dying && !attack && !takingDamage && direction == targetDirection && path.Count == 0)
         {
             //进入攻击状态
             attack = true;
@@ -468,6 +479,7 @@ public class Character : MonoBehaviour
         //如果还有生命
         if (health > 0)
         {
+            if(OnTakeDamage != null) OnTakeDamage(originator, damage);
             //挨打状态置是
             takingDamage = true;
         }
