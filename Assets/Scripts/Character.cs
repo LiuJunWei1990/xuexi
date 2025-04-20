@@ -195,7 +195,7 @@ public class Character : MonoBehaviour
     public void Use(Usable usable)
     {
         //正在攻击动作中就不能使用,直接返回
-        if (attack || takingDamage) return;
+        if (attack || takingDamage || dying || dead) return;
         //生成路径,止步最小范围是互动范围
         PathTo(usable.GetComponent<Iso>().tilePos, useRange);
         //生成路径后把当前互动物置为现在使用的这个,因为生成路径会重置当前互动物体为空,所以放在后面
@@ -286,7 +286,7 @@ public class Character : MonoBehaviour
         //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
         //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
         //当寻路结束
-        if (path.Count == 0)
+        if (path.Count == 0 && !takingDamage && !dead &&!dying)
         {
             //如果目标有互动组件
             if (usable)
@@ -307,7 +307,7 @@ public class Character : MonoBehaviour
                     //状态修改为攻击中
                     attack = true;
                     //获取到目标的方向的编号
-                    direction = Iso.Direction(iso.tilePos, target, directionCount);
+                    targetDirection = direction = Iso.Direction(iso.tilePos, target, directionCount);
                 }
             }
         }
@@ -320,7 +320,7 @@ public class Character : MonoBehaviour
     private void Move()
     {
         //分支1.路径为空就返回
-        if (path.Count == 0) return;
+        if (path.Count == 0 || attack || takingDamage || dead || dying) return;
 
 
         //获取第一个路径
@@ -456,7 +456,7 @@ public class Character : MonoBehaviour
     public void Attack(Character targetCharacter)
     {
         //如果正在攻击就返回
-        if (attack || takingDamage) return;
+        if (attack || takingDamage || dead || dying) return;
         //获取目标的Iso组件
         Iso targetIso = targetCharacter.GetComponent<Iso>();
         //行至目标出,以攻击范围做为止步范围
@@ -482,6 +482,7 @@ public class Character : MonoBehaviour
             if(OnTakeDamage != null) OnTakeDamage(originator, damage);
             //挨打状态置是
             takingDamage = true;
+            attack = false;
         }
         //如果生命打光了
         else
@@ -526,6 +527,7 @@ public class Character : MonoBehaviour
         //如果是死亡中(动画播放中),这是动画结束事件,所以就转入死亡状态
         if (dying)
         {
+            dying = false;
             //死亡状态置为true
             dead = true;
         }

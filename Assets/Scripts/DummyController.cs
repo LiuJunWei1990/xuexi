@@ -41,8 +41,6 @@ public class DummyController : MonoBehaviour
     /// <param name="damage">伤害</param>
     void OnTakeDamage(Character orginator, int damage)
     {
-        //停止协程,执行Attack方法
-        StopCoroutine(Roam());
         //目标转为施暴者
         target = orginator;
         //启动协程,执行Attack方法
@@ -54,14 +52,11 @@ public class DummyController : MonoBehaviour
     /// <returns></returns>
     IEnumerator Roam()
     {
-        Debug.Log("携程前");
         //等待一帧,等待协程执行完毕,再执行下面的代码
         yield return new WaitForEndOfFrame();
-        Debug.Log("携程后");
         //死循环,靠携程中止来跳出
-        while (true)
+        while (!target)
         {
-            Debug.Log("携程循环中");
             //生成一个周围8格的随机坐标,作为目标点
             var target = iso.tilePos+new Vector2(Random.Range(-8,8),Random.Range(-8,8));
             //行走至目标点
