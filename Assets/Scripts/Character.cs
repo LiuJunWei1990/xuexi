@@ -159,11 +159,11 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 生命值
     /// </summary>
-    int health = 100;
+    public int health = 100;
     /// <summary>
     /// 最大生命值
     /// </summary>
-    int maxHealth = 100;
+    public int maxHealth = 100;
 
     private void Awake()
     {

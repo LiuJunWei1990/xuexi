@@ -95,6 +95,14 @@ public class PlayerController : MonoBehaviour
                 var spriteRenderer = hover.GetComponent<SpriteRenderer>();
                 //提高其亮度
                 spriteRenderer.material.SetFloat("_SelfIllum", 1.75f);
+
+                //敌人状态条的实例的角色组件引用当前悬停目标的角色组件
+                EnemyBar.instance.character = hover.GetComponent<Character>();
+            }
+            else
+            {
+                //否则如果悬停目标为空,那么敌人状态条的实例的角色组件引用为空
+                EnemyBar.instance.character = null;
             }
         }
     }
