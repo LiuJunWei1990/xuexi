@@ -11,7 +11,15 @@ public class EnemyBar : MonoBehaviour
     /// <summary>
     /// 滑动条组件
     /// </summary>
+    /// 特性:显示在面板上
+    [SerializeField]
     public Slider slider;
+    /// <summary>
+    /// 滑动条名字组件
+    /// </summary>
+    /// 特性:显示在面板上
+    [SerializeField]
+    Text title;
     /// <summary>
     /// 角色组件
     /// </summary>
@@ -38,6 +46,8 @@ public class EnemyBar : MonoBehaviour
         //如果人物不为空
         if(character)
         {
+            //设置滑动条名字
+            title.text = character.name;
             //设置滑动条的最大值和当前值
             slider.maxValue = character.maxHealth;
             slider.value = character.health;

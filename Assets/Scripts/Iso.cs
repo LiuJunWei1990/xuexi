@@ -35,17 +35,6 @@ public class Iso : MonoBehaviour
     public Vector2 pos;
 
     /// <summary>
-    /// 当前对象的单元格坐标
-    /// </summary>
-    [Tooltip("所在网格坐标")]
-    public Vector2 tilePos;
-
-    /// <summary>
-    /// 精灵材质渲染器
-    /// </summary>
-    SpriteRenderer spriteRenderer;
-
-    /// <summary>
     /// 是否瓦片,瓦片拖动时按瓦片对齐,否则按网格对齐
     /// </summary>
     [Tooltip("与瓦片对齐")]
@@ -56,6 +45,11 @@ public class Iso : MonoBehaviour
     /// </summary>
     [Tooltip("与同层级按分数排序")]
     public bool sort = true;
+
+    /// <summary>
+    /// 精灵材质渲染器
+    /// </summary>
+    SpriteRenderer spriteRenderer;
 
 
     /// <summary>
@@ -182,8 +176,6 @@ public class Iso : MonoBehaviour
     {
         //获取当前对象坐标
         pos = MapToIso(transform.position);
-        //取整
-        tilePos = Snap(pos);
         //取组件,这和上面两条代码是专门给互动物体准备的,我估计后面互动相关代码会验证spriteRenderer是否为空
         spriteRenderer = GetComponent<SpriteRenderer>();
     }

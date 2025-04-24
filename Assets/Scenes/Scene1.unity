@@ -1813,6 +1813,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slider: {fileID: 1826622525}
+  title: {fileID: 1847642340}
   character: {fileID: 0}
 --- !u!1 &580886461
 GameObject:
@@ -2708,7 +2709,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 838727023}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -5490,7 +5491,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Goatman
+  m_Text: Enemy name
 --- !u!222 &1847642341
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -25352,5 +25353,5 @@ SceneRoots:
   - {fileID: 7849514836074340781}
   - {fileID: 186345060}
   - {fileID: 283285306}
-  - {fileID: 1251425799}
   - {fileID: 838727026}
+  - {fileID: 1251425799}

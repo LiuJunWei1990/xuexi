@@ -10,8 +10,17 @@ public class Pathing
     /// </summary>
     public struct Step
     {
+        /// <summary>
+        /// 朝向(向量)
+        /// </summary>
         public Vector2 direction;
+        /// <summary>
+        /// 朝向(索引)
+        /// </summary>
         public int directionIndex;
+        /// <summary>
+        /// 坐标
+        /// </summary>
         public Vector2 pos;
     }
 
@@ -240,17 +249,19 @@ public class Pathing
     static public List<Step> BuildPath(Vector2 from, Vector2 target, int directionCount = 8, float minRange = 0.1f)
     {
         //////////前期准备
-        //判断是8方向还是16方向
-        directions = directionCount == 8 ? directions8 : directions16;
-        //先把目标点赋给类中的目标点
-        Pathing.target = target;
-        //回收内存,开放节点和关闭节点的
-        Node.Recycle(openNodes);
-        Node.Recycle(closeNodes);
+        from = Iso.Snap(from);
+        target = Iso.Snap(target);
         //清空路径列表,准备生成新的路径
         path.Clear();
         //来自和目标重合就不用寻了,直接返回空路径吧.
         if (from == target) return path;
+        //回收内存,开放节点和关闭节点的
+        Node.Recycle(openNodes);
+        Node.Recycle(closeNodes);
+        //判断是8方向还是16方向
+        directions = directionCount == 8 ? directions8 : directions16;
+        //先把目标点赋给类中的目标点
+        Pathing.target = target;
         //创建起始节点,从池里面取节点,优化内存分配
         Node startNode = Node.Get();
         //给起始节点初始化,各种赋值,添入开放列表

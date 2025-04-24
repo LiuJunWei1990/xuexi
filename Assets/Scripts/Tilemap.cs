@@ -42,6 +42,7 @@ public class Tilemap : MonoBehaviour
         origin = map.Length / 2;
         //初始话实例
         instance = this;
+        for (int i = 0; i < map.Length; ++i) map[i] = true;
     }
 
 
@@ -119,18 +120,16 @@ public class Tilemap : MonoBehaviour
         pos.y -= debugHeight / 2;
 
         //绘制网格标线,网格的小格子
-        for (int x = 1; x < debugWidth; ++x)
+        for (int x = 0; x < debugWidth; ++x)
         {
-            for (int y = 1; y < debugHeight; ++y)
+            for (int y = 0; y < debugHeight; ++y)
             {
                 //获取当前网格的可通行状态
                 bool passable = this[pos + new Vector3(x, y)];
                 //如果不可通行,就绘制红线
                 if (!passable)
-                {
                     //这里不太理解,都已经if了passable,为什么还要判断一下,不是多余的吗?好像这样只会画红线
                     Iso.DebugDrawTile(pos + new Vector3(x, y), passable ? color : redColor, 0.9f);
-                }
             }
         }
     }
@@ -185,11 +184,9 @@ public class Tilemap : MonoBehaviour
                 //算出瓦片的中心点，然后转换为世界坐标，再除以瓦片长度
                 var pos = Iso.MapToWorld(cameraTile + new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
                 //绘制瓦片的四条边
-                Gizmos.DrawLine(pos, pos + new Vector3(20, 10));
-                Gizmos.DrawLine(pos, pos + new Vector3(20, -10));
+                Gizmos.DrawRay(pos, new Vector3(20, 10));
+                Gizmos.DrawRay(pos, new Vector3(20, -10));
             }
         }
     }
-
-
 }

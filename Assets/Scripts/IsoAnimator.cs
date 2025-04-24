@@ -56,7 +56,7 @@ public class IsoAnimator : MonoBehaviour
     /// <summary>
     /// 人物的状态(动作)库
     /// </summary>
-    public Dictionary<string, State> states = new Dictionary<string, State>();
+    Dictionary<string, State> states = new Dictionary<string, State>();
 
     /// <summary>
     /// 动画状态类(动画状态机那个状态,就是动作),注意isoAnimation文件中的状态(动作)和这个类是不同的类,一个在IsoAnimation.cs文件中,一个在IsoAnimator.cs文件中
@@ -115,7 +115,7 @@ public class IsoAnimator : MonoBehaviour
     void Update()
     {
         //如果当前动画帧的索引大于等于执行的动作的索引总数-1(就是当前动作动画执行完了)就跳出
-        if(frameIndex >= spritesPerDirection -1) return;
+        if(!variation.loop && frameIndex >= spritesPerDirection -1) return;
         //记录累计时间+=每帧时间*动画速度系数
         time += Time.deltaTime * speed;
         //如果累计时间大于等于每帧动画时间,就执行
@@ -125,8 +125,8 @@ public class IsoAnimator : MonoBehaviour
             time -= frameDuration;
 
             //>>>>帧数加一
-            //如果动画当前帧索引<执行的动作的索引总数-1(就是当前动作动画还没执行完)
-            if (frameIndex < spritesPerDirection - 1)
+            //如果动画当前帧索引<执行的动作的索引总数(就是当前动作动画还没执行完)
+            if (frameIndex < spritesPerDirection)
             //那么动作索引+1(就是动作动画进行到下一帧)
                 frameIndex += 1;
 
@@ -135,8 +135,8 @@ public class IsoAnimator : MonoBehaviour
             if (frameIndex == spritesPerDirection / 2)
             //向所有MonoBehaviour组件光比发"OnAnimationMiddle"消息,形参2的作用是不要求接受者必须有这个方法,没有就不执行不会报错
                 SendMessage("OnAnimationMiddle", SendMessageOptions.DontRequireReceiver);
-            //如果动画当前帧索引==执行的动作的索引总数-1(就是当前动作动画执行完了)
-            if (frameIndex == spritesPerDirection - 1)
+            //如果动画当前帧索引==执行的动作的索引总数(就是当前动作动画执行完了)
+            if (frameIndex == spritesPerDirection)
             {
             //向所有MonoBehaviour组件光比发"OnAnimationFinish"消息,形参2的作用是不要求接受者必须有这个方法,没有就不执行不会报错
                 SendMessage("OnAnimationFinish", SendMessageOptions.DontRequireReceiver);
@@ -161,8 +161,8 @@ public class IsoAnimator : MonoBehaviour
         if (character)
         //动画朝向=(角色朝向+动画朝向偏移量)%动画朝向数量,这些量都是索引
             direction = (character.direction + anim.directionOffset) % anim.directionCount;
-        //精灵索引 = 动画朝向*每个朝向的动画帧数量(定位到当前的动作)+当前帧索引(定位到当前的动作的当前帧)
-        int spriteIndex = direction * spritesPerDirection + frameIndex;
+        //精灵索引 = 动画朝向*每个朝向的动画帧数量(定位到当前的动作)+当前帧索引(定位到当前的动作的当前帧)%每个朝向的动画帧数量(定位到当前的动作的当前帧)
+        int spriteIndex = direction * spritesPerDirection + frameIndex % spritesPerDirection;
         //渲染器中的精灵引用=当前动作的精灵数组[精灵索引](就是渲染器中的精灵引用=当前动作的精灵数组[当前帧索引])
         spriteRenderer.sprite = variation.sprites[spriteIndex];
     }

@@ -41,9 +41,9 @@ public class Character : MonoBehaviour
     [Tooltip("寻路至敌人会在这个距离停下并开始攻击")]
     public float attackRange = 2.5f;
     /// <summary>
-    /// 是否在跑动
+    /// 姿态:奔跑
     /// </summary>
-    [Tooltip("是否奔跑")]
+    [Tooltip("姿态:奔跑")]
     public bool run = false;
     /// <summary>
     /// 受到伤害委托
@@ -95,7 +95,7 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 方向
+    /// 角色的当前朝向
     /// </summary>
     /// 特性:在Inspector面板中隐藏
     [HideInInspector]
@@ -108,21 +108,28 @@ public class Character : MonoBehaviour
     /// 动画组件
     /// </summary>
     IsoAnimator animator;
-
     /// <summary>
-    /// 路径,表现为一个装坐标的容器
+    /// 渲染器组件
+    /// </summary>
+    SpriteRenderer spriteRenderer;
+    /// <summary>
+    /// 路径,表现为一个装坐标的容器,存的是Step<步>
     /// </summary>
     List<Pathing.Step> path = new List<Pathing.Step>();
 
     /// <summary>
-    /// 已经移动的距离
+    /// 当前步的已经移动的距离
     /// </summary>
     float traveled = 0;
 
     /// <summary>
-    /// 目标方向
+    /// 预定的方向,角色应该面对的朝向;为了动画平滑,人物朝向会缓慢的改变至预定方向
     /// </summary>
-    int targetDirection = 0;
+    int desiredDirection = 0;
+    /// <summary>
+    /// 是否正在移动
+    /// </summary>
+    bool moving = false;
     /// <summary>
     /// 是否正在攻击
     /// </summary>
@@ -164,12 +171,17 @@ public class Character : MonoBehaviour
     /// 最大生命值
     /// </summary>
     public int maxHealth = 100;
+    /// <summary>
+    /// 目标的坐标点
+    /// </summary>
+    Vector2 targetPoint;
 
     private void Awake()
     {
-        //获取两个组件
+        //获取组件
         iso = GetComponent<Iso>();
         animator = GetComponent<IsoAnimator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     /// <summary>
@@ -181,11 +193,8 @@ public class Character : MonoBehaviour
     {
         //先放弃当前的行走动作(会保留最后一步做为path[0].pos)
         AbortMovement();
-        //如果保留了最后一步,新路径起始坐标是path[0].pos.
-        //如果路径为空,代表人物原本是静止的,起始坐标就是人物当前网格的坐标iso.tilePos
-        Vector2 startPos = path.Count > 0 ? path[0].pos : iso.tilePos;
-        //添加路径,生成路径,起始坐标是startPos,目标坐标是target,方向数量是directionCount,最小范围是minRange
-        path.AddRange(Pathing.BuildPath(Iso.Snap(startPos), target, directionCount,minRange));
+        //添加路径,生成路径,起始坐标是iso.pos,目标坐标是target,方向数量是directionCount,最小范围是minRange
+        path.AddRange(Pathing.BuildPath(iso.pos, target, directionCount,minRange));
     }
 
     /// <summary>
@@ -197,7 +206,7 @@ public class Character : MonoBehaviour
         //正在攻击动作中就不能使用,直接返回
         if (attack || takingDamage || dying || dead) return;
         //生成路径,止步最小范围是互动范围
-        PathTo(usable.GetComponent<Iso>().tilePos, useRange);
+        PathTo(usable.GetComponent<Iso>().pos, useRange);
         //生成路径后把当前互动物置为现在使用的这个,因为生成路径会重置当前互动物体为空,所以放在后面
         this.usable = usable;
     }
@@ -214,28 +223,40 @@ public class Character : MonoBehaviour
         PathTo(target);
     }
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="target"></param>
+    public void GoToSmooth(Vector2 target)
+    {
+        //如果正在执行攻击动作,则不能走,直接跳出
+        if (attack || takingDamage || dying || dead) return;
+
+        //目标赋值给目标点
+        targetPoint = target;
+        //进入行走状态
+        moving = true;
+    }
+    /// <summary>
     /// 瞬移
     /// </summary>
     /// <param name="target">目标点</param>
     public void Teleport(Vector2 target)
     {
-        if (attack || takingDamage) return;
+        if (attack && takingDamage) return;
         //判断目标网格是否可通行
         if (Tilemap.instance[target])
         {
             //可通行就直接瞬移
             iso.pos = target;
-            iso.tilePos = target;
         }
         else
         {
             //不可通行就画路径,准备瞬移到按照寻路的规则的目标网格
-            var pathToTarget = Pathing.BuildPath(Iso.Snap(iso.tilePos), target,directionCount);
+            var pathToTarget = Pathing.BuildPath(iso.pos, target,directionCount);
             //路径不为空,为空就返回
             if (pathToTarget.Count == 0) return;
             //长度-1,就是路径容器中的最后一个路点,瞬移过去
             iso.pos = pathToTarget[pathToTarget.Count - 1].pos;
-            iso.tilePos = iso.pos;
         }
         //既然是瞬移,就把路径清空
         path.Clear();
@@ -253,7 +274,7 @@ public class Character : MonoBehaviour
         usable = null;
         targetCharacter = null;
 
-        //如果路径还没走完,就走完当前这一步(一帧的行走距离)
+        //如果路径还没走完,就走完当前这一步
         if(path.Count > 0)
         {
             //存路径的第一步的
@@ -276,12 +297,11 @@ public class Character : MonoBehaviour
 
     private void Update()
     {
-        //画线人物站立的网格画线
-        Iso.DebugDrawTile(iso.tilePos);
         //画路径线
         Pathing.DebugDrawPath(path);
         //移动角色
-        Move();
+        MoveAlongPath();
+        MoveToTargetPoint();
 
         //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
         //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
@@ -292,7 +312,7 @@ public class Character : MonoBehaviour
             if (usable)
             {
                 //如果目标的网格和角色的网格距离小于等于互动范围,就执行互动
-                if (Vector2.Distance(usable.GetComponent<Iso>().tilePos, iso.tilePos) <= useRange) usable.Use();
+                if (Vector2.Distance(usable.GetComponent<Iso>().pos, iso.pos) <= useRange) usable.Use();
                 //执行完毕后,把目标置空
                 usable = null;
                 m_Target = null;
@@ -301,50 +321,73 @@ public class Character : MonoBehaviour
             if (targetCharacter && !attack)
             {
                 //如果目标的网格和角色的网格距离小于等于攻击范围,就执行攻击
-                Vector2 target = targetCharacter.GetComponent<Iso>().tilePos;
-                if (Vector2.Distance(target, iso.tilePos) <= attackRange)
+                Vector2 target = targetCharacter.GetComponent<Iso>().pos;
+                if (Vector2.Distance(target, iso.pos) <= attackRange)
                 {
                     //状态修改为攻击中
                     attack = true;
                     //获取到目标的方向的编号
-                    targetDirection = direction = Iso.Direction(iso.tilePos, target, directionCount);
+                    desiredDirection = direction = Iso.Direction(iso.pos, target, directionCount);
                 }
             }
         }
-        //更新个动画吧
+        //更新个朝向吧
+        UpdateDirection();
+    }
+
+    void LateUpdate()
+    {
         UpdateAnimation();
     }
     /// <summary>
-    /// 移动角色
+    /// 更新朝向
+    /// 每帧更新一次
     /// </summary>
-    private void Move()
+    void UpdateDirection()
     {
-        //分支1.路径为空就返回
+        //不再死亡|死亡中|攻击中|挨打中|当前朝向不等于预定的朝向,就执行
+        if(!dead &&!dying &&!attack &&!takingDamage && direction != desiredDirection)
+        {
+            //Tools.ShortestDelta获取两个方向的角度,(int)Mathf.Sign获取角度的正负号(顺逆时针)
+            int diff = (int)Mathf.Sign(Tools.ShortestDelta(direction,desiredDirection,directionCount));
+            //当前朝向+1或-1(顺逆时针),+ directionCount) % directionCount是取余数,防止超出范围.这里是索引,就是每帧只变更1索引的角度
+            direction = (direction + diff + directionCount) % directionCount;
+        }
+    }
+    /// <summary>
+    /// 沿着路径移动角色
+    /// </summary>
+    private void MoveAlongPath()
+    {
+        //分支1.路径为空,攻击中,挨打中,死亡中,死亡了,就直接返回
         if (path.Count == 0 || attack || takingDamage || dead || dying) return;
 
 
-        //获取第一个路径
+        //获取当前步
         Vector2 step = path[0].direction;
-        //计算第一路径的长度;
+        //计算当前步的长度;
         float stepLen = step.magnitude;
 
         //计算当前帧的移动距离
         float distance = speed * Time.deltaTime;
 
-        //分支2.当下一帧要经过第一路径了,已走距离加上当前帧距离超过第一路径长度
+        //分支2.如果当步已移动距离+当前帧的移动距离,超出了当前的步长就循环
         while (traveled + distance >= stepLen)
         {
-            //算距离第一个路点的距离
+            //算距离当前步的坐标点的距离
             float firstPart = stepLen - traveled;
-            //角色移动到第一路点,具体操作是把第一路径归一化乘以距离.归一化就是把路径变成方向,乘以长度后就会变成一端路径.
-            iso.pos += step.normalized * firstPart;
-            //当前帧距离,要减去上面角色移动掉的距离.
+            //角色移动到当前步的坐标点,具体操作是把当前步归一化(变成方向),乘以距离就成了到当前步坐标点的向量,加上角色当前坐标,就成了当前步的坐标了.
+            Vector2 newPos = iso.pos + step.normalized * firstPart;
+            //最后复制给角色坐标
+            iso.pos = newPos;
+            //因为前面移动掉了一部分,所以当前帧的移动距离要减去掉的那部分
             distance -= firstPart;
-            //更新已经移动了的距离(不明白为什么要减去第一条路径的长度)
+            //重置当前步的已移动距离firstPart - stepLen = -traveled
+            //traveled += -traveled = 0;
+            //这样的操作应该是担心到了float类型的精度问题,所以用这种方式来重置
+            //当前步的已移动距离归零
             traveled += firstPart - stepLen;
-            //更新角色所在网格的位置
-            iso.tilePos += step;
-            //第一段路径已经走完了,删除
+            //当前步已经走完了,删除
             path.RemoveAt(0);
             //路径不为空就继续获取下面的路径
             if (path.Count > 0)
@@ -361,14 +404,51 @@ public class Character : MonoBehaviour
         //分支4.上面代码执行完之后路径空了,转为待机
         if (path.Count == 0)
         {
-            //坐标取整
-            iso.pos.x = Mathf.Round(iso.pos.x);
-            iso.pos.y = Mathf.Round(iso.pos.y);
             //移动距离归零
             traveled = 0;
         }
+        //分支5.如果以上条件皆不成立,那么预定的朝向就是当前路径的朝向
+        else
+        {
+            desiredDirection = path[0].directionIndex;
+        }
+
+        //如果路径不为空,那么就处于行走姿态
+        moving = path.Count != 0;
     }
 
+    /// <summary>
+    /// 移动到目标点
+    /// 强行移动到目标点,理论上并不会被运行,因为要同时满足path.Count > 0 || !moving
+    /// </summary>
+    void MoveToTargetPoint()
+    {
+        //如果路径不为空,不在移动中,攻击中,挨打中,死亡中,死亡了,就直接返回
+        if(path.Count > 0 || !moving || attack || takingDamage || dead || dying) return;
+
+        //如果距离目标点小于1,就跳出
+        if(Vector2.Distance(iso.pos,targetPoint) < 1)
+        {
+            //行走姿态置为否,返回
+            moving = false;
+            return;
+        }
+
+        //当前帧的移动距离
+        float distance = speed * Time.deltaTime;
+        //获取角色坐标到目标点的方向
+        var dir = (targetPoint - iso.pos).normalized;
+        //当前帧的移动
+        iso.pos += dir * distance;
+
+        //和上面那个一样,如果距离目标点小于1,就跳出
+        if(Vector2.Distance(iso.pos,targetPoint) < 1)
+        {
+            moving = false;
+            return;
+        }
+        
+    }
     /// <summary>
     /// 更新动画
     /// </summary>
@@ -400,28 +480,15 @@ public class Character : MonoBehaviour
         }
 
         //没有路径就是待机状态
-        else if(path.Count == 0)
+        else if(moving)
         {
             //给动画名赋值
-            animation = "Idle";
+            animation = run ? "Run" : "Walk";
         }
         //否则就是行走
         else
         {
-            //通过奔跑标签判断是跑还是走
-            animation = run ? "Run" : "Walk";
-            //目标方向是路径的第一步的方向
-            targetDirection = path[0].directionIndex;
-        }
-
-        //如果人物朝向和目标方向不一样,就转向
-        if (!dead && !dying && !attack && !takingDamage && direction != targetDirection)
-        {
-
-            //计算当前方向和目标方向的夹角,获取夹角的正负,正数就是顺时针,负数就是逆时针
-            int diff = (int)Mathf.Sign(Tools.ShortestDelta(direction, targetDirection, directionCount));
-            //平滑的更新当前方向,确保方向值在 [0, directionCount - 1] 范围内
-            direction = (direction + diff + directionCount) % directionCount;
+            animation = "Idle";
         }
         animator.SetState(animation);
     }
@@ -433,7 +500,7 @@ public class Character : MonoBehaviour
     public void LookAt(Vector3 target)
     {
         //目标方向等于自身-目标的方向
-        targetDirection = Iso.Direction(iso.tilePos, target,directionCount);
+        desiredDirection = Iso.Direction(iso.pos, target,directionCount);
     }
 
     /// <summary>
@@ -442,9 +509,9 @@ public class Character : MonoBehaviour
     public void Attack()
     {
         //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
-        if (!dead && dying && !attack && !takingDamage && direction == targetDirection && path.Count == 0)
+        if (!dead && !dying && !attack && !takingDamage && direction == desiredDirection && path.Count == 0)
         {
-            //进入攻击状态
+            //进入攻击姿态
             attack = true;
         }
     }
@@ -460,7 +527,7 @@ public class Character : MonoBehaviour
         //获取目标的Iso组件
         Iso targetIso = targetCharacter.GetComponent<Iso>();
         //行至目标出,以攻击范围做为止步范围
-        PathTo(targetIso.tilePos, attackRange);
+        PathTo(targetIso.pos, attackRange);
         //获取目标的角色组件
         this.targetCharacter = targetCharacter;
     }
@@ -487,13 +554,14 @@ public class Character : MonoBehaviour
         //如果生命打光了
         else
         {
-            //人物朝向(索引) = 当前对象 向着 打人者的方向(索引)
-            direction = Iso.Direction(iso.tilePos,originator.iso.tilePos,directionCount);
-            //目标方向=人物方向
-            targetDirection = direction;
+            //目标方向(索引) = 人物朝向(索引) = 当前对象 向着 打人者的方向(索引)
+            desiredDirection = direction = Iso.Direction(iso.pos,originator.iso.pos,directionCount);
             //死亡状态置是
             dying = true;
+            //攻击状态置否
+            attack = false;
         }
+        moving = false;
     }
     /// <summary>
     /// 在动画播放时执行的方法(不是系统的api哈,就是自己取得名字)
@@ -527,6 +595,9 @@ public class Character : MonoBehaviour
         //如果是死亡中(动画播放中),这是动画结束事件,所以就转入死亡状态
         if (dying)
         {
+            //把渲染器的排序层名称改为"OnFloor"
+            spriteRenderer.sortingLayerName = "OnFloor";
+            //死亡中状态为否
             dying = false;
             //死亡状态置为true
             dead = true;
