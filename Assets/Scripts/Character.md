@@ -9,6 +9,7 @@
 |attackSpeed|float|[Tooltip("")]|角色的攻击速度>>影响攻击动画的播放速度>>动画事件触发对方挨打方法>>以次实质的攻击速度也提升了|
 |useRange|float|[Tooltip("")]|角色的互动范围,被互动对象进入这个距离寻路止步并开始互动|
 |attackRange|float|[Tooltip("")]|角色的攻击范围,对受害者进入这个距离寻路止步并开始攻击|
+|diameter|float|[Tooltip("")]|角色的直径,攻击/互动范围要加上这个直径的半径|
 |run|bool|[Tooltip("")]|姿态:奔跑,姿态做为人物当前行为的标识,用于判断播放走路动画还是奔跑动画|
 |TakeDamageHandler|delegate|无|委托:受到伤害|
 |OnTakeDamage|event|无|事件:受到伤害|
@@ -50,6 +51,8 @@
 |GoToSmooth|void|Vector2 target|并未使用过的方法,把目标引用赋值给目标的坐标|
 |Teleport|void|Vector2 target|瞬移,如果目标点可通行(是状态,不是能不能走过去),就直接瞬移,否则寻路,并瞬移到离目标最近的点|PlayerController.cs>>F4按键|
 |LookAt|void|Vector3 target|面向目标,获取自身和目标之间的朝向索引,赋值给预定的方向|PlayerController的Update|
+|LookAtImmidietly|void|Vector3 target|立即面向目标,获取自身和目标之间的朝向索引,赋值给当前的方向;这是用于攻击目标时用的,即可面向目标|Update方法|
+
 
 ### 私有
 |方法名|返回值|参数|说明|引用说明|
@@ -58,7 +61,7 @@
 |Update|void|无|1.画路径线  2.按生成的路径移动角色  3.检测是否触发角色行为[攻击/互动]  4.更新朝向|
 |LateUpdate|void|无|更新动画|
 |AbortMovement|void|无|放弃移动,把目标信息和路径清空,如果路径没走完,保留下一步|PathTo方法|
-|UpdateDirection|void|无|更新朝向,当前坐标每帧向目标坐标的方向+1索引|Update方法|
+|Turn|void|无|更新朝向,当前坐标每帧向目标坐标的方向+1索引|Update方法|
 |MoveAlongPath|void|无|沿着路径移动角色,根据不同的状态给出5种相应的处理|Update方法|
 |MoveToTargetPoint|void|无|强行移动到目标点,做为一个BUG的保底,理论上是不会触发的,因为它必须在路径不为空,并且不再行走状态下在能运行|Update方法|
 |UpdateAnimation|void|无|更新动画,根据人物姿态把姿态传递给动画状态机|Update方法,OnAnimationFinish方法|

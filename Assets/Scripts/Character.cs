@@ -34,12 +34,18 @@ public class Character : MonoBehaviour
     /// 互动范围
     /// </summary>
     [Tooltip("寻路至互动物体会在这个距离停下并开始互动")]
-    public float useRange = 1.5f;
+    public float useRange = 1f;
     /// <summary>
     /// 攻击范围
     /// </summary>
     [Tooltip("寻路至敌人会在这个距离停下并开始攻击")]
-    public float attackRange = 2.5f;
+    public float attackRange = 1f;
+    /// <summary>
+    /// 角色模型直径
+    /// </summary>
+    [Tooltip("攻击/互动范围要加上这个直径的半径")]
+    /// </summary>
+    public float diameter = 1f;
     /// <summary>
     /// 姿态:奔跑
     /// </summary>
@@ -312,7 +318,7 @@ public class Character : MonoBehaviour
             if (usable)
             {
                 //如果目标的网格和角色的网格距离小于等于互动范围,就执行互动
-                if (Vector2.Distance(usable.GetComponent<Iso>().pos, iso.pos) <= useRange) usable.Use();
+                if (Vector2.Distance(usable.GetComponent<Iso>().pos, iso.pos) <= useRange + diameter / 2) usable.Use();
                 //执行完毕后,把目标置空
                 usable = null;
                 m_Target = null;
@@ -320,19 +326,20 @@ public class Character : MonoBehaviour
             //如果目标有角色组件
             if (targetCharacter && !attack)
             {
-                //如果目标的网格和角色的网格距离小于等于攻击范围,就执行攻击
+                //获取目标角色的坐标点
                 Vector2 target = targetCharacter.GetComponent<Iso>().pos;
-                if (Vector2.Distance(target, iso.pos) <= attackRange)
+                //如果目标和角色的距离 <= 攻击范围 + 角色直径 / 2 + 目标直径 / 2,就执行攻击
+                if (Vector2.Distance(target, iso.pos) <= attackRange + diameter / 2 + targetCharacter.diameter / 2)
                 {
                     //状态修改为攻击中
                     attack = true;
                     //获取到目标的方向的编号
-                    desiredDirection = direction = Iso.Direction(iso.pos, target, directionCount);
+                    LookAtImmidietly(target);
                 }
             }
         }
         //更新个朝向吧
-        UpdateDirection();
+        Turn();
     }
 
     void LateUpdate()
@@ -340,10 +347,10 @@ public class Character : MonoBehaviour
         UpdateAnimation();
     }
     /// <summary>
-    /// 更新朝向
+    /// 转头
     /// 每帧更新一次
     /// </summary>
-    void UpdateDirection()
+    void Turn()
     {
         //不再死亡|死亡中|攻击中|挨打中|当前朝向不等于预定的朝向,就执行
         if(!dead &&!dying &&!attack &&!takingDamage && direction != desiredDirection)
@@ -494,15 +501,24 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 观察(转向)
+    /// 注释(转向)
+    /// 面向目标
     /// </summary>
     /// <param name="target">鼠标</param>
     public void LookAt(Vector3 target)
     {
-        //目标方向等于自身-目标的方向
-        desiredDirection = Iso.Direction(iso.pos, target,directionCount);
+        //如果不再行走中,目标方向 = 自身-目标的方向
+        if(!moving) desiredDirection = Iso.Direction(iso.pos, target,directionCount);
     }
-
+    /// <summary>
+    /// 立刻注释(转向)
+    /// 立刻面向目标不进行平滑处理
+    /// </summary>
+    /// <param name="target"></param>
+    public void LookAtImmidietly(Vector3 target)
+    {
+        direction = desiredDirection = Iso.Direction(iso.pos, target, directionCount);
+    }
     /// <summary>
     /// 攻击
     /// </summary>
@@ -527,7 +543,7 @@ public class Character : MonoBehaviour
         //获取目标的Iso组件
         Iso targetIso = targetCharacter.GetComponent<Iso>();
         //行至目标出,以攻击范围做为止步范围
-        PathTo(targetIso.pos, attackRange);
+        PathTo(targetIso.pos, attackRange + diameter / 2 + targetCharacter.diameter / 2);
         //获取目标的角色组件
         this.targetCharacter = targetCharacter;
     }
@@ -555,13 +571,14 @@ public class Character : MonoBehaviour
         else
         {
             //目标方向(索引) = 人物朝向(索引) = 当前对象 向着 打人者的方向(索引)
-            desiredDirection = direction = Iso.Direction(iso.pos,originator.iso.pos,directionCount);
+            LookAtImmidietly(originator.iso.pos);
             //死亡状态置是
             dying = true;
             //攻击状态置否
             attack = false;
         }
         moving = false;
+        targetCharacter = null;
     }
     /// <summary>
     /// 在动画播放时执行的方法(不是系统的api哈,就是自己取得名字)

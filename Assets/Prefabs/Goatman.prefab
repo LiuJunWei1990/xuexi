@@ -105,10 +105,13 @@ MonoBehaviour:
   speed: 5
   attackSpeed: 1
   useRange: 1.5
-  attackRange: 3.5
+  attackRange: 1.2
+  diameter: 2
   run: 0
   direction: 0
   attackDamage: 3
+  health: 100
+  maxHealth: 100
 --- !u!114 &395736104213908321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,7 +125,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pos: {x: -3, y: -2}
-  tilePos: {x: -3, y: -2}
   macro: 0
   sort: 1
 --- !u!61 &3563416637136847249
