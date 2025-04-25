@@ -43,12 +43,11 @@
 ### 公开
 |方法名|返回值|参数|说明|引用说明|
 |:----:|:--:|:--:|:--:|:--:|
-|PathTo|void|Vector2 target,float minRange = 0.1f|调用Pathing.BuildPath生成路径,把路径添加到path字段里面|GoTo,Attack,Use方法|
-|GoTo|void|Vector2 target|调用PathTo生成路径|GoToSmooth的else分支|
+|PathTo|void|Vector2 target,float minRange = 0.1f|调用Pathing.BuildPath生成路径,把路径添加到path字段里面|MoveToTargetPoint,Attack,Use方法|
+|GoTo|void|Vector2 target|行走...至,通过赋值targetPoint来实现移动|PlayerController的单击左键事件,Roam方法|
 |Attack|void|无|强制攻击按键触发的版本,直接进入攻击姿态|单击右键 或者 单击左键+左Shift|
 |Attack|void|Character targetCharacter|寻路至目标,并将目标赋值给this.targetCharacter,当Update检测该值不为空时,靠近目标会发动攻击|target[属性]的set方法;DummyController的OnTakeDamage挨打事件|
 |TakeDamage|void|Character originator,int damage|挨打,被攻击动画事件触发,扣血>>触发挨打事件/死亡>>行走姿态置否,如果是怪物,挨打事件还会执行攻击方法|target[属性]的set方法|
-|GoToSmooth|void|Vector2 target|GoTo的平滑版,替换了原来GoTo的位置,只有在目标点不可通行的情况下才会调用GoTo了|PlayerController的单击左键事件,Roam方法|
 |Teleport|void|Vector2 target|瞬移,如果目标点可通行(是状态,不是能不能走过去),就直接瞬移,否则寻路,并瞬移到离目标最近的点|PlayerController.cs>>F4按键|
 |LookAt|void|Vector3 target|面向目标,获取自身和目标之间的朝向索引,赋值给预定的方向|PlayerController的Update|
 |LookAtImmidietly|void|Vector3 target|立即面向目标,获取自身和目标之间的朝向索引,赋值给当前的方向;这是用于攻击目标时用的,即可面向目标|Update方法|
@@ -61,6 +60,7 @@
 |Update|void|无|1.画路径线  2.按生成的路径移动角色  3.检测是否触发角色行为[攻击/互动]  4.更新朝向|
 |LateUpdate|void|无|更新动画|
 |AbortMovement|void|无|放弃移动,把目标信息和路径清空,如果路径没走完,保留下一步|PathTo方法|
+|AbortPath|放弃当前路径|无|放弃当前路径,把目标信息和路径清空,如果路径没走完,保留下一步|PathTo方法|
 |Turn|void|无|更新朝向,当前坐标每帧向目标坐标的方向+1索引|Update方法|
 |MoveAlongPath|void|无|沿着路径移动角色,根据不同的状态给出5种相应的处理|Update方法|
 |MoveToTargetPoint|void|无|处于没有路径的状态下,又有目标点,就移动到目标点,会在每一步的间隙中生效使移动更顺滑并且不会半路中断了|Update方法|

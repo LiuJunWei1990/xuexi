@@ -197,10 +197,29 @@ public class Character : MonoBehaviour
     /// <param name="minRange">最小范围?</param>
     void PathTo(Vector2 target,float minRange = 0.1f)
     {
-        //先放弃当前的行走动作(会保留最后一步做为path[0].pos)
-        AbortMovement();
-        //添加路径,生成路径,起始坐标是iso.pos,目标坐标是target,方向数量是directionCount,最小范围是minRange
-        path.AddRange(Pathing.BuildPath(iso.pos, target, directionCount,minRange));
+        //先放弃当前的路径
+        AbortPath();
+        //获取自身>>目标的朝向
+        var dir = (target - iso.pos).normalized;
+        ///获取前方坐标,前方坐标=自身坐标+方向*直径/2+1
+        var forePos = iso.pos + dir * (diameter / 2 + 1);
+        //画线,自身>>前方坐标
+        Debug.DrawLine(Iso.MapToWorld(iso.pos), Iso.MapToWorld(forePos));
+        //画前方坐标的格子
+        Iso.DebugDrawTile(Iso.Snap(forePos), Color.yellow, 0.2f);
+        //如果前方坐标可通行
+        if (Tilemap.instance[Iso.Snap(forePos)])
+        {
+            //给目标的坐标点赋值
+            targetPoint = target;
+            //进入行走中姿态
+            moving = true;
+        }
+        //如果前方坐标不可通行,生成路径A*寻路
+        else
+        {
+            path = Pathing.BuildPath(iso.pos, target, directionCount,minRange     );
+        }
     }
 
     /// <summary>
@@ -218,49 +237,21 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 行走至(生成路径,移动是尤Move()实现的)
+    /// 行走...至
+    /// 点击地板或怪物巡逻调用的方法,通过赋值targetPoint来实现
     /// </summary>
-    /// <param name="target">目标点(鼠标点击处)</param>
+    /// <param name="target">目标点</param>
     public void GoTo(Vector2 target)
     {
-        //如果正在执行攻击动作,则不能走,直接跳出
-        if (attack || takingDamage || dying || dead) return;
-        //生成路径
-        PathTo(target);
-    }
-    /// <summary>
-    /// GOTo的平滑版
-    /// 如果可通行：直接移动，不生成路径;如果不可通行或者目标是对象：调用 GoTo 方法生成路径
-    /// 不使用A*寻路,可能也能更节省电脑性能
-    /// </summary>
-    /// <param name="target"></param>
-    public void GoToSmooth(Vector2 target)
-    {
-        //如果正在执行攻击动作,则不能走,直接跳出
-        if (attack || takingDamage || dying || dead) return;
-
-        //获取自身到目标的方向
-        var dir = (target - iso.pos).normalized;
-        //获取前方坐标,前方坐标=自身坐标+方向*直径
-        var forePos = iso.pos + dir * diameter;
-        //画线,自身>>前方坐标
-        Debug.DrawLine(Iso.MapToWorld(iso.pos), Iso.MapToWorld(forePos));
-        Iso.DebugDrawTile(Iso.Snap(forePos),Color.blue,0.2f);
-        //如果前方坐标可通行
-        if(Tilemap.instance[Iso.Snap(forePos)])
-        {
-            //放弃行走动作
-            AbortMovement();
-            //给目标的坐标点赋值
-            targetPoint = target;
-            //进入行走中姿态
-            moving = true;
-        }
-        else
-        {
-            //否则,如果前方坐标不可通行,就生成路径
-            GoTo(target);
-        }
+        //进入行走中姿态
+        moving = true;
+        //给目标的坐标点赋值
+        targetPoint = target;
+        //调用放弃当前路径方法(这里面包括尝试生成新路径)
+        AbortPath();
+        //可互动物体和目标角色都置为空
+        usable = null;
+        targetCharacter = null;
     }
     /// <summary>
     /// 瞬移
@@ -291,14 +282,12 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 放弃行走动作
+    /// 放弃当前路径
     /// </summary>
-    private void AbortMovement()
+    private void AbortPath()
     {
         //把关于路径的所有变量都清空
         m_Target = null;
-        usable = null;
-        targetCharacter = null;
 
         //如果路径还没走完,就走完当前这一步
         if(path.Count > 0)
@@ -326,22 +315,27 @@ public class Character : MonoBehaviour
         //画路径线
         Pathing.DebugDrawPath(path);
         //移动角色
-        MoveAlongPath();
         MoveToTargetPoint();
-
+        MoveAlongPath();
         //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
         //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
         //当寻路结束
-        if (path.Count == 0 && !takingDamage && !dead &&!dying)
+        if (!takingDamage && !dead &&!dying)
         {
             //如果目标有互动组件
             if (usable)
             {
-                //如果目标的网格和角色的网格距离小于等于互动范围,就执行互动
-                if (Vector2.Distance(usable.GetComponent<Iso>().pos, iso.pos) <= useRange + diameter / 2) usable.Use();
-                //执行完毕后,把目标置空
-                usable = null;
-                m_Target = null;
+                //如果目标的网格和角色的网格距离小于等于互动范围,就执行
+                if (Vector2.Distance(usable.GetComponent<Iso>().pos, iso.pos) <= useRange + diameter / 2)
+                {
+                    //执行可互动目标的互动方法
+                    usable.Use();
+                    //离开行走中姿态
+                    moving = false;
+                    //执行完毕后,把目标置空
+                    usable = null;
+                    m_Target = null;
+                }
             }
             //如果目标有角色组件
             if (targetCharacter && !attack)
@@ -351,6 +345,8 @@ public class Character : MonoBehaviour
                 //如果目标和角色的距离 <= 攻击范围 + 角色直径 / 2 + 目标直径 / 2,就执行攻击
                 if (Vector2.Distance(target, iso.pos) <= attackRange + diameter / 2 + targetCharacter.diameter / 2)
                 {
+                    //离开行走中姿态
+                    moving = false;
                     //状态修改为攻击中
                     attack = true;
                     //获取到目标的方向的编号
@@ -387,7 +383,7 @@ public class Character : MonoBehaviour
     private void MoveAlongPath()
     {
         //分支1.路径为空,攻击中,挨打中,死亡中,死亡了,就直接返回
-        if (path.Count == 0 || attack || takingDamage || dead || dying) return;
+        if (path.Count == 0 ||!moving || attack || takingDamage || dead || dying) return;
 
 
         //获取当前步
@@ -439,9 +435,6 @@ public class Character : MonoBehaviour
         {
             desiredDirection = path[0].directionIndex;
         }
-
-        //如果路径不为空,那么就处于行走姿态
-        moving = path.Count != 0;
     }
 
     /// <summary>
@@ -460,21 +453,12 @@ public class Character : MonoBehaviour
             moving = false;
             return;
         }
+        //尝试生成路径
+        PathTo(targetPoint);
+        //如果路径生成成功了,就跳出,这个方法的下一个方法就是沿着路径移动
+        if(path.Count > 0) return;
         //获取角色坐标到目标点的方向
         var dir = (targetPoint - iso.pos).normalized;
-        //获取前方坐标,前方坐标=自身坐标+方向*直径
-        var forePos = iso.pos + dir * diameter;
-        //画线,自身>>前方坐标
-        Debug.DrawLine(Iso.MapToWorld(iso.pos), Iso.MapToWorld(forePos));
-        //画前方坐标的格子
-        Iso.DebugDrawTile(Iso.Snap(forePos),Color.yellow,0.2f);
-        //如果前方坐标不可通行
-        if(!Tilemap.instance[Iso.Snap(forePos)])
-        {
-            //生成路径
-            PathTo(targetPoint);
-            return;
-        }
         //当前帧的移动距离
         float distance = speed * Time.deltaTime;
         //当前帧的移动
@@ -485,7 +469,6 @@ public class Character : MonoBehaviour
         if(Vector2.Distance(iso.pos,targetPoint) < 1)
         {
             moving = false;
-            return;
         }
         
     }
@@ -579,6 +562,8 @@ public class Character : MonoBehaviour
         PathTo(targetIso.pos, attackRange + diameter / 2 + targetCharacter.diameter / 2);
         //获取目标的角色组件
         this.targetCharacter = targetCharacter;
+        //由于有了攻击目标可互动目标置空
+        usable = null;
     }
 
     /// <summary>

@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour
             //为空就是走路
             else
             {
-                character.GoToSmooth(targetTile);
+                character.GoTo(targetTile);
             }
         }
         //按下Tab键

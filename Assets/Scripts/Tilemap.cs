@@ -142,7 +142,7 @@ public class Tilemap : MonoBehaviour
     private int MapToIndex(Vector3 tilePos)
     {
         //Mathf.Round四舍五入取整,保证坐标精度
-        return origin + (int)Mathf.Round(tilePos.x + tilePos.y * widht);
+        return origin + Mathf.RoundToInt(tilePos.x + tilePos.y * widht);
     }
 
 
