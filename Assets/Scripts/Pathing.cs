@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Pathing
@@ -216,8 +217,35 @@ public class Pathing
         //方向都遍历完了之后,如果新节点还未置空就回收该节点,就是添加到pool节点池里面.
         if (newNode != null) newNode.Recycle();
     }
+    /// <summary>
+    /// 这个方法时遍历所有节点,直到遇见不可通行的节点
+    /// </summary>
+    /// <param name="node"></param>
+    static private void Collapse(Node node)
+    {
+        //如果父节点不为空,且父节点的父节点也不为空,就循环
+        while (node.parent!= null && node.parent.parent != null)
+        {
+            //设定可通行,默认是true
+            bool passable = true;
+            //如果可通行
+            if(passable)
+            {
+                //父节点的父节点的父节点赋值给父节点
+                node.parent = node.parent.parent;
+                //父节点的朝向 = 父节点的坐标 - 父节点的父节点的坐标
+                node.parent.direction = node.pos - node.parent.pos;
+                //父节点的朝向索引 = 父节点的坐标和父节点的父节点的坐标之间的方向索引
+                node.parent.dirctionIndex = Iso.Direction(node.parent.pos,node.pos,directions.Length);
+            }
+            //直到不可通行跳出循环
+            else
+            {
+                break;
+            }
+        }
 
-
+    }
     /// <summary>
     /// 从目标节点回溯,生成路径
     /// </summary>
@@ -313,16 +341,16 @@ public class Pathing
             }
         }
 
-        ///////////画线
-        //绘制关闭列表和开放列表中的节点
-        foreach (Node node in closeNodes)
-        {
-            Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
-        }
-        foreach (Node node in openNodes)
-        {
-            Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
-        }
+        // ///////////画线
+        // //绘制关闭列表和开放列表中的节点
+        // foreach (Node node in closeNodes)
+        // {
+        //     Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
+        // }
+        // foreach (Node node in openNodes)
+        // {
+        //     Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
+        // }
 
         //返回路径
         return path;
@@ -336,6 +364,13 @@ public class Pathing
         {
             //画线从当前点到下一步点
             Debug.DrawLine(Iso.MapToWorld(path[i].pos), Iso.MapToWorld(path[i+1].pos));
+        }
+
+        if(path.Count > 0)
+        {
+            var center = Iso.MapToWorld(path[path.Count - 1].pos);
+            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(0,0.1f)),center + Iso.MapToWorld(new Vector2(0,-0.1f)));
+            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(-0.1f, 0)), center + Iso.MapToWorld(new Vector2(0.1f, 0)));
         }
     }
 }

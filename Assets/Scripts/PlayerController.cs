@@ -126,8 +126,8 @@ public class PlayerController : MonoBehaviour
         }
         //画目标网格的边框,坐标是targetTile,可通行画绿框,不可通行画红框
         Iso.DebugDrawTile(targetTile, Tilemap.instance[targetTile] ? Color.green : Color.red, 0.1f);
-        //生成路径,当前坐标--目标网格，注意这仅仅是生成路径，就是会有debug那条线，没有加入Character的path属性是不会执行的
-        Pathing.BuildPath(iso.pos, targetTile,character.directionCount,character.useRange);
+        // //生成路径,当前坐标--目标网格，注意这仅仅是生成路径，就是会有debug那条线，没有加入Character的path属性是不会执行的
+        // Pathing.BuildPath(iso.pos, targetTile,character.directionCount,character.useRange);
 
         character.LookAt(IsoInput.mousePosition);
 
@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour
             //为空就是走路
             else
             {
-                character.GoTo(targetTile);
+                character.GoToSmooth(targetTile);
             }
         }
         //按下Tab键

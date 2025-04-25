@@ -60,7 +60,7 @@ public class DummyController : MonoBehaviour
             //生成一个周围8格的随机坐标,作为目标点
             var target = iso.pos+new Vector2(Random.Range(-8,8),Random.Range(-8,8));
             //行走至目标点
-            character.GoTo(target);
+            character.GoToSmooth(target);
             //等待1到5秒,再继续循环
             yield return new WaitForSeconds(Random.Range(1,5));
         }

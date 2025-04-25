@@ -229,7 +229,9 @@ public class Character : MonoBehaviour
         PathTo(target);
     }
     /// <summary>
-    /// 
+    /// GOTo的平滑版
+    /// 如果可通行：直接移动，不生成路径;如果不可通行或者目标是对象：调用 GoTo 方法生成路径
+    /// 不使用A*寻路,可能也能更节省电脑性能
     /// </summary>
     /// <param name="target"></param>
     public void GoToSmooth(Vector2 target)
@@ -237,10 +239,28 @@ public class Character : MonoBehaviour
         //如果正在执行攻击动作,则不能走,直接跳出
         if (attack || takingDamage || dying || dead) return;
 
-        //目标赋值给目标点
-        targetPoint = target;
-        //进入行走状态
-        moving = true;
+        //获取自身到目标的方向
+        var dir = (target - iso.pos).normalized;
+        //获取前方坐标,前方坐标=自身坐标+方向*直径
+        var forePos = iso.pos + dir * diameter;
+        //画线,自身>>前方坐标
+        Debug.DrawLine(Iso.MapToWorld(iso.pos), Iso.MapToWorld(forePos));
+        Iso.DebugDrawTile(Iso.Snap(forePos),Color.blue,0.2f);
+        //如果前方坐标可通行
+        if(Tilemap.instance[Iso.Snap(forePos)])
+        {
+            //放弃行走动作
+            AbortMovement();
+            //给目标的坐标点赋值
+            targetPoint = target;
+            //进入行走中姿态
+            moving = true;
+        }
+        else
+        {
+            //否则,如果前方坐标不可通行,就生成路径
+            GoTo(target);
+        }
     }
     /// <summary>
     /// 瞬移
@@ -426,7 +446,7 @@ public class Character : MonoBehaviour
 
     /// <summary>
     /// 移动到目标点
-    /// 强行移动到目标点,理论上并不会被运行,因为要同时满足path.Count > 0 || !moving
+    /// 处于没有路径的状态下,又有目标点,就移动到目标点,会在每一步的间隙中生效是移动更顺滑并且不会半路中断了
     /// </summary>
     void MoveToTargetPoint()
     {
@@ -440,14 +460,27 @@ public class Character : MonoBehaviour
             moving = false;
             return;
         }
-
-        //当前帧的移动距离
-        float distance = speed * Time.deltaTime;
         //获取角色坐标到目标点的方向
         var dir = (targetPoint - iso.pos).normalized;
+        //获取前方坐标,前方坐标=自身坐标+方向*直径
+        var forePos = iso.pos + dir * diameter;
+        //画线,自身>>前方坐标
+        Debug.DrawLine(Iso.MapToWorld(iso.pos), Iso.MapToWorld(forePos));
+        //画前方坐标的格子
+        Iso.DebugDrawTile(Iso.Snap(forePos),Color.yellow,0.2f);
+        //如果前方坐标不可通行
+        if(!Tilemap.instance[Iso.Snap(forePos)])
+        {
+            //生成路径
+            PathTo(targetPoint);
+            return;
+        }
+        //当前帧的移动距离
+        float distance = speed * Time.deltaTime;
         //当前帧的移动
         iso.pos += dir * distance;
-
+        //获取预定方向
+        desiredDirection = Iso.Direction(iso.pos, targetPoint, directionCount);
         //和上面那个一样,如果距离目标点小于1,就跳出
         if(Vector2.Distance(iso.pos,targetPoint) < 1)
         {
