@@ -489,6 +489,7 @@ public class Character : MonoBehaviour
                 //把新路径赋值给当前路径
                 path.AddRange(newPath);
             }
+            if(path.Count == 0) moving = false;
             //沿路径移动
             MoveAlongPath();
         }

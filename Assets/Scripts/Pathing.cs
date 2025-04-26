@@ -37,6 +37,7 @@ public class Pathing
     class Node : IEquatable<Node>, IComparable<Node>
     {
         public float gScore;                    // 节点的移动成本
+        public float hScore;                    // 节点的启发式距离评分
         public float score;                      // 节点的评分(成本 + 启发式距离)
         public Vector2 pos;                      // 节点的位置
         public Node parent;                      // 父节点
@@ -205,8 +206,10 @@ public class Pathing
                     //>>>>>节点评分:移动成本+启发式距离<<<<<<<<<<
                     //移动成本是自己填写的g分数+这一步的距离,因为每次只遍历中心点周围一圈的距离
                     newNode.gScore = node.gScore + direction.magnitude;
-                    //移动成本+启发式距离(目标点和新节点的距离)
-                    newNode.score = newNode.gScore + Vector2.Distance(target,newNode.pos);
+                    //启发是距离评分是目标点到新节点的距离
+                    newNode.hScore = Vector2.Distance(target, newNode.pos);
+                    //移动成本+启发式距离
+                    newNode.score = newNode.gScore + newNode.hScore;
                     //添加到开放节点中
                     openNodes.Add(newNode);
                     //新节点置空
@@ -296,13 +299,17 @@ public class Pathing
         startNode.parent = null;
         startNode.pos = from;
         startNode.gScore = 0;
-        startNode.score = 999; //这是第一个节点,评分无所谓,给个最高分就行,因为它是最远的
+        //初始节点的评分无穷大,反正是起始,所以无穷大就好
+        startNode.hScore = Mathf.Infinity;
+        startNode.score = Mathf.Infinity;
         openNodes.Add(startNode);
 
 
         ////////////开始生成
         //循环计数器,避免死循环的
         int iterCount = 0;
+        //父节点,起始节点,做为当前的父节点
+        Node bestNode = startNode;
         //开放列表不为空,就开始吧
         while (openNodes.Count > 0)
         {
@@ -310,11 +317,13 @@ public class Pathing
             openNodes.Sort();
             //处理第一个,处理完的会移至关闭列表,所以,永远都是处理第一个
             Node node = openNodes[0];
-            //如果目标不可通行 并且 节点有父节点 并且 节点的评分大于等于父节点(越寻越远了)
-            if (!Tilemap.instance[target] && node.parent != null && node.score > node.parent.score)
+            //如果当前节点的启发式距离评分小于父节点的启发式距离评分,就把当前节点做新的父节点
+            if(node.hScore < bestNode.hScore) bestNode = node;
+            //如果目标不可通行 并且 父节点不为空 并且 节点启发式距离的评分大于等于父节点(越寻越远了)
+            if (!Tilemap.instance[target] && node.parent != null && node.hScore > node.parent.hScore)
             {
-                //那还寻个屁,回溯,生成路径
-                TraverseBack(node.parent);
+                //那还寻个屁,回溯,从父节点的父节点开始生成路径
+                TraverseBack(bestNode.parent);
                 //跳出
                 break;
             }
@@ -334,23 +343,23 @@ public class Pathing
             iterCount += 1;
             if (iterCount > 100)
             {
-                //寻路循环超过100次,就回溯,生成路径,避免陷入死循环
-                TraverseBack(node);
+                //寻路循环超过100次,就从父节点的父节点开始回溯,生成路径,避免陷入死循环
+                TraverseBack(bestNode.parent);
                 //跳出
                 break;
             }
         }
 
-        // ///////////画线
-        // //绘制关闭列表和开放列表中的节点
-        // foreach (Node node in closeNodes)
-        // {
-        //     Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
-        // }
-        // foreach (Node node in openNodes)
-        // {
-        //     Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
-        // }
+        ///////////画线
+        //绘制关闭列表和开放列表中的节点
+        foreach (Node node in closeNodes)
+        {
+            Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
+        }
+        foreach (Node node in openNodes)
+        {
+            Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
+        }
 
         //返回路径
         return path;
