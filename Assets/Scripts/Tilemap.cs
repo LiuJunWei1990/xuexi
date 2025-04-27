@@ -167,6 +167,69 @@ public class Tilemap : MonoBehaviour
         }
     }
     /// <summary>
+    /// 射线(瓦片版)
+    /// :结构体
+    /// </summary>
+    public struct RaycastHit
+    {
+        /// <summary>
+        /// 是否碰撞
+        /// </summary>
+        public bool hit;
+        /// <summary>
+        /// 碰撞点
+        /// </summary>
+        public Vector2 pos;
+        /// <summary>
+        /// 自定义转换符'bool'
+        /// RaycastHit类可以直接赋值给bool类型,内容是RaycastHit对象的hit属性
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator bool(RaycastHit value)
+        {
+            return value.hit;
+        }
+    }
+    /// <summary>
+    /// 射线检测(瓦片版)
+    /// :RaycastHit结构体的静态方法,用于检测射线是否碰撞
+    /// </summary>
+    /// <param name="from">射线起点</param>
+    /// <param name="to">射线终点</param>
+    /// <param name="maxRayLength">射线极限长度,默认赋值无限大</param>
+    /// <returns>返回RaycastHit,由于它自定义了bool类型的转换,基本上就是返回是否射中物体</returns>
+    static public RaycastHit Raycast(Vector2 from, Vector2 to, float maxRayLength = Mathf.Infinity)
+    {
+        //声明一个射线
+        var hit = new RaycastHit();
+        //计算射线的向量
+        var diff = to - from;
+        //设定每步长度,角色移动的步子
+        var stepLen = 0.1f;
+        //射线长度最多就是极限长度,  Mathf.Min对比选取两个值中间的小的那个值
+        float rayLength = Mathf.Min(diff.magnitude, maxRayLength);
+        //计算射线长度有多少步(取整)
+        int stepCount = Mathf.RoundToInt(rayLength / stepLen);
+        //计算一个步子的向量
+        var step = diff.normalized * stepLen;
+        //射线起点做为当前坐标
+        var pos = from;
+        //遍历每一步
+        for (int i = 0; i < stepCount; ++i)
+        {
+            //每次加上一步
+            pos += step;
+            //去当前坐标格子的可通行状态,做为碰撞结果
+            hit.hit = !instance[Iso.Snap(pos)];
+            //如果遇到不可通行就跳出
+            if (hit.hit) break;
+        }
+        //返回结果
+        return hit;
+    }
+
+    
+    /// <summary>
     /// 这个是编辑模式和运行模式都会调用的方法,用来绘制网格线
     /// </summary>
     private void OnDrawGizmos()

@@ -221,7 +221,8 @@ public class Pathing
         if (newNode != null) newNode.Recycle();
     }
     /// <summary>
-    /// 这个方法时遍历所有节点,直到遇见不可通行的节点
+    /// 剔除掉不重要的节点
+    /// :比如终点10,987654都可以用射线打到,代表这条路径上无阻挡,98765节点都不重要,可以剔除掉,10的父节点直接是4
     /// </summary>
     /// <param name="node"></param>
     static private void Collapse(Node node)
@@ -229,23 +230,15 @@ public class Pathing
         //如果父节点不为空,且父节点的父节点也不为空,就循环
         while (node.parent!= null && node.parent.parent != null)
         {
-            //设定可通行,默认是true
-            bool passable = true;
-            //如果可通行
-            if(passable)
-            {
-                //父节点的父节点的父节点赋值给父节点
-                node.parent = node.parent.parent;
-                //父节点的朝向 = 父节点的坐标 - 父节点的父节点的坐标
-                node.parent.direction = node.pos - node.parent.pos;
-                //父节点的朝向索引 = 父节点的坐标和父节点的父节点的坐标之间的方向索引
-                node.parent.dirctionIndex = Iso.Direction(node.parent.pos,node.pos,directions.Length);
-            }
-            //直到不可通行跳出循环
-            else
+            //当前节点到祖父节点之间,如不可通行就中止循环
+            if (Tilemap.Raycast(node.pos, node.parent.parent.pos))
             {
                 break;
             }
+            //前面没跳出,继续回溯,把祖父节点变成父节点,继续循环
+            node.parent = node.parent.parent;
+            node.direction = node.pos - node.parent.pos;
+            node.dirctionIndex = Iso.Direction(node.parent.pos, node.pos, directions.Length);
         }
 
     }
@@ -258,6 +251,8 @@ public class Pathing
         //找父节点,父节点不为空就执行代码
         while (node.parent != null)
         {
+            //先剔除不重要的节点
+            Collapse(node);
             //新建一个步子
             Step step = new Step();
             //把节点的属性赋值给步子
@@ -350,36 +345,43 @@ public class Pathing
             }
         }
 
-        ///////////画线
-        //绘制关闭列表和开放列表中的节点
-        foreach (Node node in closeNodes)
-        {
-            Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
-        }
-        foreach (Node node in openNodes)
-        {
-            Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
-        }
+        // ///////////画线
+        // //绘制关闭列表和开放列表中的节点
+        // foreach (Node node in closeNodes)
+        // {
+        //     Iso.DebugDrawTile(node.pos, Color.magenta, 0.3f);
+        // }
+        // foreach (Node node in openNodes)
+        // {
+        //     Iso.DebugDrawTile(node.pos, Color.green, 0.3f);
+        // }
 
         //返回路径
         return path;
     }
 
     //绘制路径线
-    static public void DebugDrawPath(List<Step> path)
+    static public void DebugDrawPath(Vector2 from, List<Step> path)
     {
-        //遍历所有路径
+        //如果路径不为空
+        if (path.Count > 0)
+        {
+            //画路径线(灰色段),从人物到第一步
+            Debug.DrawLine(Iso.MapToWorld(from), Iso.MapToWorld(path[0].pos), Color.grey);
+        }
+        //遍历所有路径,画路径线(默认颜色),每一步
         for (int i = 0; i < path.Count - 1; ++i)
         {
-            //画线从当前点到下一步点
+            //画路径线(默认颜色),从当前步到下一步
             Debug.DrawLine(Iso.MapToWorld(path[i].pos), Iso.MapToWorld(path[i+1].pos));
         }
-
+        //如果路径不为空
         if(path.Count > 0)
         {
+            //画方格
+            //路径终点的方格
             var center = Iso.MapToWorld(path[path.Count - 1].pos);
-            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(0,0.1f)),center + Iso.MapToWorld(new Vector2(0,-0.1f)));
-            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(-0.1f, 0)), center + Iso.MapToWorld(new Vector2(0.1f, 0)));
-        }
+            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(0, 0.15f)), center + Iso.MapToWorld(new Vector2(0, -0.15f)));
+            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(-0.15f, 0)), center + Iso.MapToWorld(new Vector2(0.15f, 0)));        }
     }
 }

@@ -189,38 +189,6 @@ public class Character : MonoBehaviour
         animator = GetComponent<IsoAnimator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
-
-    /// <summary>
-    /// 直接到达
-    /// 检测是否可以直接到达目标位置
-    /// </summary>
-    /// <param name="target">行至的目标</param>
-    /// <param name="minRange">最小范围?</param>
-    bool DirectlyAccessible(Vector2 target)
-    {
-        //设定最多步数10,超过就不直达了
-        int stepCount = 10;
-        //设定步长,每次移动的距离
-        float stepLen = 0.5f;
-        //获取自身>>目标的朝向
-        var dir = (target - iso.pos).normalized;
-        //尝试直达,循环10次,每次移动0.5f
-        for(int i = 0; i < stepCount; i++)
-        {
-            //计算这次循环的一步的位置
-            //预判位置 = 自身位置+朝向*(角色半径 + 步长*循环的步数)
-            var forePos = iso.pos + dir * (diameter / 2 + stepLen * i);
-            //画线 : 从自身位置到预判
-            Debug.DrawLine(Iso.MapToWorld(iso.pos), Iso.MapToWorld(forePos));
-            //画线 : 预判位置的网格画成黄色
-            Iso.DebugDrawTile(Iso.Snap(forePos),Color.yellow, 0.2f);
-            //如果预判位置不可通行,返回否
-            if (!Tilemap.instance[Iso.Snap(forePos)]) return false;
-        }
-        //否则返回是
-        return true;
-    }
-
     /// <summary>
     /// 使用/互动
     /// </summary>
@@ -329,8 +297,6 @@ public class Character : MonoBehaviour
 
     private void Update()
     {
-        //画路径线
-        Pathing.DebugDrawPath(path);
         //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
         //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
         //当没有挨打,死亡,死亡中姿态时,执行
@@ -462,11 +428,11 @@ public class Character : MonoBehaviour
         //如果不再行走中姿态就直接跳出
         if(!moving) return;
 
-        //尝试直接移动到目标点,如果能够直接移动就执行下面的移动代码
-        if(DirectlyAccessible(targetPoint))
+        //瓦片的射线检测,角色当前位置>>>目标位置,射线最大长度2f
+        bool directlyAccesible = !Tilemap.Raycast(iso.pos, targetPoint, maxRayLength: 2.0f);
+        //没打中就代表可通行,执行下面代码
+        if(directlyAccesible)
         {
-            //放弃当前路径
-            AbortPath();
             //获取角色坐标到目标点的方向
             var dir = (targetPoint - iso.pos).normalized;
             //当前帧的移动距离
@@ -490,6 +456,8 @@ public class Character : MonoBehaviour
                 path.AddRange(newPath);
             }
             if(path.Count == 0) moving = false;
+
+            Pathing.DebugDrawPath(iso.pos, path);
             //沿路径移动
             MoveAlongPath();
         }
