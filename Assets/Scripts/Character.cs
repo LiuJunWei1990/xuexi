@@ -52,6 +52,11 @@ public class Character : MonoBehaviour
     [Tooltip("姿态:奔跑")]
     public bool run = false;
     /// <summary>
+    /// 转向速度
+    /// </summary>
+    [Tooltip("人物转向的速度")]
+    static float turnSpeed = 3f;
+    /// <summary>
     /// 受到伤害委托
     /// </summary>
     /// <param name="orginator">施暴者</param>
@@ -101,11 +106,15 @@ public class Character : MonoBehaviour
     }
 
     /// <summary>
-    /// 角色的当前朝向
+    /// 角色的当前朝向(索引)
     /// </summary>
     /// 特性:在Inspector面板中隐藏
     [HideInInspector]
-    public int direction = 0;
+    public int directionIndex = 0;
+    /// <summary>
+    /// 角色的当前朝向(矢量)
+    /// </summary>
+    float direction = 0;
     /// <summary>
     /// 等距坐标组件
     /// </summary>
@@ -257,7 +266,7 @@ public class Character : MonoBehaviour
     public void Attack()
     {
         //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
-        if (!dead && !dying && !attack && !takingDamage && direction == desiredDirection && !moving)
+        if (!dead && !dying && !attack && !takingDamage && directionIndex == desiredDirection && !moving)
         {
             //进入攻击姿态
             attack = true;
@@ -351,12 +360,16 @@ public class Character : MonoBehaviour
     void Turn()
     {
         //不再死亡|死亡中|攻击中|挨打中|当前朝向不等于预定的朝向,就执行
-        if(!dead &&!dying &&!attack &&!takingDamage && direction != desiredDirection)
+        if(!dead &&!dying &&!attack &&!takingDamage && directionIndex != desiredDirection)
         {
-            //Tools.ShortestDelta获取两个方向的角度,(int)Mathf.Sign获取角度的正负号(顺逆时针)
-            int diff = (int)Mathf.Sign(Tools.ShortestDelta(direction,desiredDirection,directionCount));
-            //当前朝向+1或-1(顺逆时针),+ directionCount) % directionCount是取余数,防止超出范围.这里是索引,就是每帧只变更1索引的角度
-            direction = (direction + diff + directionCount) % directionCount;
+            //计算是顺时针还是逆时针 : Tools.ShortestDelta计算两个方向的角度差,Mathf.Sign计算角度差的正负(结果就是+1或者-1)
+            float diff = Mathf.Sign(Tools.ShortestDelta(directionIndex, desiredDirection, directionCount));
+            //每帧转动的角度*diff(正负)
+            direction += diff * turnSpeed * Time.deltaTime * directionCount;
+            //取余数,防止超出方向数量
+            direction = Tools.Mod(direction + directionCount, directionCount);
+            //取整,获得最终的方向索引
+            directionIndex = Mathf.RoundToInt(direction);
         }
     }
     /// <summary>
@@ -528,7 +541,7 @@ public class Character : MonoBehaviour
     /// <param name="target"></param>
     public void LookAtImmidietly(Vector3 target)
     {
-        direction = desiredDirection = Iso.Direction(iso.pos, target, directionCount);
+        directionIndex = desiredDirection = Iso.Direction(iso.pos, target, directionCount);
     }
     /// <summary>
     /// 挨打

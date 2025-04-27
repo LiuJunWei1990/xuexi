@@ -160,7 +160,7 @@ public class IsoAnimator : MonoBehaviour
         //如果角色组件不为空
         if (character)
         //动画朝向=(角色朝向+动画朝向偏移量)%动画朝向数量,这些量都是索引
-            direction = (character.direction + anim.directionOffset) % anim.directionCount;
+            direction = (character.directionIndex + anim.directionOffset) % anim.directionCount;
         //精灵索引 = 动画朝向*每个朝向的动画帧数量(定位到当前的动作)+当前帧索引(定位到当前的动作的当前帧)%每个朝向的动画帧数量(定位到当前的动作的当前帧)
         int spriteIndex = direction * spritesPerDirection + frameIndex % spritesPerDirection;
         //渲染器中的精灵引用=当前动作的精灵数组[精灵索引](就是渲染器中的精灵引用=当前动作的精灵数组[当前帧索引])
