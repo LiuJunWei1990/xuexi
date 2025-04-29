@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//添加测试
 /// <summary>
 /// 角色组件
 /// </summary>
