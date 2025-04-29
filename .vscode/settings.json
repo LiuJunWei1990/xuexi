@@ -56,6 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "xuexi.sln",
+    "dotnet.defaultSolution": "xuexi_ziyong.sln",
     "marscode.chatLanguage": "auto"
 }
