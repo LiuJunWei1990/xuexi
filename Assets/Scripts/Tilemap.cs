@@ -15,8 +15,21 @@ public class Tilemap : MonoBehaviour
     /// 类的单例
     /// </summary>
     /// 容器类型,用一个单例来保证不会被多次实例化
-    static public Tilemap instance;
-
+    static private Tilemap instance;
+    /// <summary>
+    /// 结构:瓦片
+    /// </summary>
+    public struct Cell
+    {
+        /// <summary>
+        /// 标记该瓦片是否可通行
+        /// </summary>
+        public bool passable;
+        /// <summary>
+        /// 该瓦片对应的游戏对象
+        /// </summary>
+        public GameObject gameObject;
+    }
     /// <summary>
     /// 容器的长
     /// </summary>
@@ -30,19 +43,19 @@ public class Tilemap : MonoBehaviour
     /// </summary>
     private int origin;
     /// <summary>
-    /// 容器
+    /// Cell容器
     /// </summary>
-    private bool[] map;
+    private Cell[] map;
 
     private void Awake()
     {
         //初始化容器,容量等于长乘以宽
-        map = new bool[widht * height];
+        map = new Cell[widht * height];
         //初始化原点,容器最中间的那个网格就是原点
         origin = map.Length / 2;
         //初始话实例
         instance = this;
-        for (int i = 0; i < map.Length; ++i) map[i] = true;
+        for (int i = 0; i < map.Length; ++i) map[i].passable = true;
     }
 
 
@@ -91,14 +104,14 @@ public class Tilemap : MonoBehaviour
             {
                 for (int y = 0; y < tile.height; ++y)
                 {
-                    //根据瓦片可否通行给网格打可否通行标记(创建网格)
-                    Tilemap.instance[pos + new Vector3(x, y)] = tile.passable;
+                    //等距转索引下标
+                    int index = MapToIndex(pos + new Vector3(x, y));
+                    //给容器赋值
+                    map[index].passable = tile.passable;
+                    map[index].gameObject = tile.gameObject;
                 }
             }
         }
-
-
-
     }
 
     private void Update()
@@ -125,7 +138,7 @@ public class Tilemap : MonoBehaviour
             for (int y = 0; y < debugHeight; ++y)
             {
                 //获取当前网格的可通行状态
-                bool passable = this[pos + new Vector3(x, y)];
+                bool passable = Passable(pos + new Vector3(x, y));
                 //如果不可通行,就绘制红线
                 if (!passable)
                     //这里不太理解,都已经if了passable,为什么还要判断一下,不是多余的吗?好像这样只会画红线
@@ -144,27 +157,55 @@ public class Tilemap : MonoBehaviour
         //Mathf.Round四舍五入取整,保证坐标精度
         return origin + Mathf.RoundToInt(tilePos.x + tilePos.y * widht);
     }
-
-
-
     /// <summary>
-    /// 索引器
+    /// 获取瓦片
     /// </summary>
-    /// <param name="tilePos">网格坐标</param>
-    /// <returns>网格通行状态</returns>
-    public bool this[Vector3 tilePos]
+    /// <param name="pos">等距坐标</param>
+    /// <returns>容器中对应的瓦片</returns>
+    public static Cell GetCell(Vector3 pos)
     {
-        get
-        {
-            //通过等距坐标计算出索引
-            return map[MapToIndex(tilePos)];
-        }
-
-        set
-        {
-            //通过等距坐标计算出索引
-            map[MapToIndex(tilePos)] = value;
-        }
+        //坐标取整
+        var tilePos = Iso.Snap(pos);
+        //获取索引下标
+        int index = instance.MapToIndex(tilePos);
+        //返回容器中对应的瓦片
+        return instance.map[index];
+    }
+    /// <summary>
+    /// 根据等距坐标判断是否可通行
+    /// </summary>
+    /// <param name="pos">等距坐标</param>
+    /// <returns>是否可通行</returns>
+    public static bool Passable(Vector3 pos)
+    {
+        //坐标取整
+        var tilePos = Iso.Snap(pos);
+        //根据坐标获取索引下标
+        int index = instance.MapToIndex(tilePos);
+        //返回对应下标瓦片的通行状态
+        return instance.map[index].passable;
+    }
+    /// <summary>
+    /// 根据瓦片的等距坐标判断是否可通行
+    /// </summary>
+    /// <param name="tilePos">瓦片的等距坐标</param>
+    /// <returns>是否可通行</returns>
+    public static bool PassableTile(Vector3 tilePos)
+    {
+        int index = instance.MapToIndex(tilePos);
+        return instance.map[index].passable;
+    }
+    /// <summary>
+    /// 修改可通行状态
+    /// </summary>
+    /// <param name="pos">等距坐标0</param>
+    /// <param name="passable">输入可通行状态</param>
+    public static void SetPassable(Vector3 pos, bool passable)
+    {
+        //获取到索引下标
+        int index = instance.MapToIndex(pos);
+        //修改对应下标瓦片的通行状态
+        instance.map[index].passable = passable; 
     }
     /// <summary>
     /// 射线(瓦片版)
@@ -176,6 +217,10 @@ public class Tilemap : MonoBehaviour
         /// 是否碰撞
         /// </summary>
         public bool hit;
+        /// <summary>
+        /// 碰撞的瓦片
+        /// </summary>
+        public GameObject gameObject;
         /// <summary>
         /// 碰撞点
         /// </summary>
@@ -212,19 +257,27 @@ public class Tilemap : MonoBehaviour
         int stepCount = Mathf.RoundToInt(rayLength / stepLen);
         //计算一个步子的向量
         var step = diff.normalized * stepLen;
-        //射线起点做为当前坐标
+        //用射线起点初始化当前坐标
         var pos = from;
         //遍历每一步
         for (int i = 0; i < stepCount; ++i)
         {
-            //每次加上一步
+            //每次当前坐标加上一步
             pos += step;
-            //去当前坐标格子的可通行状态,做为碰撞结果
-            hit.hit = !instance[Iso.Snap(pos)];
-            //如果遇到不可通行就跳出
-            if (hit.hit) break;
+            //获取当前坐标的瓦片
+            Cell cell = GetCell(pos);
+            //如果当前坐标不可通行
+            if(!cell.passable)
+            {
+                //不可通行的反向为是,是赋值给hit代表射线击中阻挡
+                hit.hit = !cell.passable;
+                //当前不可通行瓦片赋值被击中对象
+                hit.gameObject = cell.gameObject;
+                //返回结果是
+                break;
+            }
         }
-        //返回结果
+        //返回结果否
         return hit;
     }
 

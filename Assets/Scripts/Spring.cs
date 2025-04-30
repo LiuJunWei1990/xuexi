@@ -41,11 +41,9 @@ public class Spring : MonoBehaviour
     /// </summary>
     void OnUse()
     {
-        //满程度-1
+        if(fullness == 0) return;
         fullness -= 1;
-        //播放对应满程度的对话
         animator.Play(fullness.ToString());
-        //切换成相应的激活状态
         usable.active = fullness != 0;
     }
 }

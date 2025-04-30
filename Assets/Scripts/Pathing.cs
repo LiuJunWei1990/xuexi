@@ -187,7 +187,7 @@ public class Pathing
             Vector2 pos = node.pos + direction;
 
             //网格库实例的索引器就是取按坐标对应的网格,获取的是一个bool,代表网格是否可通行,不通行就不添加进开放列表
-            if (Tilemap.instance[pos])
+            if (Tilemap.Passable(pos))
             {
                 //前面那个空节点,要是还为空,就取节点池里面的第一个节点,不为空就不做这一步
                 if (newNode == null) newNode = Node.Get();
@@ -315,7 +315,7 @@ public class Pathing
             //如果当前节点的启发式距离评分小于父节点的启发式距离评分,就把当前节点做新的父节点
             if(node.hScore < bestNode.hScore) bestNode = node;
             //如果目标不可通行 并且 父节点不为空 并且 节点启发式距离的评分大于等于父节点(越寻越远了)
-            if (!Tilemap.instance[target] && node.parent != null && node.hScore > node.parent.hScore)
+            if (!Tilemap.Passable(target) && node.parent != null && node.hScore > node.parent.hScore)
             {
                 //那还寻个屁,回溯,从父节点的父节点开始生成路径
                 TraverseBack(bestNode.parent);

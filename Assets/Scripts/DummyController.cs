@@ -58,11 +58,11 @@ public class DummyController : MonoBehaviour
         while (!target)
         {
             //生成一个周围8格的随机坐标,作为目标点
-            var target = iso.pos+new Vector2(Random.Range(-8,8),Random.Range(-8,8));
+            var target = iso.pos+new Vector2(Random.Range(-8f,8f),Random.Range(-8f,8f));
             //行走至目标点
             character.GoTo(target);
-            //等待1到5秒,再继续循环
-            yield return new WaitForSeconds(Random.Range(1,5));
+            //等待1到3秒,再继续循环
+            yield return new WaitForSeconds(Random.Range(1f,3f));
         }
     }
     /// <summary>
@@ -77,7 +77,7 @@ public class DummyController : MonoBehaviour
             //攻击目标
             character.Attack(target);
             //等待0.5到3秒,再继续循环
-            yield return new WaitForSeconds(Random.Range(0.5f,3));
+            yield return new WaitForSeconds(Random.Range(0.5f,3f));
         }
     }
 }

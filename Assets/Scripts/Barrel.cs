@@ -40,7 +40,7 @@ public class Barrel : MonoBehaviour
         //使用组件的激活字段,设置为否.因为使用后桶打碎了
         usable.active = false;
         //桶碎了,网格自然也就可通行了
-        Tilemap.instance[Iso.MapToIso(transform.position)] = true;
+        Tilemap.SetPassable(Iso.MapToIso(transform.position), true);
         //修改图层,以保证不会挡住其他物体
         spriteRenderer.sortingLayerName = "OnFloor";
     }

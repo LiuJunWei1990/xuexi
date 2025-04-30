@@ -239,7 +239,7 @@ public class Character : MonoBehaviour
     {
         if (attack && takingDamage) return;
         //判断目标网格是否可通行
-        if (Tilemap.instance[target])
+        if (Tilemap.Passable(target))
         {
             //可通行就直接瞬移
             iso.pos = target;
@@ -315,7 +315,10 @@ public class Character : MonoBehaviour
             if (usable)
             {
                 //如果目标的网格和角色的网格距离小于等于互动范围,就执行
-                if (Vector2.Distance(usable.GetComponent<Iso>().pos, iso.pos) <= useRange + diameter / 2)
+                //打瓦片版射线,自身>>可互动物体,最大长度为互动范围+直径/2;;;maxRayLength:(命名参数)代表指定这个新参赋值给maxRayLength:;;也可以单纯做一个装饰,提升代码可读性
+                Tilemap.RaycastHit hit = Tilemap.Raycast(iso.pos, usable.GetComponent<Iso>().pos, maxRayLength: useRange + diameter / 2);
+                //如果打中了物体(代表物体不可通行,不可通行代表是可互动状态)
+                if(hit.gameObject == usable.gameObject)
                 {
                     //执行可互动目标的互动方法
                     usable.Use();

@@ -111,23 +111,23 @@ public class PlayerController : MonoBehaviour
     {
         UpdateHover();
         //目标的网格
-        Vector3 targetTile;
+        Vector3 targetPosition;
         //如果当前互动物体不为空
         if (hover != null)
         {
             //目标网格直接取当前互动物体的网格
-            targetTile = Iso.MapToIso(hover.transform.position);
+            targetPosition = Iso.MapToIso(hover.transform.position);
         }
         //当前互动物体为空
         else
         {
             //目标取鼠标位置的网格
-            targetTile = IsoInput.mouseTile;
+            targetPosition = IsoInput.mousePosition;
         }
         //画目标网格的边框,坐标是targetTile,可通行画绿框,不可通行画红框
-        Iso.DebugDrawTile(targetTile, Tilemap.instance[targetTile] ? Color.green : Color.red, 0.1f);
+        Iso.DebugDrawTile(targetPosition, Tilemap.Passable(targetPosition) ? Color.green : Color.red, 0.1f);
         //给路径赋值:自身>>>目标
-        var path = Pathing.BuildPath(iso.pos, targetTile, character.directionCount);
+        var path = Pathing.BuildPath(iso.pos, targetPosition, character.directionCount);
         //画线,自身开始,整个路径
         Pathing.DebugDrawPath(iso.pos, path);
         //角色朝向跟随鼠标
@@ -158,7 +158,7 @@ public class PlayerController : MonoBehaviour
             //为空就是走路
             else
             {
-                character.GoTo(targetTile);
+                character.GoTo(IsoInput.mousePosition);
             }
         }
         //按下Tab键
