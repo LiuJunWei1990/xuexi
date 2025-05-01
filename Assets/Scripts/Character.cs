@@ -55,7 +55,7 @@ public class Character : MonoBehaviour
     /// 转向速度
     /// </summary>
     [Tooltip("人物转向的速度")]
-    static float turnSpeed = 3f;
+    static float turnSpeed = 4f;
     /// <summary>
     /// 受到伤害委托
     /// </summary>
@@ -365,10 +365,14 @@ public class Character : MonoBehaviour
         //不再死亡|死亡中|攻击中|挨打中|当前朝向不等于预定的朝向,就执行
         if(!dead &&!dying &&!attack &&!takingDamage && directionIndex != desiredDirection)
         {
-            //计算是顺时针还是逆时针 : Tools.ShortestDelta计算两个方向的角度差,Mathf.Sign计算角度差的正负(结果就是+1或者-1)
-            float diff = Mathf.Sign(Tools.ShortestDelta(directionIndex, desiredDirection, directionCount));
-            //每帧转动的角度*diff(正负)
-            direction += diff * turnSpeed * Time.deltaTime * directionCount;
+            //Tools.ShortestDelta计算两个方向的角度差,如果是顺时针,返回值为正,逆时针为负
+            float diff = Tools.ShortestDelta(directionIndex, desiredDirection, directionCount);
+            //获取绝对值,去掉顺逆时针,只保留角度
+            float delta = Mathf.Abs(diff);
+            // 当前帧转向的角度 : (转向方向顺逆 * 转向速度 * 每帧事件 * 朝向数量)
+            //Mathf.Clamp(..., -delta, delta): 限制形参1角度差的范围,防止超出形参2-形参3的范围
+            //direction += ...: 把当前帧的角度差加到当前朝向上
+            direction += Mathf.Clamp(Mathf.Sign(diff) * turnSpeed * Time.deltaTime * directionCount, -delta, delta);
             //取余数,防止超出方向数量
             direction = Tools.Mod(direction + directionCount, directionCount);
             //取整,获得最终的方向索引
