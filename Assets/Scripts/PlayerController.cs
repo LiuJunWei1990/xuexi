@@ -124,8 +124,6 @@ public class PlayerController : MonoBehaviour
             //目标取鼠标位置的网格
             targetPosition = IsoInput.mousePosition;
         }
-        //画目标网格的边框,坐标是targetTile,可通行画绿框,不可通行画红框
-        Iso.DebugDrawTile(targetPosition, Tilemap.Passable(targetPosition) ? Color.green : Color.red, 0.1f);
         //给路径赋值:自身>>>目标
         var path = Pathing.BuildPath(iso.pos, targetPosition, character.directionCount);
         //画线,自身开始,整个路径
