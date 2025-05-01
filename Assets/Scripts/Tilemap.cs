@@ -33,7 +33,7 @@ public class Tilemap : MonoBehaviour
     /// <summary>
     /// 容器的长
     /// </summary>
-    private int widht = 1024;
+    private int width = 1024;
     /// <summary>
     /// 容器的宽
     /// </summary>
@@ -47,10 +47,10 @@ public class Tilemap : MonoBehaviour
     /// </summary>
     private Cell[] map;
 
-    private void Awake()
+    void Awake()
     {
         //初始化容器,容量等于长乘以宽
-        map = new Cell[widht * height];
+        map = new Cell[width * height];
         //初始化原点,容器最中间的那个网格就是原点
         origin = map.Length / 2;
         //初始话实例
@@ -72,24 +72,27 @@ public class Tilemap : MonoBehaviour
         /// <param name="a">A瓦片</param>
         /// <param name="b">B瓦片</param>
         /// <returns>这样的结果就是,地板会排序到后面</returns>
-        public int Compare(Tile a,Tile b)
+        public int Compare(Tile a, Tile b)
         {
             bool floor1 = a.GetComponent<SpriteRenderer>().sortingLayerName == "Floor";
             bool floor2 = b.GetComponent<SpriteRenderer>().sortingLayerName == "Floor";
             return -floor1.CompareTo(floor2);
         }
     }
-    private void Start()
+
+    void Start()
     {
         //找到所有瓦片
         Tile[] tiles = GameObject.FindObjectsOfType<Tile>();
-        //按照是否瓦片层级名为Floor排序,Floor排后面,数组不能像List一样直接Sort,要用Array.Sort
-        Array.Sort(tiles, new TileOrderComparer());
+        // //按照是否瓦片层级名为Floor排序,Floor排后面,数组不能像List一样直接Sort,要用Array.Sort
+        //Array.Sort(tiles, new TileOrderComparer());
 
 
         //>>>>>>>>>>>遍历所有瓦片,根据瓦片坐标标记容器里面的网格是否可通行<<<<<<<<<<<<
         foreach (Tile tile in tiles)
         {
+            //如果瓦片不可通行,中止foreach循环
+            if (tile.passable) continue;
             //把pos定位到瓦片最下方的网格的中心点
             //当前瓦片坐标转等距
             Vector3 pos = Iso.MapToIso(tile.transform.position);
@@ -114,14 +117,11 @@ public class Tilemap : MonoBehaviour
         }
     }
 
-    private void Update()
+    void Update()
     {
         //下面都是绘制网格红线的代码
-
-        //准备颜色,白
-        Color color = new Color(1, 1, 1, 0.15f);
         //准备颜色,红
-        Color redColor = new Color(1, 0, 0, 0.3f);
+        Color color = new Color(1, 0, 0, 0.3f);
 
         //取屏幕中心点的等距坐标
         Vector3 pos = Iso.Snap(Iso.MapToIso(Camera.main.transform.position));
@@ -131,19 +131,21 @@ public class Tilemap : MonoBehaviour
         //pos在屏幕中心,这里-=长宽,就是取最底部坐标
         pos.x -= debugWidth / 2;
         pos.y -= debugHeight / 2;
+        //获取pos屏幕中心点对应的索引下标
+        int index = instance.MapToIndex(Iso.Snap(pos));
 
         //绘制网格标线,网格的小格子
-        for (int x = 0; x < debugWidth; ++x)
+        for (int y = 0; y < debugHeight; ++y)
         {
-            for (int y = 0; y < debugHeight; ++y)
+            for (int x = 0; x < debugWidth; ++x)
             {
-                //获取当前网格的可通行状态
-                bool passable = Passable(pos + new Vector3(x, y));
-                //如果不可通行,就绘制红线
-                if (!passable)
-                    //这里不太理解,都已经if了passable,为什么还要判断一下,不是多余的吗?好像这样只会画红线
-                    Iso.DebugDrawTile(pos + new Vector3(x, y), passable ? color : redColor, 0.9f);
+                //如果当前网格不可通行,就绘制红线;;[index + x]:index每循环1次+1024,代表的就是本行,+X就是这行的第几个网格
+                if (!instance.map[index + x].passable)
+                    //网格画红线
+                    Iso.DebugDrawTile(pos + new Vector3(x, y), color, 0.9f);
             }
+            //index += width,就是下一行
+            index += width;
         }
     }
 
@@ -155,7 +157,7 @@ public class Tilemap : MonoBehaviour
     private int MapToIndex(Vector3 tilePos)
     {
         //Mathf.Round四舍五入取整,保证坐标精度
-        return origin + Mathf.RoundToInt(tilePos.x + tilePos.y * widht);
+        return origin + Mathf.RoundToInt(tilePos.x + tilePos.y * width);
     }
     /// <summary>
     /// 获取网格
@@ -214,10 +216,10 @@ public class Tilemap : MonoBehaviour
     /// </summary>
     /// <param name="pos">等距坐标0</param>
     /// <param name="passable">输入可通行状态</param>
-    public static void SetPassable(Vector3 pos, bool passable)
+    public static void SetPassable(Vector3 tilePos, bool passable)
     {
         //获取到索引下标
-        int index = instance.MapToIndex(pos);
+        int index = instance.MapToIndex(tilePos);
         //修改对应下标网格的通行状态
         instance.map[index].passable = passable; 
     }
@@ -260,7 +262,7 @@ public class Tilemap : MonoBehaviour
     /// <param name="ignore">忽略的对象,默认赋值null</param>
     /// <param name="debug">是否绘制射线,默认赋值false</param>
     /// <returns>返回RaycastHit,由于它自定义了bool类型的转换,基本上就是返回是否射中物体</returns>
-    static public RaycastHit Raycast(Vector2 from, Vector2 to,float rayLength = Mathf.Infinity, float maxRayLength = Mathf.Infinity, GameObject ignore = null, bool debug = false)
+    static public RaycastHit Raycast(Vector2 from, Vector2 to, float rayLength = Mathf.Infinity, float maxRayLength = Mathf.Infinity, GameObject ignore = null, bool debug = false)
     {
         //声明一个射线
         var hit = new RaycastHit();
@@ -269,7 +271,7 @@ public class Tilemap : MonoBehaviour
         //设定每步长度,角色移动的步子
         var stepLen = 0.1f;
         //如果射线长度为无限大,就取射线长度和最大射线长度的较小的那个
-        if(rayLength == Mathf.Infinity) rayLength = Mathf.Min(diff.magnitude, maxRayLength);
+        if (rayLength == Mathf.Infinity) rayLength = Mathf.Min(diff.magnitude, maxRayLength);
         //计算射线长度有多少步(取整)
         int stepCount = Mathf.RoundToInt(rayLength / stepLen);
         //计算一个步子的向量
@@ -281,12 +283,12 @@ public class Tilemap : MonoBehaviour
         {
             //每次当前坐标加上一步
             pos += step;
-            //如果(?),那么给网格画线白色,偏移0.3,就是会比网格缩小一圈,持续时间0.5f
-            if(debug) Iso.DebugDrawTile(Iso.Snap(pos), margin: 0.3f, duration: 0.5f);
+            //如果debug,那么给网格画线白色,偏移0.3,就是会比网格缩小一圈,持续时间0.5f
+            if (debug) Iso.DebugDrawTile(Iso.Snap(pos), margin: 0.3f, duration: 0.5f);
             //获取当前坐标的网格
             Cell cell = GetCell(pos);
             //如果当前坐标不可通行,并且不是忽略对象
-            if(!cell.passable && (ignore == null || ignore != cell.gameObject))
+            if (!cell.passable && (ignore == null || ignore != cell.gameObject))
             {
                 //不可通行的反向为是,是赋值给hit代表射线击中阻挡
                 hit.hit = !cell.passable;
@@ -299,12 +301,55 @@ public class Tilemap : MonoBehaviour
         //返回结果否
         return hit;
     }
-
+    /// <summary>
+    /// 检测指定区域内的所有游戏对象,返回数量
+    /// </summary>
+    /// <param name="center">中心点</param>
+    /// <param name="size">区域大小</param>
+    /// <param name="result">返回结果:对象存入的数组</param>
+    /// <returns>对象数量</returns>
+    static public int OverlapBox(Vector2 center, Vector2 size, GameObject[] result)
+    {
+        //新建计数器
+        int count = 0;
+        //数组长度为0,返回0
+        if (result.Length == 0) return 0;
+        //行长度:尺寸的Y轴取整
+        int rows = Mathf.RoundToInt(size.y);
+        //列长度:尺寸的X轴取整
+        int columns = Mathf.RoundToInt(size.x);
+        //获取正下方的网格的数组下标
+        int index = instance.MapToIndex(Iso.Snap(center - size / 2));
+        //遍历范围内的网格
+        for(int row = 0; row < rows; ++row)
+        {
+            for(int column = 0; column < columns; ++column)
+            {
+                //新建对象 = 对应网格的游戏对象,index是每行的开头,column是列数,就是每行的第几个网格
+                var gameObject = instance.map[index + column].gameObject;
+                //如果对象不为空
+                if (gameObject != null)
+                {
+                    //收集进数组
+                    result[count] = gameObject;
+                    //计数器+1
+                    count += 1;
+                    //如果计数器大于数组长度,返回计数器值
+                    if (count >= result.Length)
+                        return count;
+                }
+            }
+            //index += width,就是下一行
+            index += instance.width;
+        }
+        //返回计数器值
+        return count;
+    }
     
     /// <summary>
     /// 这个是编辑模式和运行模式都会调用的方法,用来绘制网格线
     /// </summary>
-    private void OnDrawGizmos()
+    void OnDrawGizmos()
     {
         //这里把屏幕中心的等距坐标除以5,后面再除以瓦片尺寸0.2,就是乘以5.保证它一定是5的倍数,这样就能保证对齐瓦片
         var cameraTile = Iso.MacroTile(Iso.MapToIso(Camera.main.transform.position));
@@ -313,15 +358,16 @@ public class Tilemap : MonoBehaviour
         //遍历-10到9.作为瓦片的边框
         for (int x = -10; x < 10; ++x)
         {
-            for (int y = -10; y < 10; ++y)
-            {
-                //不太明白怎么算的,反正是画瓦片的四条边
-                //算出瓦片的中心点，然后转换为世界坐标，再除以瓦片长度
-                var pos = Iso.MapToWorld(cameraTile + new Vector3(x, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
-                //绘制瓦片的四条边
-                Gizmos.DrawRay(pos, new Vector3(20, 10));
-                Gizmos.DrawRay(pos, new Vector3(20, -10));
-            }
+            //画X轴线
+            var pos = Iso.MapToWorld(cameraTile + new Vector3(x, 10) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
+            Gizmos.DrawRay(pos, new Vector3(20, -10f));
+        }
+        //遍历-10到9.作为瓦片的边框
+        for (int y = -10; y < 10; ++y)
+        {
+            //画Y轴线
+            var pos = Iso.MapToWorld(cameraTile + new Vector3(-10, y) - new Vector3(0.5f, 0.5f)) / Iso.tileSize;
+            Gizmos.DrawRay(pos, new Vector3(20, 10f));
         }
     }
 }

@@ -22,7 +22,7 @@ public class Barrel : MonoBehaviour
     SpriteRenderer spriteRenderer;
 
 
-    private void Awake()
+    void Awake()
     {
         //获取各种组件
         animator = GetComponent<IsoAnimator>();

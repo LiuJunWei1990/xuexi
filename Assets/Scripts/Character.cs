@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -59,9 +58,9 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 受到伤害委托
     /// </summary>
-    /// <param name="orginator">施暴者</param>
+    /// <param name="originator">施暴者</param>
     /// <param name="damage">伤害</param>
-    public delegate void TakeDamageHandler(Character orginator, int damage);
+    public delegate void TakeDamageHandler(Character originator, int damage);
 
     /// <summary>
     /// 受到伤害事件
@@ -191,7 +190,7 @@ public class Character : MonoBehaviour
     /// </summary>
     Vector2 targetPoint;
 
-    private void Awake()
+    void Awake()
     {
         //获取组件
         iso = GetComponent<Iso>();
@@ -223,6 +222,8 @@ public class Character : MonoBehaviour
     /// <param name="target">目标点</param>
     public void GoTo(Vector2 target)
     {
+        //如果角色正在攻击,挨打,死亡,死亡中姿态,就直接返回
+        if(attack || takingDamage || dying || dead) return;
         //进入行走中姿态
         moving = true;
         //给目标的坐标点赋值
@@ -247,7 +248,7 @@ public class Character : MonoBehaviour
         else
         {
             //不可通行就画路径,准备瞬移到按照寻路的规则的目标网格
-            var pathToTarget = Pathing.BuildPath(iso.pos, target,directionCount);
+            var pathToTarget = Pathing.BuildPath(iso.pos, target, directionCount);
             //路径不为空,为空就返回
             if (pathToTarget.Count == 0) return;
             //长度-1,就是路径容器中的最后一个路点,瞬移过去
@@ -296,7 +297,7 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 放弃当前路径
     /// </summary>
-    private void AbortPath()
+    void AbortPath()
     {
         //把关于路径的所有变量都清空
         m_Target = null;
@@ -306,12 +307,12 @@ public class Character : MonoBehaviour
         traveled = 0;
     }
 
-    private void Update()
+    void Update()
     {
         //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
         //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
         //当没有挨打,死亡,死亡中姿态时,执行
-        if (!takingDamage && !dead &&!dying)
+        if (!takingDamage && !dead && !dying)
         {
             //如果目标有互动组件
             if (usable)
@@ -320,7 +321,7 @@ public class Character : MonoBehaviour
                 //打瓦片版射线,自身>>可互动物体,最大长度为互动范围+直径/2;;;maxRayLength:(命名参数)代表指定这个新参赋值给maxRayLength:;;也可以单纯做一个装饰,提升代码可读性;;ignore射线忽略角色自身
                 var hit = Tilemap.Raycast(iso.pos, usable.GetComponent<Iso>().pos, maxRayLength: useRange + diameter / 2, ignore: gameObject);
                 //如果打中了物体(代表物体不可通行,不可通行代表是可互动状态)
-                if(hit.gameObject == usable.gameObject)
+                if (hit.gameObject == usable.gameObject)
                 {
                     //执行可互动目标的互动方法
                     usable.Use();
@@ -365,7 +366,7 @@ public class Character : MonoBehaviour
     void Turn()
     {
         //不再死亡|死亡中|攻击中|挨打中|当前朝向不等于预定的朝向,就执行
-        if(!dead &&!dying &&!attack &&!takingDamage && directionIndex != desiredDirection)
+        if (!dead && !dying && !attack && !takingDamage && directionIndex != desiredDirection)
         {
             //Tools.ShortestDelta计算两个方向的角度差,如果是顺时针,返回值为正,逆时针为负
             float diff = Tools.ShortestDelta(directionIndex, desiredDirection, directionCount);
@@ -384,10 +385,10 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 沿着路径移动角色
     /// </summary>
-    private void MoveAlongPath()
+    void MoveAlongPath()
     {
         //分支1.路径为空,攻击中,挨打中,死亡中,死亡了,就直接返回
-        if (path.Count == 0 ||!moving || attack || takingDamage || dead || dying) return;
+        if (path.Count == 0 || !moving || attack || takingDamage || dead || dying) return;
 
 
         //获取当前步
@@ -448,15 +449,20 @@ public class Character : MonoBehaviour
     void MoveToTargetPoint()
     {
         //如果不再行走中姿态就直接跳出
-        if(!moving) return;
-
+        if (!moving) return;
+        //如果距离目标点小于0.5,就直接离开行走中姿态并返回
+        if (Vector2.Distance(iso.pos, targetPoint) < 0.5f)
+        {
+            moving = false;
+            return;
+        }
         //新建上一帧坐标点变量,先保存当前帧坐标点
         var prevPos = iso.pos;
 
         //瓦片的射线检测,角色当前位置>>>目标位置,射线最大长度2f,射线忽略自身
         bool directlyAccesible = !Tilemap.Raycast(iso.pos, targetPoint, maxRayLength: 2.0f, ignore: gameObject);
         //没打中就代表可通行,执行下面代码
-        if(directlyAccesible)
+        if (directlyAccesible)
         {
             //获取角色坐标到目标点的方向
             var dir = (targetPoint - iso.pos).normalized;
@@ -473,14 +479,14 @@ public class Character : MonoBehaviour
             //生成路径
             var newPath = Pathing.BuildPath(iso.pos, targetPoint, directionCount);
             //如果当前路径或者新路径未空,又或者两个路径的终点一致,那就执行下面的代码
-            if(path.Count == 0 || newPath.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
+            if (path.Count == 0 || newPath.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
             {
                 //放弃当前路径
                 AbortPath();
                 //把新路径赋值给当前路径
                 path.AddRange(newPath);
             }
-            if(path.Count == 0) moving = false;
+            if (path.Count == 0) moving = false;
 
             Pathing.DebugDrawPath(iso.pos, path);
             //沿路径移动
@@ -509,11 +515,6 @@ public class Character : MonoBehaviour
             //把新状态设置给容器中的对应网格
             Tilemap.SetCell(iso.pos, newCell);
         }        
-        //如果没有互动对象和目标角色,并且距离目标点小于1.这种情况就是纯行走到了目的地,那么就离开行走中姿态
-        if(usable == null && targetCharacter == null && Vector2.Distance(iso.pos, targetPoint) < 1f)
-        {
-            moving = false;
-        }
     }
     /// <summary>
     /// 更新动画
@@ -546,7 +547,7 @@ public class Character : MonoBehaviour
         }
 
         //没有路径就是待机状态
-        else if(moving)
+        else if (moving)
         {
             //给动画名赋值
             animation = run ? "Run" : "Walk";
@@ -567,7 +568,7 @@ public class Character : MonoBehaviour
     public void LookAt(Vector3 target)
     {
         //如果不再行走中,目标方向 = 自身-目标的方向
-        if(!moving) desiredDirection = Iso.Direction(iso.pos, target,directionCount);
+        if (!moving) desiredDirection = Iso.Direction(iso.pos, target, directionCount);
     }
     /// <summary>
     /// 立刻注释(转向)
@@ -583,7 +584,7 @@ public class Character : MonoBehaviour
     /// </summary>
     /// <param name="originator">打人者</param>
     /// <param name="damage">伤害</param>
-    public void TakeDamage(Character originator,int damage)
+    public void TakeDamage(Character originator, int damage)
     {
         //每次动画播放时执行该方法
 
@@ -592,7 +593,7 @@ public class Character : MonoBehaviour
         //如果还有生命
         if (health > 0)
         {
-            if(OnTakeDamage != null) OnTakeDamage(originator, damage);
+            if (OnTakeDamage != null) OnTakeDamage(originator, damage);
             //挨打状态置是
             takingDamage = true;
             attack = false;
@@ -618,26 +619,39 @@ public class Character : MonoBehaviour
         //如果正在攻击
         if (attack)
         {
+            //如果目标角色为空
             if (targetCharacter == null)
             {
+                //打一个射线:从自己>>目标坐标;;长度:身体半径+攻击范围;;排除对象:自身;;是否画线:是
                 var hit = Tilemap.Raycast(iso.pos, targetPoint, rayLength: diameter / 2 + attackRange, ignore: gameObject, debug: true);
+                //射线打中目标
                 if (hit.gameObject != null)
                 {
+                    //目标角色就是射线打中的这个
                     targetCharacter = hit.gameObject.GetComponent<Character>();
                 }
             }
             //如果目标角色不为空
             if (targetCharacter)
             {
+                //获取目标角色的坐标点
                 Vector2 target = targetCharacter.GetComponent<Iso>().pos;
+                //如果目标和角色的距离 <= 攻击范围 + 角色半径 + 目标半径,就执行攻击
                 if (Vector2.Distance(target, iso.pos) <= attackRange + diameter / 2 + targetCharacter.diameter / 2)
                 {
                     targetCharacter.TakeDamage(this, attackDamage);
                 }
+                //攻击完后,目标角色置空
                 targetCharacter = null;                
                 //目标也置空
                 m_Target = null;
             }
+        }
+        //如果正在死亡中
+        if (dying)
+        {
+            //把渲染层级改为躺在地板上
+            spriteRenderer.sortingLayerName = "OnFloor";
         }
     }
 
@@ -652,8 +666,6 @@ public class Character : MonoBehaviour
         //如果是死亡中(动画播放中),这是动画结束事件,所以就转入死亡状态
         if (dying)
         {
-            //把渲染器的排序层名称改为"OnFloor"
-            spriteRenderer.sortingLayerName = "OnFloor";
             //死亡中状态为否
             dying = false;
             //死亡状态置为true

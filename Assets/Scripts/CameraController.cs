@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +12,7 @@ public class CameraController : MonoBehaviour
     /// </summary>
     PlayerController playerController;
 
-    private void Awake()
+    void Awake()
     {
         //获取目标,按TAG找
         playerController = GameObject.FindObjectOfType<PlayerController>();
@@ -21,7 +20,7 @@ public class CameraController : MonoBehaviour
         transform.position = CalcTargetPos();
     }
 
-    private void LateUpdate()
+    void LateUpdate()
     {
         //每帧更新坐标,比Update晚
         transform.position = CalcTargetPos();
@@ -31,7 +30,7 @@ public class CameraController : MonoBehaviour
     /// 计算目标坐标,目标就是玩家
     /// </summary>
     /// <returns>返回处理好的坐标,用于更新摄像机坐标位置</returns>
-    private Vector3 CalcTargetPos()
+    Vector3 CalcTargetPos()
     {
         //保存目标坐标
         Vector3 targetPos = playerController.character.transform.position;
