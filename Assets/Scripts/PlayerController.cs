@@ -143,7 +143,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButton(1) || (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(0)))
         {
             //执行攻击
-            character.Attack();
+            character.Attack(IsoInput.mousePosition);
         }
 
         //单击左键

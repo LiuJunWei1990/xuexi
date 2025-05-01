@@ -75,12 +75,13 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 绘制标线的调试信息，带有颜色和网格边距(主要应该是绘制网格的，长度默认是0.5f.当然要绘制瓦片边界也不是不行，给偏移加负数长度使其超过0.5就行)
+    /// 绘制网格标线的调试信息，带有颜色和网格边距(主要应该是绘制网格的，长度默认是0.5f.当然要绘制瓦片边界也不是不行，给偏移加负数长度使其超过0.5就行)
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="color">线条颜色</param>
     /// <param name="margin">偏移，就是网格中间的小方块，A*寻路用的那种</param>
-    static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0)
+    /// <param name="duration">画线的持续时间</param>
+    static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0, float duration = 0f)
     {
         // 将等距坐标转换为世界坐标
         pos = Iso.MapToWorld(pos);
@@ -89,10 +90,10 @@ public class Iso : MonoBehaviour
         float d = 0.5f - margin;
 
         // 绘制网格的四条边
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)), color);
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color);
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color);
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)), color);
+        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)), color, duration);
+        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color, duration);
+        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color, duration);
+        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)), color, duration);
     }
     /// <summary>
     /// 专门给调试模式用的,绘制瓦片边界，颜色由Gizmos的颜色决定，边长的计算方式有点变化，这里是边长乘以0.5
@@ -113,13 +114,14 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 不提供颜色的重载debug画线，默认颜色为白色
+    /// 不提供颜色的重载debug网格画线，默认颜色为白色
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="margin">偏移</param>
-    static public void DebugDrawTile(Vector3 pos, float margin = 0)
+    /// <param name="duration">持续时间</param>
+    static public void DebugDrawTile(Vector3 pos, float margin = 0, float duration = 0f)
     {
-        DebugDrawTile(pos, Color.white, margin);
+        DebugDrawTile(pos, Color.white, margin, duration);
     }
 
     /// <summary>

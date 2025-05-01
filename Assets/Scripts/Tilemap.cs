@@ -17,16 +17,16 @@ public class Tilemap : MonoBehaviour
     /// 容器类型,用一个单例来保证不会被多次实例化
     static private Tilemap instance;
     /// <summary>
-    /// 结构:瓦片
+    /// 结构:网格
     /// </summary>
     public struct Cell
     {
         /// <summary>
-        /// 标记该瓦片是否可通行
+        /// 标记该网格是否可通行
         /// </summary>
         public bool passable;
         /// <summary>
-        /// 该瓦片对应的游戏对象
+        /// 该网格对应的游戏对象
         /// </summary>
         public GameObject gameObject;
     }
@@ -43,7 +43,7 @@ public class Tilemap : MonoBehaviour
     /// </summary>
     private int origin;
     /// <summary>
-    /// Cell容器
+    /// Cell网格容器
     /// </summary>
     private Cell[] map;
 
@@ -158,18 +158,32 @@ public class Tilemap : MonoBehaviour
         return origin + Mathf.RoundToInt(tilePos.x + tilePos.y * widht);
     }
     /// <summary>
-    /// 获取瓦片
+    /// 获取网格
     /// </summary>
     /// <param name="pos">等距坐标</param>
-    /// <returns>容器中对应的瓦片</returns>
+    /// <returns>容器中对应的网格</returns>
     public static Cell GetCell(Vector3 pos)
     {
         //坐标取整
         var tilePos = Iso.Snap(pos);
         //获取索引下标
         int index = instance.MapToIndex(tilePos);
-        //返回容器中对应的瓦片
+        //返回容器中对应的网格
         return instance.map[index];
+    }
+    /// <summary>
+    /// 设置网格
+    /// </summary>
+    /// <param name="pos">坐标</param>
+    /// <param name="cell">网格对象</param>
+    public static void SetCell(Vector3 pos, Cell cell)
+    {
+        //输入的坐标取整
+        var tilePos = Iso.Snap(pos);
+        //获取索引下标
+        int index = instance.MapToIndex(tilePos);
+        //对应网格赋值到网格容器中
+        instance.map[index] = cell;
     }
     /// <summary>
     /// 根据等距坐标判断是否可通行
@@ -182,13 +196,13 @@ public class Tilemap : MonoBehaviour
         var tilePos = Iso.Snap(pos);
         //根据坐标获取索引下标
         int index = instance.MapToIndex(tilePos);
-        //返回对应下标瓦片的通行状态
+        //返回对应下标网格的通行状态
         return instance.map[index].passable;
     }
     /// <summary>
-    /// 根据瓦片的等距坐标判断是否可通行
+    /// 根据网格的等距坐标判断是否可通行
     /// </summary>
-    /// <param name="tilePos">瓦片的等距坐标</param>
+    /// <param name="tilePos">网格的等距坐标</param>
     /// <returns>是否可通行</returns>
     public static bool PassableTile(Vector3 tilePos)
     {
@@ -204,11 +218,11 @@ public class Tilemap : MonoBehaviour
     {
         //获取到索引下标
         int index = instance.MapToIndex(pos);
-        //修改对应下标瓦片的通行状态
+        //修改对应下标网格的通行状态
         instance.map[index].passable = passable; 
     }
     /// <summary>
-    /// 射线(瓦片版)
+    /// 射线(网格版)
     /// :结构体
     /// </summary>
     public struct RaycastHit
@@ -218,7 +232,7 @@ public class Tilemap : MonoBehaviour
         /// </summary>
         public bool hit;
         /// <summary>
-        /// 碰撞的瓦片
+        /// 碰撞的对象(瓦片/角色/物体等)
         /// </summary>
         public GameObject gameObject;
         /// <summary>
@@ -236,14 +250,17 @@ public class Tilemap : MonoBehaviour
         }
     }
     /// <summary>
-    /// 射线检测(瓦片版)
+    /// 射线检测(网格版)
     /// :RaycastHit结构体的静态方法,用于检测射线是否碰撞
     /// </summary>
     /// <param name="from">射线起点</param>
     /// <param name="to">射线终点</param>
+    /// <param name="rayLength">射线长度,默认赋值无限大</param>
     /// <param name="maxRayLength">射线极限长度,默认赋值无限大</param>
+    /// <param name="ignore">忽略的对象,默认赋值null</param>
+    /// <param name="debug">是否绘制射线,默认赋值false</param>
     /// <returns>返回RaycastHit,由于它自定义了bool类型的转换,基本上就是返回是否射中物体</returns>
-    static public RaycastHit Raycast(Vector2 from, Vector2 to, float maxRayLength = Mathf.Infinity)
+    static public RaycastHit Raycast(Vector2 from, Vector2 to,float rayLength = Mathf.Infinity, float maxRayLength = Mathf.Infinity, GameObject ignore = null, bool debug = false)
     {
         //声明一个射线
         var hit = new RaycastHit();
@@ -251,8 +268,8 @@ public class Tilemap : MonoBehaviour
         var diff = to - from;
         //设定每步长度,角色移动的步子
         var stepLen = 0.1f;
-        //射线长度最多就是极限长度,  Mathf.Min对比选取两个值中间的小的那个值
-        float rayLength = Mathf.Min(diff.magnitude, maxRayLength);
+        //如果射线长度为无限大,就取射线长度和最大射线长度的较小的那个
+        if(rayLength == Mathf.Infinity) rayLength = Mathf.Min(diff.magnitude, maxRayLength);
         //计算射线长度有多少步(取整)
         int stepCount = Mathf.RoundToInt(rayLength / stepLen);
         //计算一个步子的向量
@@ -264,14 +281,16 @@ public class Tilemap : MonoBehaviour
         {
             //每次当前坐标加上一步
             pos += step;
-            //获取当前坐标的瓦片
+            //如果(?),那么给网格画线白色,偏移0.3,就是会比网格缩小一圈,持续时间0.5f
+            if(debug) Iso.DebugDrawTile(Iso.Snap(pos), margin: 0.3f, duration: 0.5f);
+            //获取当前坐标的网格
             Cell cell = GetCell(pos);
-            //如果当前坐标不可通行
-            if(!cell.passable)
+            //如果当前坐标不可通行,并且不是忽略对象
+            if(!cell.passable && (ignore == null || ignore != cell.gameObject))
             {
                 //不可通行的反向为是,是赋值给hit代表射线击中阻挡
                 hit.hit = !cell.passable;
-                //当前不可通行瓦片赋值被击中对象
+                //当前不可通行网格的对象赋值成被击中对象
                 hit.gameObject = cell.gameObject;
                 //返回结果是
                 break;

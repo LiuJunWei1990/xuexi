@@ -237,7 +237,7 @@ public class Character : MonoBehaviour
     /// <param name="target">目标点</param>
     public void Teleport(Vector2 target)
     {
-        if (attack && takingDamage) return;
+        if (attack || takingDamage) return;
         //判断目标网格是否可通行
         if (Tilemap.Passable(target))
         {
@@ -263,13 +263,15 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 攻击
     /// </summary>
-    public void Attack()
+    public void Attack(Vector3 target)
     {
         //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
         if (!dead && !dying && !attack && !takingDamage && directionIndex == desiredDirection && !moving)
         {
             //进入攻击姿态
             attack = true;
+            //给目标坐标点赋值
+            targetPoint = target;
         }
     }
     /// <summary>
@@ -315,8 +317,8 @@ public class Character : MonoBehaviour
             if (usable)
             {
                 //如果目标的网格和角色的网格距离小于等于互动范围,就执行
-                //打瓦片版射线,自身>>可互动物体,最大长度为互动范围+直径/2;;;maxRayLength:(命名参数)代表指定这个新参赋值给maxRayLength:;;也可以单纯做一个装饰,提升代码可读性
-                Tilemap.RaycastHit hit = Tilemap.Raycast(iso.pos, usable.GetComponent<Iso>().pos, maxRayLength: useRange + diameter / 2);
+                //打瓦片版射线,自身>>可互动物体,最大长度为互动范围+直径/2;;;maxRayLength:(命名参数)代表指定这个新参赋值给maxRayLength:;;也可以单纯做一个装饰,提升代码可读性;;ignore射线忽略角色自身
+                var hit = Tilemap.Raycast(iso.pos, usable.GetComponent<Iso>().pos, maxRayLength: useRange + diameter / 2, ignore: gameObject);
                 //如果打中了物体(代表物体不可通行,不可通行代表是可互动状态)
                 if(hit.gameObject == usable.gameObject)
                 {
@@ -448,8 +450,8 @@ public class Character : MonoBehaviour
         //如果不再行走中姿态就直接跳出
         if(!moving) return;
 
-        //瓦片的射线检测,角色当前位置>>>目标位置,射线最大长度2f
-        bool directlyAccesible = !Tilemap.Raycast(iso.pos, targetPoint, maxRayLength: 2.0f);
+        //瓦片的射线检测,角色当前位置>>>目标位置,射线最大长度2f,射线忽略自身
+        bool directlyAccesible = !Tilemap.Raycast(iso.pos, targetPoint, maxRayLength: 2.0f, ignore: gameObject);
         //没打中就代表可通行,执行下面代码
         if(directlyAccesible)
         {
@@ -457,29 +459,46 @@ public class Character : MonoBehaviour
             var dir = (targetPoint - iso.pos).normalized;
             //当前帧的移动距离
             float distance = speed * Time.deltaTime;
+            //新建一个网格对象,get角色当前所在的网格
+            var cell = Tilemap.GetCell(iso.pos);
+            //网格的通行状态置为true,
+            cell.passable = true;
+            //网格的游戏对象置为null
+            cell.gameObject = null;
+            //把cell赋值回角色当前所站立的网格
+            Tilemap.SetCell(iso.pos,cell);
             //当前帧的移动
             iso.pos += dir * distance;
+            //移动完成后,get角色位置的网格
+            cell = Tilemap.GetCell(iso.pos);
+            //网格可通行为否
+            cell.passable = false;
+            //网格角色为Character自身
+            cell.gameObject = gameObject;
+            //把cell赋值回角色当前所站立的网格
+            Tilemap.SetCell(iso.pos, cell);
             //获取预定方向
             desiredDirection = Iso.Direction(iso.pos, targetPoint, directionCount);
         }
-        //否则,就是不能直接移动到目标点,那就A*寻路
+        //否则,就是不能直接移动到目标点,那就离开行走中姿态
         else
         {
-            //生成路径
-            var newPath = Pathing.BuildPath(iso.pos, targetPoint, directionCount);
-            //如果当前路径或者新路径未空,又或者两个路径的终点一致,那就执行下面的代码
-            if(path.Count == 0 || newPath.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
-            {
-                //放弃当前路径
-                AbortPath();
-                //把新路径赋值给当前路径
-                path.AddRange(newPath);
-            }
-            if(path.Count == 0) moving = false;
+            moving = false;
+            // //生成路径
+            // var newPath = Pathing.BuildPath(iso.pos, targetPoint, directionCount);
+            // //如果当前路径或者新路径未空,又或者两个路径的终点一致,那就执行下面的代码
+            // if(path.Count == 0 || newPath.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
+            // {
+            //     //放弃当前路径
+            //     AbortPath();
+            //     //把新路径赋值给当前路径
+            //     path.AddRange(newPath);
+            // }
+            // if(path.Count == 0) moving = false;
 
-            Pathing.DebugDrawPath(iso.pos, path);
-            //沿路径移动
-            MoveAlongPath();
+            // Pathing.DebugDrawPath(iso.pos, path);
+            // //沿路径移动
+            // MoveAlongPath();
         }
         //如果没有互动对象和目标角色,并且距离目标点小于1.这种情况就是纯行走到了目的地,那么就离开行走中姿态
         if(usable == null && targetCharacter == null && Vector2.Distance(iso.pos, targetPoint) < 1f)
@@ -590,13 +609,23 @@ public class Character : MonoBehaviour
         //如果正在攻击
         if (attack)
         {
+            if (targetCharacter == null)
+            {
+                var hit = Tilemap.Raycast(iso.pos, targetPoint, rayLength: diameter / 2 + attackRange, ignore: gameObject, debug: true);
+                if (hit.gameObject != null)
+                {
+                    targetCharacter = hit.gameObject.GetComponent<Character>();
+                }
+            }
             //如果目标角色不为空
             if (targetCharacter)
             {
-                //就执行攻击,形参1打人者,是自己,形参2是伤害,是自己的攻击伤害
-                targetCharacter.TakeDamage(this, attackDamage);
-                //执行完毕后,就把目标角色置空
-                targetCharacter = null;
+                Vector2 target = targetCharacter.GetComponent<Iso>().pos;
+                if (Vector2.Distance(target, iso.pos) <= attackRange + diameter / 2 + targetCharacter.diameter / 2)
+                {
+                    targetCharacter.TakeDamage(this, attackDamage);
+                }
+                targetCharacter = null;                
                 //目标也置空
                 m_Target = null;
             }
