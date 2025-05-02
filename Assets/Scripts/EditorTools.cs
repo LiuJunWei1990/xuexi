@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 //这个命名空间会使脚本只在编辑器模式下运行,在游戏打包后不会被打包进游戏
 using UnityEditor;
-using UnityEngine;
 
 /// <summary>
 /// Unity 编辑器扩展工具集
@@ -11,7 +11,7 @@ using UnityEngine;
 public class EditorTools
 {
     [MenuItem("Assets/Create/Iso Animation动画切片生成器")]
-    static public void CreateAnimation()
+    static public void CreateIsoAnimation()
     {
        ScriptableObjectUtility.CreateAsset<IsoAnimation>();
     }

@@ -14,7 +14,7 @@ public class IsoInput : MonoBehaviour
     /// <summary>
     /// 鼠标指向的瓦片坐标
     /// </summary>
-    static public Vector2 mouseTile;
+    static public Vector3 mouseTile;
 
     void Update()
     {

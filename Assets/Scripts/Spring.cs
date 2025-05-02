@@ -22,7 +22,7 @@ public class Spring : MonoBehaviour
     /// </summary>
     Usable usable;
 
-    private void Awake()
+    void Awake()
     {
         //获取组件
         animator = GetComponent<Animator>();
@@ -41,7 +41,7 @@ public class Spring : MonoBehaviour
     /// </summary>
     void OnUse()
     {
-        if(fullness == 0) return;
+        if (fullness == 0) return;
         fullness -= 1;
         animator.Play(fullness.ToString());
         usable.active = fullness != 0;

@@ -40,19 +40,19 @@ public class Tile : MonoBehaviour
     [Range(-5, 5)]
     public int offsetY = 0;
 
-    private void Start()
+    void Start()
     {
 
     }
 
-    private void Update()
+    void Update()
     {
     }
 
     /// <summary>
     /// 瓦片被选中时绘制该瓦片的网格
     /// </summary>
-    private void OnDrawGizmosSelected()
+    void OnDrawGizmosSelected ()
     {
         //获取瓦片的等距坐标
         Vector3 pos = Iso.MapToIso(transform.position);
@@ -63,9 +63,9 @@ public class Tile : MonoBehaviour
         pos.x += offsetX;
         pos.y += offsetY;
         //遍历瓦片的每一个网格
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width; ++x)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < height; ++y)
             {
                 //根据可通行性设置颜色
                 Gizmos.color = passable ? new Color(1, 1, 1, 0.2f) : new Color(1, 0, 0, 0.3f);

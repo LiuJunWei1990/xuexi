@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +26,7 @@ public class PlayerController : MonoBehaviour
 
     Collider2D[] hoverColliders = new Collider2D[4];
 
-    private void Awake()
+    void Awake()
     {
         //如果角色组件为空
         if (character == null)
@@ -37,7 +38,7 @@ public class PlayerController : MonoBehaviour
         SetCharacter(character);
     }
 
-    private void Start()
+    void Start()
     {
 
     }
@@ -46,7 +47,7 @@ public class PlayerController : MonoBehaviour
     /// 设定角色
     /// </summary>
     /// <param name="character">目标角色</param>
-    void SetCharacter(Character character)
+    void SetCharacter (Character character)
     {
         //将目标的角色组件赋值给当前角色组件
         this.character = character;
@@ -107,7 +108,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Update()
+    void Update()
     {
         UpdateHover();
         //目标的网格

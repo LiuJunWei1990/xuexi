@@ -16,7 +16,7 @@ static public class Extensions
     /// <param name="key">键</param>
     /// <param name="defaultValue">值,初始化了默认值</param>
     /// <returns></returns>
-    public static TValue GetValueOrDefault<TKey,TValue>(this Dictionary<TKey, TValue> dictionary,TKey key,TValue defaultValue = default(TValue))
+    public static TValue GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue = default(TValue))
     {
         //声明一下值，避免报错
         TValue value;

@@ -1,10 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
-public class Pathing
+public class Pathing 
 {
     /// <summary>
     /// 步子,把每一步具象成一个结构,包含方向和坐标,方向索引
@@ -42,7 +41,7 @@ public class Pathing
         public Vector2 pos;                      // 节点的位置
         public Node parent;                      // 父节点
         public Vector2 direction;                // 移动方向
-        public int dirctionIndex;                // 方向索引
+        public int directionIndex;                // 方向索引
 
         private Node()
         {
@@ -180,7 +179,7 @@ public class Pathing
         //添加一个空的节点对象,做为新节点
         Node newNode = null;
         //遍厉可能的方向的路径
-        for(int i = 0;i < directions.Length;++i)
+        for (int i = 0; i < directions.Length; ++i)
         {
             Vector2 direction = directions[i];
             //中心节点+某一方向路径,等于该方向的节点坐标(用的是等距坐标)
@@ -202,7 +201,7 @@ public class Pathing
                     newNode.parent = node;
                     //方向,因为只移动1的距离,方向和路径是一样的
                     newNode.direction = direction;
-                    newNode.dirctionIndex = i;
+                    newNode.directionIndex = i;
                     //>>>>>节点评分:移动成本+启发式距离<<<<<<<<<<
                     //移动成本是自己填写的g分数+这一步的距离,因为每次只遍历中心点周围一圈的距离
                     newNode.gScore = node.gScore + direction.magnitude;
@@ -228,7 +227,7 @@ public class Pathing
     static private void Collapse(Node node)
     {
         //如果父节点不为空,且父节点的父节点也不为空,就循环
-        while (node.parent!= null && node.parent.parent != null)
+        while (node.parent != null && node.parent.parent != null)
         {
             //当前节点到祖父节点之间,如不可通行就中止循环
             if (Tilemap.Raycast(node.pos, node.parent.parent.pos))
@@ -238,7 +237,7 @@ public class Pathing
             //前面没跳出,继续回溯,把祖父节点变成父节点,继续循环
             node.parent = node.parent.parent;
             node.direction = node.pos - node.parent.pos;
-            node.dirctionIndex = Iso.Direction(node.parent.pos, node.pos, directions.Length);
+            node.directionIndex = Iso.Direction(node.parent.pos, node.pos, directions.Length);
         }
 
     }
@@ -257,7 +256,7 @@ public class Pathing
             Step step = new Step();
             //把节点的属性赋值给步子
             step.direction = node.direction;
-            step.directionIndex = node.dirctionIndex;
+            step.directionIndex = node.directionIndex;
             step.pos = node.pos;
             //把步子插入到路径的第一个
             path.Insert(0, step);
@@ -313,7 +312,7 @@ public class Pathing
             //处理第一个,处理完的会移至关闭列表,所以,永远都是处理第一个
             Node node = openNodes[0];
             //如果当前节点的启发式距离评分小于父节点的启发式距离评分,就把当前节点做新的父节点
-            if(node.hScore < bestNode.hScore) bestNode = node;
+            if (node.hScore < bestNode.hScore) bestNode = node;
             //如果目标不可通行 并且 父节点不为空 并且 节点启发式距离的评分大于等于父节点(越寻越远了)
             if (!Tilemap.Passable(target) && node.parent != null && node.hScore > node.parent.hScore)
             {
@@ -324,7 +323,7 @@ public class Pathing
             }
 
             //到目标点的停止距离就结束了,开始回溯路径,然后跳出循环
-            if (Vector2.Distance(node.pos,target) <= minRange)
+            if (Vector2.Distance(node.pos, target) <= minRange)
             {
                 TraverseBack(node);
                 break;
@@ -373,15 +372,16 @@ public class Pathing
         for (int i = 0; i < path.Count - 1; ++i)
         {
             //画路径线(默认颜色),从当前步到下一步
-            Debug.DrawLine(Iso.MapToWorld(path[i].pos), Iso.MapToWorld(path[i+1].pos));
+            Debug.DrawLine(Iso.MapToWorld(path[i].pos), Iso.MapToWorld(path[i + 1].pos));
         }
         //如果路径不为空
-        if(path.Count > 0)
+        if (path.Count > 0)
         {
             //画方格
             //路径终点的方格
             var center = Iso.MapToWorld(path[path.Count - 1].pos);
             Debug.DrawLine(center + Iso.MapToWorld(new Vector2(0, 0.15f)), center + Iso.MapToWorld(new Vector2(0, -0.15f)));
-            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(-0.15f, 0)), center + Iso.MapToWorld(new Vector2(0.15f, 0)));        }
+            Debug.DrawLine(center + Iso.MapToWorld(new Vector2(-0.15f, 0)), center + Iso.MapToWorld(new Vector2(0.15f, 0)));
+        }
     }
 }

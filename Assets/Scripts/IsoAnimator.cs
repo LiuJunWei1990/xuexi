@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -84,7 +83,7 @@ public class IsoAnimator : MonoBehaviour
         //初始化当前状态
         State firstState = null;
         //遍历引用的isoAnimation文件中的states数组
-        foreach (var state in anim.states)
+        foreach(var state in anim.states)
         {
             //如果人物的动作库里有遍历的动作
             if (states.ContainsKey(state.name))
@@ -115,7 +114,7 @@ public class IsoAnimator : MonoBehaviour
     void Update()
     {
         //如果当前动画帧的索引大于等于执行的动作的索引总数-1(就是当前动作动画执行完了)就跳出
-        if(!variation.loop && frameIndex >= spritesPerDirection -1) return;
+        if (!variation.loop && frameIndex >= spritesPerDirection) return;
         //记录累计时间+=每帧时间*动画速度系数
         time += Time.deltaTime * speed;
         //如果累计时间大于等于每帧动画时间,就执行
@@ -161,8 +160,8 @@ public class IsoAnimator : MonoBehaviour
         if (character)
         //动画朝向=(角色朝向+动画朝向偏移量)%动画朝向数量,这些量都是索引
             direction = (character.directionIndex + anim.directionOffset) % anim.directionCount;
-        //精灵索引 = 动画朝向*每个朝向的动画帧数量(定位到当前的动作)+当前帧索引(定位到当前的动作的当前帧)%每个朝向的动画帧数量(定位到当前的动作的当前帧)
-        int spriteIndex = direction * spritesPerDirection + frameIndex % spritesPerDirection;
+        //精灵索引 = 动画朝向*每个朝向的动画帧数量(定位到当前的动作)+(当前帧索引 || 每个朝向的动画帧数量(选两个值中较小的那个,就是保证不会溢出当前朝向动画帧的总数))
+        int spriteIndex = direction * spritesPerDirection + Mathf.Min(frameIndex, spritesPerDirection - 1);
         //渲染器中的精灵引用=当前动作的精灵数组[精灵索引](就是渲染器中的精灵引用=当前动作的精灵数组[当前帧索引])
         spriteRenderer.sprite = variation.sprites[spriteIndex];
     }

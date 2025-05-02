@@ -1,8 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using UnityEngine;
-
+using UnityEditor.Animations;
 /// <summary>
 /// 定义一个IsoAnimation类,用于存储动画相关的属性,继承自ScriptableObject类
 /// ScriptableObject类是Unity自带的一个类,用于把一个类型转换为资源文件,前提是这个类型继承自ScriptableObject
@@ -28,13 +27,13 @@ public class IsoAnimation : ScriptableObject
         /// </summary>
         public bool loop = true;
         /// <summary>
-        /// 动画文件引用(编辑器面板上那个框框),需要自己赋值,赋值这个texture后,会自动生成sprites数组
-        /// </summary>
-        public Texture2D texture; 
-        /// <summary>
         /// 动画文件的fps
         /// </summary>
         public float fps = 12.0f;
+        /// <summary>
+        /// 动画文件引用(编辑器面板上那个框框),需要自己赋值,赋值这个texture后,会自动生成sprites数组
+        /// </summary>
+        public Texture2D texture; 
         /// <summary>
         /// texture的精灵文件数组,由生成按钮生成,不需要自己赋值
         /// </summary>

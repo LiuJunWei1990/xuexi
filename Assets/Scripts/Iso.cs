@@ -15,7 +15,7 @@ using UnityEngine;
 /// 特性:会在编辑模式下运行该脚本
 [ExecuteInEditMode]
 /// 特性:该脚本携带一个组件
-[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent (typeof(SpriteRenderer))]
 public class Iso : MonoBehaviour
 {
 
@@ -75,7 +75,7 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 绘制网格标线的调试信息，带有颜色和网格边距(主要应该是绘制网格的，长度默认是0.5f.当然要绘制瓦片边界也不是不行，给偏移加负数长度使其超过0.5就行)
+    /// Debug模式下绘制网格,需要程序运行时才会显示在Scene视图中,颜色由color参数决定
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="color">线条颜色</param>
@@ -83,34 +83,39 @@ public class Iso : MonoBehaviour
     /// <param name="duration">画线的持续时间</param>
     static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0, float duration = 0f)
     {
-        // 将等距坐标转换为世界坐标
-        pos = Iso.MapToWorld(pos);
-
         // 计算标线网格的一半边长
         float d = 0.5f - margin;
 
         // 绘制网格的四条边
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)), color, duration);
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color, duration);
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)), color, duration);
-        Debug.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)), color, duration);
+        // 计算四个顶点的世界坐标
+        var topRight = MapToWorld(pos + new Vector3(d, d));
+        var topLeft = MapToWorld(pos + new Vector3(-d, d));
+        var bottomRight = MapToWorld(pos + new Vector3(d, -d));
+        var bottomLeft = MapToWorld(pos + new Vector3(-d, -d));
+        // 绘制四条边
+        Debug.DrawLine(topRight, bottomRight, color, duration);
+		Debug.DrawLine(bottomLeft, topLeft, color, duration);
+		Debug.DrawLine(topRight, topLeft, color, duration);
+		Debug.DrawLine(bottomRight, bottomLeft, color, duration);
     }
     /// <summary>
-    /// 专门给调试模式用的,绘制瓦片边界，颜色由Gizmos的颜色决定，边长的计算方式有点变化，这里是边长乘以0.5
+    /// Gizmos模式下绘制网格,无需程序运行直接显示在Scene视图中,颜色由color参数决定
     /// </summary>
-    /// <param name="pos"></param>
-    /// <param name="size"></param>
-    static public void GizmosDrawTile(Vector3 pos,float size = 1.0f)
+    /// <param name="pos">等距坐标</param>
+    /// <param name="size">长度</param>
+    static public void GizmosDrawTile(Vector3 pos, float size = 1.0f)
     {
-        // 将等距坐标转换为世界坐标
-        pos = Iso.MapToWorld(pos);
         // 计算标线网格的一半边长
         float d = 0.5f * size;
         // 绘制网格的四条边
-        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(d, -d)));
-        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(-d, -d)), pos + Iso.MapToWorld(new Vector2(-d, d)));
-        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, d)), pos + Iso.MapToWorld(new Vector2(-d, d)));
-        Gizmos.DrawLine(pos + Iso.MapToWorld(new Vector2(d, -d)), pos + Iso.MapToWorld(new Vector2(-d, -d)));
+        var topRight = MapToWorld(pos + new Vector3(d, d));
+        var topLeft = MapToWorld(pos + new Vector3(-d, d));
+        var bottomRight = MapToWorld(pos + new Vector3(d, -d));
+        var bottomLeft = MapToWorld(pos + new Vector3(-d, -d));
+        Gizmos.DrawLine(topRight, bottomRight);
+        Gizmos.DrawLine(bottomLeft, topLeft);
+        Gizmos.DrawLine(topRight, topLeft);
+        Gizmos.DrawLine(bottomRight, bottomLeft);
     }
 
     /// <summary>
@@ -145,12 +150,12 @@ public class Iso : MonoBehaviour
     static public Vector3 MacroTile(Vector3 pos)
     {
         //保持Z轴不变
-        var macroTlie = pos;
+        var macroTile = pos;
         //X,Y轴除以5后取整
-        macroTlie.x = Mathf.Round(pos.x / 5);
-        macroTlie.y = Mathf.Round(pos.y / 5);
+        macroTile.x = Mathf.Round(pos.x / 5);
+        macroTile.y = Mathf.Round(pos.y / 5);
         //返回处理后的坐标
-        return macroTlie;
+        return macroTile;
     }
 
     /// <summary>
@@ -160,21 +165,21 @@ public class Iso : MonoBehaviour
     /// <param name="target">目标</param>
     /// <param name="directionCount">8向或者16向</param>
     /// <returns></returns>
-    static public int Direction(Vector2 from, Vector3 target,int directionCount)
+    static public int Direction(Vector2 from, Vector3 target, int directionCount)
     {
         //终点减起点得到两点之间的向量
         var dir = target - (Vector3)from;
-        //获取Vector3(-1,-1,-1)(左下方向)和向量dir之间的夹角
-        //Mathf.Sign(dir.y - dir.x)判断的是-1,-1,-1到1,1,1之间,负数是下半,正数是上半
+        //获取Vector3(-1,-1)(左下方向)和向量dir之间的夹角
+        //Mathf.Sign(dir.y - dir.x)判断的是-1,-1到1,1之间,负数是下半,正数是上半
         //给夹角加上正负数,可以代表360度中的任一角度
-        var angle = Vector3.Angle(new Vector3(-1,-1,-1), dir)*Mathf.Sign(dir.y - dir.x);
+        var angle = Vector3.Angle(new Vector3(-1, -1), dir) * Mathf.Sign(dir.y - dir.x);
         //360°除以方向数,得到每一个方向的角度
         var directionDegrees = 360.0f / directionCount;
         //获取方向索引
         return Mathf.RoundToInt((angle + 360) % 360 / directionDegrees) % directionCount;
     }
 
-    private void Awake()
+    void Awake()
     {
         //获取当前对象坐标
         pos = MapToIso(transform.position);
@@ -228,11 +233,4 @@ public class Iso : MonoBehaviour
             spriteRenderer.sortingOrder += macroTileOrder * 1000;
         }
     }
-
-    //// 在 Unity 编辑器中绘制 Gizmos（调试信息）
-    //void OnDrawGizmosSelected()
-    //{
-    //    // 绘制当前游戏对象的网格调试信息
-    //    DebugDrawTile(pos);
-    //}
 }

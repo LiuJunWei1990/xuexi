@@ -1,9 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
+using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEditor;
 /// <summary>
 /// IosAnimation的编辑器
 /// 给IosAnimation添加一个编辑器
@@ -20,29 +19,29 @@ public class IsoAnimationEditor : Editor
         //绘制默认面板并后续检测属性是否被修改
         //绘制默认面板就是把IsoAnimation的public属性都加到面板上并初始化
         //后续检测属性是否被修改,如果被修改就立即调用Build方法更新动画
-        if(DrawDefaultInspector()) Build(); 
+        if (DrawDefaultInspector()) Build(); 
 
         //这是保底,如果属性修改没有正确更新,点击更新按钮强制更新
-        if(GUILayout.Button("更新")) Build();
+        if (GUILayout.Button("更新")) Build();
     }
-    private void Build()
+    void Build()
     {
         //这里指的应该是当前选中的isoAnimation文件
         var isoAnimation = target as IsoAnimation;
         //遍历isoAnimation文件中的states数组
-        foreach(var state in isoAnimation.states)
+        foreach (var state in isoAnimation.states)
         {
             //如果state的texture图片文件不为空,就继续
-            if(state.texture)
+            if (state.texture)
             {
                 //如果state的名字为空或者名字长度为0,就继续
-                if(state.name == null || state.name.Length == 0)
+                if (state.name == null || state.name.Length == 0)
                     //state的名字 = IsoAnimation文件中引用texture文件的名字
                     state.name = state.texture.name;
                 //获取IsoAnimation文件中引用texture文件的路径
-                var assetPath = AssetDatabase.GetAssetPath(state.texture);
+                var spritesPath = AssetDatabase.GetAssetPath(state.texture);
                 //加载路径下的所有资源,并先按照名字长度排序,次按照名字首字母排序,然后转成数组,赋值给state的sprites数组
-                state.sprites = AssetDatabase.LoadAllAssetsAtPath(assetPath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
+                state.sprites = AssetDatabase.LoadAllAssetsAtPath(spritesPath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
             }        
         }
         //保存修改到磁盘上,如果不保存修改,下次打开文件就会丢失修改
