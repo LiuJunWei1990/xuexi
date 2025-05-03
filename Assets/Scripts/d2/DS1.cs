@@ -3,6 +3,91 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+
+// DT1索引类，用于管理和查找DT1瓦片数据
+class DT1Index
+{
+    // 存储瓦片种类与对应瓦片列表映射表的字典
+    Dictionary<int, List<DT1.Tile>> tiles = new Dictionary<int, List<DT1.Tile>>();
+    // 存储瓦片种类与稀有度总和映射表的字典
+    new Dictionary<int, int> rarities = new Dictionary<int, int>();
+    // DT1文件计数器
+    int dt1Count = 0;
+
+    //将列表中的瓦片添加到字典中去
+    public void Add(DT1.Tile[] newTiles)
+    {
+        // 遍历这个列表中的所有瓦片
+        foreach (var tile in newTiles)
+        {
+            // 当前遍历到的瓦片的种类,字典里是否有,如果有就把字典里这个瓦片列表拿出来赋值,不存在就赋值null
+            List<DT1.Tile> list = tiles.GetValueOrDefault(tile.index, null);
+            // 如果不存在，那就是字典里没有这类瓦片
+            // 那就为这类瓦片新建一个列表,并且加入到字典中
+            if (list == null)
+            {
+                list = new List<DT1.Tile>();
+                tiles[tile.index] = list;
+            }
+
+            // 如果是第一个DT1文件，遍历到的瓦片是从列表的开头加入
+            // 如果不是第一个DT1文件,遍历到的瓦片是从列表的结尾加入
+            if (dt1Count == 0)
+                list.Insert(0, tile);
+            else
+                list.Add(tile);
+
+            // 查找当前瓦片的种类是否存在于稀有度映射中
+            // 如果不存在，就把这个种类和这个瓦片的稀有度加入到映射中
+            if (!rarities.ContainsKey(tile.index)) rarities[tile.index] = tile.rarity;
+            // 如果存在，就把这个种类的原稀有度加上这个瓦片的稀有度
+            else rarities[tile.index] += tile.rarity;
+        }
+        // 遍历完了这组列表,DT1文件计数加1
+        dt1Count += 1;
+    }
+
+    // 根据瓦片类型索引查找瓦片
+    public bool Find(int index, out DT1.Tile tile)
+    {
+        //新建一个瓦片列表,用来储存找到的这类瓦片
+        List<DT1.Tile> tileList;
+        // 根据瓦片类型索引查找瓦片列表
+        //如果找到了就把找到的列表赋值给tileList
+        // 如果没找到就给个默认值的瓦片,返回结果为false
+        if (!tiles.TryGetValue(index, out tileList))
+        {
+            tile = new DT1.Tile();
+            return false;
+        }
+
+        // 获取当前索引的稀有度总和
+        int raritySum = rarities[index];
+        // 如果稀有度总和为0，直接out第一个瓦片
+        if (raritySum == 0)
+        {
+            tile = tileList[0];
+        }
+        // 如果稀有度总和不为0
+        else
+        {
+            // 随机选择一个瓦片，跳过稀有度为0的瓦片
+            int randomIndex = Random.Range(0, tileList.Count - 1);
+            //如果稀有度是0,就会跳过这个瓦片,选它的下一个
+            while (tileList[randomIndex].rarity == 0)
+            {
+                //稀有度为0,就+1;;余一下可以保证不溢出,并且+1能一直循环
+                randomIndex = (randomIndex + 1) % tileList.Count;
+            }
+            // 随机选择一个瓦片，跳过稀有度为0的瓦片
+            tile = tileList[randomIndex];
+        }
+        
+        // 返回查找成功
+        return true;
+    }
+}
+
 /// <summary>
 /// DS1文件读取器
 /// </summary>
@@ -12,23 +97,48 @@ using UnityEditor;
 public class DS1
 {
     /// <summary>
-    /// 单元格,地图单元数据结构（每个格子10字节）
+    /// 单元格,这里的单元格貌似指的是瓦片对应的格子（每个格子10字节）
     /// </summary>
     struct Cell
     {
-        public byte prop1;     // 属性1（通常为材质索引）
-        public byte prop2;     // 属性2（子材质索引/动画帧数）
-        public byte prop3;     // 属性3（高位4bit为主材质索引）
-        public byte prop4;     // 属性4（低2bit补充主材质索引）
-        public byte orientation; // 方向（0-7代表8个方向）
-        public int bt_idx;       // 区块类型索引
-        public byte flags;       // 标志位（是否可通行等）
+        /// <summary>
+        /// 属性1（通常为材质索引）
+        /// </summary>
+        public byte prop1;
+        /// <summary>
+        /// 属性2（子材质索引/动画帧数）
+        /// </summary>
+        public byte prop2;
+        /// <summary>
+        /// 属性3（高位4bit为主材质索引）
+        /// </summary>
+        public byte prop3;
+        /// <summary>
+        /// 属性4（低2bit补充主材质索引）
+        /// </summary>
+        public byte prop4;
     };
+    // 导入结果结构体，用于给Import导入方法,返回结果用
+    public struct ImportResult
+    {
+        public Vector3 center;  // 地图中心点坐标
+        public Vector3 entry;    // 玩家入口点坐标
+    }
+
+    // 方向查找表，用于将原始方向值转换为实际方向
+    static byte[] dirLookup = 
+    {
+        0x00, 0x01, 0x02, 0x01, 0x02, 0x03, 0x03, 0x05, 0x05, 0x06,
+        0x06, 0x07, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
+        0x0F, 0x10, 0x11, 0x12, 0x14
+    };
+    // 地图入口索引，通过DT1.Tile.Index方法生成，参数为(30, 11, 10),它是静态且只读的
+    static readonly int mapEntryIndex = DT1.Tile.Index(30, 11, 10);
     /// <summary>
     /// 导入一个ds1文件
     /// </summary>
     /// <param name="ds1Path">ds1文件路径</param>
-	static public void Import(string ds1Path)
+	static public ImportResult Import(string ds1Path, GameObject monsterPrefab = null)
     {
         //System.Diagnostics.Stopwatch时.NET自带的计时器,可以用来测量代码执行时间
         //StartNew()方法用于创建一个新的计时器实例并开始计时
@@ -82,12 +192,13 @@ public class DS1
 
             //// adjust eventually the # of tag layer
             //if ((tagType == 1) || (tagType == 2))
-            //    t_num = 1;
+            //    tagLayerCount = 1;
         }
-
+         // 创建一个DT1索引对象，用于管理和查找DT1瓦片数据
+        var dt1Index = new DT1Index();
+        // 总瓦片数量，初始化为0
+        int totalTiles = 0;
         //[[[版本号 >= 3]]]
-        //新建一个瓦片数组,用来存储地图的瓦片数据(不再版本分支中,任何版本都要新建这个数组)
-        DT1.Tile[] tiles = new DT1.Tile[4096];
         //如果版本号大于等于3,就读取文件数量
         if (version >= 3)
         {
@@ -108,15 +219,12 @@ public class DS1
                 }
                 //如果文件名以.tg1结尾,就把.tg1替换成.dt1
                 filename = filename.Replace(".tg1", ".dt1");
-                //读取dt1文件的方法,返回瓦片数组(DT1文件的瓦片结构体)
-                //并遍历它
-                foreach (var tile in DT1.Import("Assets" + filename))
-                {
-                    //如果瓦片信息中的材质为空,就跳过这个瓦片,继续下一个
-                    if (tile.texture == null) continue;
-                    //如果没跳出,那就加入到之前新建的瓦片数组中去
-                    tiles[tile.index] = tile;
-                }
+                //导入dt1文件的方法,返回瓦片数组(DT1文件的瓦片结构体)
+                var imported = DT1.Import("Assets" + filename);
+                //导入的数组长度添加到瓦片总数中
+                totalTiles += imported.tiles.Length;
+                //把这个DT列表添加到映射字典里去
+                dt1Index.Add(imported.tiles);
             }
         }
         //中止计时器,并debug输出DT1文件的加载时间
@@ -130,44 +238,40 @@ public class DS1
         if ((version >= 9) && (version <= 13)) reader.ReadBytes(2);
 
         //新建4个图层
-        int w_num = 1; // 墙壁和方向图层数量
-        int f_num = 1; // 地板图层数量
-        int s_num = 1; // 阴影图层数量
-        int t_num = 0; // 标签图层数量
+        int wallLayerCount = 1; // 墙壁图层数量
+        int floorLayerCount = 1; // 地板图层数量
+        int shadowLayerCount = 1; // 阴影图层数量
+        int tagLayerCount = 0; // 标签图层数量
 
         //[[[版本号 >= 4]]]
         if (version >= 4)
         {
             //读取墙壁和方向图层数量
-            w_num = reader.ReadInt32();
+            wallLayerCount = reader.ReadInt32();
             //同时如果[[[版本号 >= 16]]]
             if (version >= 16)
             {
                 //读取地板图层数量
-                f_num = reader.ReadInt32();
+                floorLayerCount = reader.ReadInt32();
             }
         }
         //否则
         else
         {
             //标签图层数量设为1
-            t_num = 1;
+            tagLayerCount = 1;
         }
-        //输出图层数量:(2 * w_num 墙壁) + f_num 地板 + s_num 阴影 + t_num 标签
-        Debug.Log("图层数量分别为 : (2 * " + w_num + " 墙壁) + " + f_num + " 地板 + " + s_num + " 阴影 + " + t_num + " 标签");
+        //输出图层数量:(2 * wallLayerCount 墙壁) + floorLayerCount 地板 + shadowLayerCount 阴影 + tagLayerCount 标签
+        Debug.Log("图层数量分别为 : (2 * " + wallLayerCount + " 墙壁) + " + floorLayerCount + " 地板 + " + shadowLayerCount + " 阴影 + " + tagLayerCount + " 标签");
         //新建一个单元格数组,用来存储墙壁数据,Cell[第几图层][第几块墙壁]
-        Cell[][] walls = new Cell[w_num][];
+        Cell[][] walls = new Cell[wallLayerCount][];
         //遍历地板图层数量,给墙壁的每一个图层添加全地图大小的瓦片数组
-        for (int i = 0; i < f_num; ++i) walls[i] = new Cell[width * height];
-        //新建一个单元格数组,用来存储地板数据,Cell[第几图层][第几块地板]
-        Cell[][] floors = new Cell[f_num][];
-        //遍历地板图层数量,给地板的每一个图层添加全地图大小的瓦片数组
-        for (int i = 0; i < f_num; ++i) floors[i] = new Cell[width * height];
+        for (int i = 0; i < wallLayerCount; ++i) walls[i] = new Cell[width * height];
         //新建图层总数变量
         int layerCount = 0;
         //新建一个布局数组,用来存储图层顺序
         int[] layout = new int[14];
-        //如果版本号小于4
+        //如果版本号小于4,每种图层只有一层
         if (version < 4)
         {
 
@@ -178,36 +282,69 @@ public class DS1
             layout[4] = 11; // 阴影
             layerCount = 5; // 总图层数
         }
-        //否则
+        //否则,版本号大于等于4,每种图层有多层
         else
         {
-            //总图层数量为0
+            //>>>>根据文件流中读取的图层层数填充图层数组
+            //图层计数为0
             layerCount = 0;
-            //遍历墙壁和方向图层数量
-            for (int x = 0; x < w_num; x++)
+            //遍历墙壁和朝向图层数量
+            for (int x = 0; x < wallLayerCount; x++)
             {
                 //每次遍历:把值添加到数组里面,墙从1开始,朝向从5开始
                 layout[layerCount++] = 1 + x; // wall x
                 layout[layerCount++] = 5 + x; // orientation x
             }
             //遍历地板的图层数量
-            for (int x = 0; x < f_num; x++)
+            for (int x = 0; x < floorLayerCount; x++)
             {
                 //地板图层从9开始
                 layout[layerCount++] = 9 + x; // floor x
             }
             //阴影和标签加入到数组中,分别时11和12
-            if (s_num != 0) layout[layerCount++] = 11;    // shadow
-            if (t_num != 0) layout[layerCount++] = 12;    // tag
+            if (shadowLayerCount != 0) layout[layerCount++] = 11;    // shadow
+            if (tagLayerCount != 0) layout[layerCount++] = 12;    // tag
         }
-        //创建一个空对象做为父,命名为tristram,就是大名鼎鼎的崔斯特瑞姆,这应该就是第一幕地图的原点了
-        GameObject parent = new GameObject("tristram");
+
+        // 创建一个根游戏对象做为根节点，使用DS1文件名作为对象名称
+        GameObject root = new GameObject(Path.GetFileName(ds1Path));
+        // 创建地板图层数组，大小为地板图层数量
+        var floorLayers = new GameObject[floorLayerCount];
+        // 遍历地板图层数量，为每个图层创建游戏对象做为本层节点
+        for(int i = 0; i < floorLayerCount;  ++i)
+        {
+            // 创建地板图层对象，命名为f+图层序号,做为本层节点
+            floorLayers[i] = new GameObject("f" + (i + 1));
+            // 将地板图层节点设置为根节点的子节点,入f1,f2等
+            floorLayers[i].transform.SetParent(root.transform);
+        }
+
+        // 创建墙壁图层数组，大小为墙壁图层数量
+        var wallLayers = new GameObject[wallLayerCount];
+        // 遍历墙壁图层数量，为每个图层创建游戏对象做为本层节点
+        for (int i = 0; i < wallLayerCount; ++i)
+        {
+            // 创建墙壁图层对象，命名为w+图层序号,做为本层节点
+            wallLayers[i] = new GameObject("w" + (i + 1));
+            // 将墙壁图层节点设置为根节点的子节点
+            wallLayers[i].transform.SetParent(root.transform);
+        }
+
+        // 创建导入结果对象
+        var importResult = new ImportResult();
+        // 计算地图中心点坐标，将地图宽度和高度转换为世界坐标后除以2
+        importResult.center = MapToWorld(width, height) / 2;
+        // 将入口点坐标设置为地图中心点坐标
+        importResult.entry = importResult.center;
         //遍历整个图层总数
         for (int n = 0; n < layerCount; n++)
         {
+            Debug.Log("正在加载图层 " + n + " " + layout[n]);
+            //图层的层级
             int p;
+            //当前图层的第几个瓦片
             int i = 0;
-            //遍历地图的每一格
+            //每一层图层都会遍历地图的每一瓦片,根据文件信息赋值属性(应该是允许有空白的)
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -215,35 +352,98 @@ public class DS1
                     //根据当前当前所在的图层,进行不同处理
                     switch (layout[n])
                     {
-                        //1-4是墙图层,跳过4个字节(读取了没赋值)
+                        //1-4是墙图层
                         case 1:
                         case 2:
                         case 3:
                         case 4:
-                            reader.ReadBytes(4);
-                            //p = layout[n] - 1;
-                            //walls[p][i].prop1 = reader.ReadByte();
-                            //walls[p][i].prop2 = reader.ReadByte();
-                            //walls[p][i].prop3 = reader.ReadByte();
-                            //walls[p][i].prop4 = reader.ReadByte();
+                        {
+                            //这里推断数据文件内的层级是从0开始,所以都要减去起始层数
+                            p = layout[n] - 1;
+                            //[墙的第几个图层][本层的第几个瓦片]的4项属性,读取文件流数据
+                            walls[p][i].prop1 = reader.ReadByte();
+                            walls[p][i].prop2 = reader.ReadByte();
+                            walls[p][i].prop3 = reader.ReadByte();
+                            walls[p][i].prop4 = reader.ReadByte();
+                            //中止switch
                             break;
+                        }
                         //5-8是朝向图层,p=n-5,应该就是朝向的第几层,从0-3,读取一个字节做o,再跳过三个字节(读取了没赋值)
                         case 5:
                         case 6:
                         case 7:
                         case 8:
+                        {
+                            //这里推断数据文件内的层级是从0开始,所以都要减去起始层数
                             p = layout[n] - 5;
-                            byte o = reader.ReadByte();
-                            //if (version < 7)
-                            //    walls[p][i].orientation = dir_lookup[o];
-                            //else
-                            //    walls[p][i].orientation = o;
-
+                            //可能朝向信息都是一样的没有下标,直接取数据
+                            int orientation = reader.ReadByte();
+                            //如果版本小于7,orientation代表的是朝向数组的下标,那么需要用朝向数组,取一下实际的朝向信息
+                            if (version < 7) orientation = dirLookup[orientation];
+                            //跳过三个字节
                             reader.ReadBytes(3);
+                            //如果当前单元格墙壁的材质索引是0,那就中止switch,因为这个单元格是没有墙壁的
+                            if (walls[p][i].prop1 == 0) break;
+                            //新建一个变量,用来存储朝向的剩下三项属性
+                            int prop2 = walls[p][i].prop2;
+                            int prop3 = walls[p][i].prop3;
+                            int prop4 = walls[p][i].prop4;
+                            //计算主材质索引,高位4bit为主材质索引
+                            int mainIndex = (prop3 >> 4) + ((prop4 & 0x03) << 4);
+                            //子材质索引直接使用prop2
+                            int subIndex = prop2;
+                            //计算最终的材质索引
+                            int index = DT1.Tile.Index(mainIndex, subIndex, orientation);
+                            //如果这个索引是地图入口,就把这个坐标赋值给importResult.entry
+                            if (index == mapEntryIndex)
+                            {
+                                importResult.entry = MapToWorld(x, y);
+                                //
+                                Debug.Log("地图入口在此坐标 " + x + " " + y);
+                            }
+                            //新建一个变量,用来存储这个瓦片
+                            DT1.Tile tile;
+                            //在瓦片映射字典里找到index这一类材质的瓦片,随机一个稀有度不为0的瓦片赋值给tile
+                            if (dt1Index.Find(index, out tile))
+                            {
+                                //创建这个瓦片
+                                var tileObject = CreateTile(tile, x, y);
+                                //把这个瓦片放到墙壁图层的第p层节点下面
+                                tileObject.transform.SetParent(wallLayers[p].transform);
+                            }
+                            //如果没找到
+                            else
+                            {
+                                //输出警告信息,找不到这个瓦片
+                                Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
+                            }
+                            //如果朝向索引等于3
+                            if (orientation == 3)
+                            {
+                                //读取瓦片的材质索引
+                                index = DT1.Tile.Index(mainIndex, subIndex, 4);
+                                //在瓦片映射字典里找到index这一类材质的瓦片,随机一个稀有度不为0的瓦片赋值给tile
+                                if (dt1Index.Find(index, out tile))
+                                {
+                                    ///创建这个瓦片
+                                    var tileObject = CreateTile(tile, x, y);
+                                    //把这个瓦片放到墙壁图层的第p层节点下面
+                                    tileObject.transform.SetParent(wallLayers[p].transform);
+                                }
+                                else
+                                {
+
+                                    Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
+                                }
+                            }
+                            //中止switch
                             break;
+                        }
                         //9-10是地板层,p=n-9,应该就是地板的第几层,从0-1,读取4个字节,分别是prop1,prop2,prop3,prop4,四个属性
                         case 9:
                         case 10:
+                        {
+                            //这里推断数据文件内的层级是从0开始,所以都要减去起始层数
                             p = layout[n] - 9;
                             int prop1 = reader.ReadByte();   // 属性1（通常为材质索引）
                             int prop2 = reader.ReadByte();   // 属性2（子材质索引/动画帧数）
@@ -251,30 +451,28 @@ public class DS1
                             int prop4 = reader.ReadByte();   // 属性4（低2bit补充主材质索引）
                             //>>>>下面这段看不懂了,需要了解暗黑2MOD的原理才能看懂
                             //注释一下大概意思
+                            //材质为空就中止switch
+                            if (prop1 == 0) break;
                             //计算主材质索引
                             int mainIndex = (prop3 >> 4) + ((prop4 & 0x03) << 4);
                             //子材质索引直接使用prop2
                             int subIndex = prop2;
+                            //新建变量方向索引,默认0
+                            int orientation = 0;
                             //计算最终的材质索引
-                            int index = (mainIndex << 6) + subIndex;
-                            //根据索引,从tiles数组中获取对应的瓦片
-                            DT1.Tile tile = tiles[index];
-                            //如果瓦片材质不为空,就创建一个地板对象,并设置它的位置,父对象,和顺序
-                            if (tile.texture != null)
+                            int index = DT1.Tile.Index(mainIndex, subIndex, orientation);
+                            //新建变量,临时瓦片变量
+                            DT1.Tile tile;
+                            //找到对应的材质类型的瓦片,随机一个稀有度不为0的瓦片赋值给tile
+                            if (dt1Index.Find(index, out tile))
                             {
                                 //创建一个地板对象
-                                var tileObject = CreateFloor(tile, orderInLayer: -p);
-                                //设置它的位置
-                                var pos = Iso.MapToWorld(new Vector3(x, y)) * 5;
-                                pos.y = -pos.y;
-                                tileObject.transform.position = pos;
-                                //设置它的父对象
-                                tileObject.transform.SetParent(parent.transform);
-                                break;
+                                var tileObject = CreateTile(tile, x, y, orderInLayer: p);
+                                //放在地板层的第p层节点下面
+                                tileObject.transform.SetParent(floorLayers[p].transform);
                             }
-                            //上面的if不成功就代表这个瓦片材质是空的,那就跳出switch继续循环
-                            break;
-
+                                break;
+                        }
                         //11是阴影层,跳过4个字节(读取了没赋值)
                         case 11:
                             reader.ReadBytes(4);
@@ -289,7 +487,7 @@ public class DS1
                             //    bptr++;
                             //    s_ptr[p]->prop4 = *bptr;
                             //    bptr++;
-                            //    s_ptr[p] += s_num;
+                            //    s_ptr[p] += shadowLayerCount;
                             //}
                             //else
                             //    bptr += 4;
@@ -302,15 +500,15 @@ public class DS1
                             //{
                             //    p = layout[n] - 12;
                             //    t_ptr[p]->num = (UDWORD) * ((UDWORD*)bptr);
-                            //    t_ptr[p] += t_num;
+                            //    t_ptr[p] += tagLayerCount;
                             //}
                             //bptr += 4;
                             break;
                     }
+                    //每遍历完一个单元格,就把i+1,表示下一个单元格
+                    ++i;
                 }
             }
-            //这个i在整个循环中都没用上,暂时没有作用
-            ++i;
         }
         //[[[如果版本号>=2]]]
         if (version >= 2)
@@ -335,6 +533,18 @@ public class DS1
                     //读取对象的flags,读4个字节
                     int flags = reader.ReadInt32();
                 }
+                //如果对象类型是1,并且有怪物预制体
+                if (type == 1 && monsterPrefab != null)
+                {
+                    //获取这个子单元格的世界坐标
+                    var pos = MapSubCellToWorld(x, y);
+                    //创建一个怪物对象,并把这个坐标赋值给它
+                    var monster = GameObject.Instantiate(monsterPrefab, pos, Quaternion.identity);
+                    //如果有怪物预制体,就把这个怪物的名字赋值给它
+                    monster.name = monsterPrefab.name;
+                    //把这个怪物放到根节点下面
+                    monster.transform.SetParent(root.transform);
+                }
             }
         }
         //关闭流
@@ -342,49 +552,133 @@ public class DS1
         //中止计时器,并debug输出DS1文件的加载时间
         sw.Stop();
         Debug.Log("DT1 加载 用 " + sw.Elapsed + "时间");
+        //返回导入结果
+        return importResult;
     }
-    /// <summary>
-    /// 创建一个地板对象
-    /// </summary>
-    /// <param name="tile">DT1文件中提取的地板对象</param>
-    /// <param name="orderInLayer">同图层的堆叠排序</param>
-    /// <returns>返回地板的gameObject</returns>
-    static GameObject CreateFloor(DT1.Tile tile, int orderInLayer)
+
+    // 将地图坐标转换为世界坐标
+    static Vector3 MapToWorld(int x, int y)
     {
-        //获取瓦片材质
+        // 使用Iso.MapToWorld方法将地图坐标转换为世界坐标，并除以瓦片大小
+        var pos = Iso.MapToWorld(new Vector3(x, y)) / Iso.tileSize;
+        // 反转Y轴坐标
+        pos.y = -pos.y;
+        // 返回转换后的世界坐标
+        return pos;
+    }
+
+    // 将子单元格坐标转换为世界坐标
+    static Vector3 MapSubCellToWorld(int x, int y)
+    {
+        // 使用Iso.MapToWorld方法将子单元格坐标转换为世界坐标，并减去偏移量(2,2)
+        var pos = Iso.MapToWorld(new Vector3(x - 2, y - 2));
+        // 反转Y轴坐标
+        pos.y = -pos.y;
+        // 返回转换后的世界坐标
+        return pos;
+    }
+
+    // 创建一个瓦片的游戏对象
+    static GameObject CreateTile(DT1.Tile tile, int x, int y, int orderInLayer = 0)
+    {
+        // 获取瓦片的纹理
         var texture = tile.texture;
-        //新建一个游戏对象
+        // 将地图坐标转换为世界坐标
+        var pos = MapToWorld(x, y);
+
+        // 创建新的游戏对象
         GameObject gameObject = new GameObject();
-        //给游戏对象命名:floor_ + 材质主索引 + _ + 材质子索引,例子:floor
-        gameObject.name = "floor_" + tile.mainIndex + "_" + tile.subIndex;
-        //给游戏对象添加一个MeshRenderer组件和一个MeshFilter组件并引用
+        // 设置游戏对象名称：主索引_子索引_朝向
+        gameObject.name = tile.mainIndex + "_" + tile.subIndex + "_" + tile.orientation;
+        // 设置游戏对象位置
+        gameObject.transform.position = pos;
+        // 添加MeshRenderer组件
         var meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        // 添加MeshFilter组件
         var meshFilter = gameObject.AddComponent<MeshFilter>();
-        //新建一个材质网格对象
+        // 创建新的Mesh对象
         Mesh mesh = new Mesh();
-        //给网格取个名字
-        mesh.name = "generated floor mesh";
-        //赋值网格顶点坐标
-        mesh.vertices = new Vector3[] { new Vector3(-1, 0.5f), new Vector3(-1, -0.5f), new Vector3(1, -0.5f), new Vector3(1, 0.5f) };
-        //赋值网格的三角形(这个赋值应该是和三角形有关,但是不知道具体代表什么)
-        mesh.triangles = new int[] { 2, 1, 0, 3, 2, 0 };
-        //赋值网格的UV坐标
+        // 获取瓦片的纹理坐标
         float x0 = tile.textureX;
         float y0 = tile.textureY;
-        mesh.uv = new Vector2[] {
-                  new Vector2 (x0 / texture.width, -y0 / texture.height),
-                  new Vector2 (x0 / texture.width, (-y0 -80f) / texture.height),
-                  new Vector2 ((x0 + 160f) / texture.width, (-y0 -80f) / texture.height),
-                  new Vector2 ((x0 + 160f) / texture.width, -y0 / texture.height)
-        };
-        //赋值网格的法线
+        // 计算瓦片的宽度和高度（转换为世界单位）
+        float w = tile.width / Iso.pixelsPerUnit;
+        float h = (-tile.height) / Iso.pixelsPerUnit;
+
+        // 如果瓦片朝向为0（默认朝向）
+        if(tile.orientation == 0)
+        {
+            // 设置左上角顶点位置
+            var topLeft = new Vector3(-1f, 0.5f);
+            // 设置网格顶点
+            mesh.vertices = new Vector3[] {
+                topLeft,
+                topLeft + new Vector3(0, -h),
+                topLeft + new Vector3(w, -h),
+                topLeft + new Vector3(w, 0)
+            };
+            // 设置网格三角形（两个三角形组成四边形）
+            mesh.triangles = new int[] { 2, 1, 0, 3, 2, 0 };
+            // 设置UV坐标
+            mesh.uv = new Vector2[] {
+                new Vector2 (x0 / texture.width, -y0 / texture.height),
+                new Vector2 (x0 / texture.width, (-y0 +tile.height) / texture.height),
+                new Vector2 ((x0 + tile.width) / texture.width, (-y0 +tile.height) / texture.height),
+                new Vector2 ((x0 + tile.width) / texture.width, -y0 / texture.height)
+            };
+
+            // 设置渲染顺序
+            meshRenderer.sortingLayerName = "Floor";
+            meshRenderer.sortingOrder = orderInLayer;
+        }
+        // 其他朝向的瓦片
+        else
+        {
+            // 设置左上角顶点位置
+            var topLeft = new Vector3(-1f, h - 0.5f);
+            // 设置网格顶点
+            mesh.vertices = new Vector3[] {
+                topLeft,
+                topLeft + new Vector3(0, -h),
+                topLeft + new Vector3(w, -h),
+                topLeft + new Vector3(w, 0)
+            };
+            // 设置网格三角形
+            mesh.triangles = new int[] { 2, 1, 0, 3, 2, 0 };
+            // 设置UV坐标
+            mesh.uv = new Vector2[] {
+                new Vector2 (x0 / texture.width, (-y0 - tile.height) / texture.height),
+                new Vector2 (x0 / texture.width, -y0 / texture.height),
+                new Vector2 ((x0 + tile.width) / texture.width, -y0 / texture.height),
+                new Vector2 ((x0 + tile.width) / texture.width, (-y0 - tile.height) / texture.height)
+            };
+            // 根据位置设置渲染顺序
+            meshRenderer.sortingOrder = Iso.SortingOrder(pos);
+        }
+        // 将网格赋值给MeshFilter
         meshFilter.mesh = mesh;
+
+        // 遍历瓦片的标志位数组（5x5网格）
+        int flagIndex = 0;
+        for(int dx = -2; dx < 3; ++dx)
+        {
+            for(int dy = 2; dy > -3; --dy)
+            {
+                // 如果遍历到的标志位结果为1（表示不可通过）(这个数据是在DT1文件中读取的)
+                //(tile.flags[flagIndex] & 1) 由于数据是二进制的,&是二进制和整型的对比,一致的话返回结果true也就是1
+                if ((tile.flags[flagIndex] & 1) != 0)
+                {
+                    // 计算子单元格位置并设置为不可通过
+                    var subCellPos = Iso.MapToIso(pos) + new Vector3(dx, dy);
+                    Tilemap.SetPassable(subCellPos, false);
+                }
+                //遍历一个格子就+1
+                ++flagIndex;
+            }
+        }
+
         //给材质网格对象赋值材质
         meshRenderer.material = tile.material;
-        //设置材质网格对象的排序层和顺序
-        meshRenderer.sortingLayerName = "Floor";
-        //设置材质网格对象的排序顺序
-        meshRenderer.sortingOrder = orderInLayer;
         //返回瓦片对象
         return gameObject;
     }

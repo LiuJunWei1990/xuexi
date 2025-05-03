@@ -35,8 +35,28 @@ public class EditorTools {
         // 检查资源路径是否以 "ds1" 结尾，如果是则返回true，否则返回false
         return assetPath.EndsWith("ds1");
     }
-}
 
+    [MenuItem("Assets/Convert DT1 to PNG")]
+    static public void ConvertDT1ToPNG()
+    {
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        DT1.ConvertToPng(assetPath);
+    }
+
+    [MenuItem("Assets/Convert DT1 to PNG", true)]
+    static public bool ConvertDT1ToPNGValidate()
+    {
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        return assetPath.EndsWith("dt1");
+    }
+
+    [MenuItem("Assets/Reset DT1 cache")]
+    static public void ResetDT1()
+    {
+        DT1.ResetCache();
+    }
+
+}
 /// <summary>
 /// ScriptableObject类实例化
 /// ScriptableObject类是一个用于把子类变成文件的类型的资源,上面的IsoAnimation就是它的子类

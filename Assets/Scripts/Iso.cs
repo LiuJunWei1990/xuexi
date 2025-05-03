@@ -18,16 +18,20 @@ using UnityEngine;
 [RequireComponent (typeof(SpriteRenderer))]
 public class Iso : MonoBehaviour
 {
+    /// <summary>
+    /// 常量，瓦片的素材像素(80*80)
+    /// </summary>
+    public const float pixelsPerUnit = 80;
 
     /// <summary>
-    /// 静态变量，瓦片的尺寸（世界坐标宽度）
+    /// 常量，瓦片的尺寸（世界坐标单位,X轴）
     /// </summary>
-    static public float tileSize = 0.2f;
+    public const float tileSize = 0.2f;
 
     /// <summary>
-    /// 静态变量，瓦片的尺寸（世界坐标高度，为宽度的一半）
+    /// 常量，瓦片的尺寸（世界坐标单位,Y轴，为X轴的一半）
     /// </summary>
-    static public float tileSizeY = tileSize / 2;
+    public const float tileSizeY = tileSize / 2;
     /// <summary>
     /// 当前对象的位置（等距坐标）
     /// </summary>
@@ -73,7 +77,25 @@ public class Iso : MonoBehaviour
         // 根据世界坐标计算等距坐标
         return new Vector3(world.y + world.x / 2, world.y - world.x / 2) / tileSize;
     }
-
+    /// <summary>
+    /// 计算渲染顺序
+    /// </summary>
+    /// <param name="worldPosition">世界坐标下的坐标点</param>
+    /// <returns>形参坐标点处于的渲染顺序标号</returns>
+    static public int SortingOrder(Vector3 worldPosition)
+    {
+        // 计算排序顺序
+        //新建要返回的层级排序,赋值为形参坐标点的Y轴坐标除以tileSizeY的结果,取整,然后取反,
+        int sortingOrder = -Mathf.RoundToInt(worldPosition.y / tileSizeY);
+        //计算形参坐标点所在的宏瓦片
+        var macroTile = MacroTile(MapToIso(worldPosition));
+        //新建宏瓦片的层级排序,赋值为宏瓦片的Y轴世界坐标除以tileSizeY的结果,取整,然后取反,
+        int macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
+        //层级排序加上宏瓦片的层级排序乘以1000加成得到最终的层级排序
+        sortingOrder += macroTileOrder * 1000;
+        //返回结果
+        return sortingOrder;
+    }
     /// <summary>
     /// Debug模式下绘制单元格,需要程序运行时才会显示在Scene视图中,颜色由color参数决定
     /// </summary>
@@ -225,12 +247,8 @@ public class Iso : MonoBehaviour
         //是否排序,默认是排序的,因为有些物体不需要排序,比如地板,地板是不会挡住其他物体的,所以不需要排序
         if (sort)
         {
-            //管理物体的渲染层级,数值越大越靠前,因为加了-号,变成数值越小越靠前
-            spriteRenderer.sortingOrder = -Mathf.RoundToInt(transform.position.y / tileSizeY);
-            //宏瓦片的排序值宏瓦片是相对于规则的地板瓦片来说的,用来增加渲染层级的数值差距,使其分开渲染,以次来提升性能
-            var macroTile = MacroTile(pos);
-            int macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
-            spriteRenderer.sortingOrder += macroTileOrder * 1000;
+            //得到物体的渲染层级
+            spriteRenderer.sortingOrder = SortingOrder(transform.position);
         }
     }
 }

@@ -13,7 +13,7 @@ public class EnemyBar : MonoBehaviour
     /// </summary>
     /// 特性:显示在面板上
     [SerializeField]
-    public Slider slider;
+    Slider slider;
     /// <summary>
     /// 滑动条名字组件
     /// </summary>
@@ -44,7 +44,7 @@ public class EnemyBar : MonoBehaviour
         //人物不为空滑动条显示,为空隐藏
         slider.gameObject.SetActive(character != null);
         //如果人物不为空
-        if(character)
+        if (character)
         {
             //设置滑动条名字
             title.text = character.name;

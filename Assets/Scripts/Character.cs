@@ -51,7 +51,7 @@ public class Character : MonoBehaviour
     [Tooltip("姿态:奔跑")]
     public bool run = false;
     /// <summary>
-    /// 转向速度
+    /// 转向速度,每秒的转速
     /// </summary>
     [Tooltip("人物转向的速度")]
     static float turnSpeed = 4f;
@@ -223,7 +223,7 @@ public class Character : MonoBehaviour
     public void GoTo(Vector2 target)
     {
         //如果角色正在攻击,挨打,死亡,死亡中姿态,就直接返回
-        if(attack || takingDamage || dying || dead) return;
+        if (attack || takingDamage || dying || dead) return;
         //进入行走中姿态
         moving = true;
         //给目标的坐标点赋值
@@ -378,8 +378,8 @@ public class Character : MonoBehaviour
             direction += Mathf.Clamp(Mathf.Sign(diff) * turnSpeed * Time.deltaTime * directionCount, -delta, delta);
             //取余数,防止超出方向数量
             direction = Tools.Mod(direction + directionCount, directionCount);
-            //取整,获得最终的方向索引
-            directionIndex = Mathf.RoundToInt(direction);
+            //取整,获得最终的方向索引(余了一下朝向总数,防止超出方向数量)
+            directionIndex = Mathf.RoundToInt(direction) % directionCount;
         }
     }
     /// <summary>
@@ -519,7 +519,7 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 更新动画
     /// </summary>
-    private void UpdateAnimation()
+    void UpdateAnimation()
     {
         //动画名称
         string animation;

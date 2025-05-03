@@ -23,7 +23,7 @@ public class DT1
         public int mainIndex;  // 主索引
         public int subIndex;  // 子索引
         public int rarity;  // 稀有度
-        public byte[] flags;  // 标志位数组
+        public byte[] flags;  // 标志位数组,就是瓦片里面的5*5单元格
         public int blockHeaderPointer;  // 块头指针
         public int blockDatasLength;  // 块数据长度
         public int blockCount;  // 块数量
@@ -32,33 +32,41 @@ public class DT1
         public Texture2D texture;  // 纹理
         public int textureX;  // 纹理X坐标
         public int textureY;  // 纹理Y坐标
-        public int index;  // 索引
+        /// <summary>
+        /// 瓦片的种类的索引
+        /// </summary>
+        public int index; 
         /// <summary>
         /// 读取单个瓦片数据
         /// </summary>
         /// <param name="reader"></param>
         public void Read(BinaryReader reader)
         {
-
             direction = reader.ReadInt32();  // 读取方向
             roofHeight = reader.ReadInt16();  // 读取屋顶高度
             soundIndex = reader.ReadByte();  // 读取声音索引
             animated = reader.ReadByte();  // 读取是否动画
             height = reader.ReadInt32();  // 读取高度
             width = reader.ReadInt32();  // 读取宽度
-            reader.ReadBytes(4); // 读取4字节的零值
+            reader.ReadBytes(4); // 跳过4字节
             orientation = reader.ReadInt32();  // 读取朝向
             mainIndex = reader.ReadInt32();  // 读取主索引
             subIndex = reader.ReadInt32();  // 读取子索引
             rarity = reader.ReadInt32();  // 读取稀有度
-            reader.ReadBytes(4); // 读取4字节的未知值
-            flags = reader.ReadBytes(25); // 读取25字节的标志位
-            reader.ReadBytes(7); // 读取7字节的未使用值
+            reader.ReadBytes(4); // 跳过4字节
+            flags = reader.ReadBytes(25); // 读取25字节的标志位,就是瓦片内5*5单元格的信息
+            reader.ReadBytes(7); // 跳过7字节的
             blockHeaderPointer = reader.ReadInt32();  // 读取块头指针
             blockDatasLength = reader.ReadInt32();  // 读取块数据长度
             blockCount = reader.ReadInt32();  // 读取块数量
-            reader.ReadBytes(12); // 读取12字节的零值
-            index = (mainIndex << 6) + subIndex;  // 计算索引
+            reader.ReadBytes(12); // 跳过读取12字节
+            index = Index(mainIndex, subIndex, orientation); // 计算索引
+        }
+        // 计算瓦片的索引
+        static public int Index(int mainIndex, int subIndex, int orientation)
+        {
+            // 将主索引左移6位，加上子索引，结果再左移5位，最后加上朝向
+            return (((mainIndex << 6) + subIndex) << 5) + orientation;
         }
     }
     /// <summary>

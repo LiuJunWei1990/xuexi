@@ -15,6 +15,10 @@ public class PlayerController : MonoBehaviour
     /// 角色组件
     /// </summary>
     public Character character;
+    /// <summary>
+    /// 玩家控制器实例
+    /// </summary>
+    static public PlayerController instance;
     //当前鼠标悬停的游戏对象
     //特性:不显示在面板上
     [HideInInspector]
@@ -31,14 +35,15 @@ public class PlayerController : MonoBehaviour
         //如果角色组件为空
         if (character == null)
         {
-            //通过Tag找到角色组件
-            character = GameObject.FindWithTag("Player").GetComponent<Character>();
+            //通过Tag找到角色对象
+            var player = GameObject.FindWithTag("Player");
+            //如果通角色对象不为空,设置角色
+            if (player != null)  SetCharacter(player.GetComponent<Character>());
         }
-        //设置角色
-        SetCharacter(character);
+
     }
 
-    void Start()
+    void Start ()
     {
 
     }
@@ -47,7 +52,7 @@ public class PlayerController : MonoBehaviour
     /// 设定角色
     /// </summary>
     /// <param name="character">目标角色</param>
-    void SetCharacter (Character character)
+    public void SetCharacter (Character character)
     {
         //将目标的角色组件赋值给当前角色组件
         this.character = character;
@@ -110,6 +115,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        //如果玩家对象为空,那组件就不用运行了,直接返回这一帧
+        if (character == null) return;
         UpdateHover();
         //目标的单元格
         Vector3 targetPosition;
