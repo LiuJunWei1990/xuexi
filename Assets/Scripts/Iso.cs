@@ -35,7 +35,7 @@ public class Iso : MonoBehaviour
     public Vector2 pos;
 
     /// <summary>
-    /// 是否瓦片,瓦片拖动时按瓦片对齐,否则按网格对齐
+    /// 是否瓦片,瓦片拖动时按瓦片对齐,否则按单元格对齐
     /// </summary>
     [Tooltip("与瓦片对齐")]
     public bool macro = false;
@@ -75,18 +75,18 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// Debug模式下绘制网格,需要程序运行时才会显示在Scene视图中,颜色由color参数决定
+    /// Debug模式下绘制单元格,需要程序运行时才会显示在Scene视图中,颜色由color参数决定
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="color">线条颜色</param>
-    /// <param name="margin">偏移，就是网格中间的小方块，A*寻路用的那种</param>
+    /// <param name="margin">偏移，就是单元格中间的小方块，A*寻路用的那种</param>
     /// <param name="duration">画线的持续时间</param>
     static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0, float duration = 0f)
     {
-        // 计算标线网格的一半边长
+        // 计算标线单元格的一半边长
         float d = 0.5f - margin;
 
-        // 绘制网格的四条边
+        // 绘制单元格的四条边
         // 计算四个顶点的世界坐标
         var topRight = MapToWorld(pos + new Vector3(d, d));
         var topLeft = MapToWorld(pos + new Vector3(-d, d));
@@ -99,15 +99,15 @@ public class Iso : MonoBehaviour
 		Debug.DrawLine(bottomRight, bottomLeft, color, duration);
     }
     /// <summary>
-    /// Gizmos模式下绘制网格,无需程序运行直接显示在Scene视图中,颜色由color参数决定
+    /// Gizmos模式下绘制单元格,无需程序运行直接显示在Scene视图中,颜色由color参数决定
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="size">长度</param>
     static public void GizmosDrawTile(Vector3 pos, float size = 1.0f)
     {
-        // 计算标线网格的一半边长
+        // 计算标线单元格的一半边长
         float d = 0.5f * size;
-        // 绘制网格的四条边
+        // 绘制单元格的四条边
         var topRight = MapToWorld(pos + new Vector3(d, d));
         var topLeft = MapToWorld(pos + new Vector3(-d, d));
         var bottomRight = MapToWorld(pos + new Vector3(d, -d));
@@ -119,7 +119,7 @@ public class Iso : MonoBehaviour
     }
 
     /// <summary>
-    /// 不提供颜色的重载debug网格画线，默认颜色为白色
+    /// 不提供颜色的重载debug单元格画线，默认颜色为白色
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <param name="margin">偏移</param>
@@ -204,17 +204,17 @@ public class Iso : MonoBehaviour
         // 如果当前对象处于编辑状态
         else
         {
-            //>>>>>>>>>>这里代码的作用时,在编辑模式下,可以拖动游戏对象位置,并且自动对齐网格,一格一格的动<<<<<<<<<<<<
+            //>>>>>>>>>>这里代码的作用时,在编辑模式下,可以拖动游戏对象位置,并且自动对齐单元格,一格一格的动<<<<<<<<<<<<
             //如果是大尺寸瓦片,每格就是瓦片大小
             if (macro)
             {
                 //MacroTile把等距坐标除以五之后取整,再乘以五,保证坐标一直是5的倍数,这样就是大尺寸瓦片的坐标了.
                 transform.position = MapToWorld(MacroTile(MapToIso(transform.position))) * 5;
             }
-            //如果不是,每格就是网格大小
+            //如果不是,每格就是单元格大小
             else
             {
-                // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐网格)
+                // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐单元格)
                 transform.position = MapToWorld(Snap(MapToIso(transform.position)));
             }
             

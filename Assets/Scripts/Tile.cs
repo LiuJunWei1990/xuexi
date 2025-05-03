@@ -27,14 +27,14 @@ public class Tile : MonoBehaviour
     public int height = 5;
 
     /// <summary>
-    /// 用于调整瓦片的网格的X偏移(等距单位)
+    /// 用于调整瓦片的单元格的X偏移(等距单位)
     /// </summary>
     /// 特性:滑动条
     [Range(-5, 5)]
     public int offsetX = 0;
 
     /// <summary>
-    /// 用于调整瓦片的网格的Y偏移(等距单位)
+    /// 用于调整瓦片的单元格的Y偏移(等距单位)
     /// </summary>
     /// /// 特性:滑动条
     [Range(-5, 5)]
@@ -50,7 +50,7 @@ public class Tile : MonoBehaviour
     }
 
     /// <summary>
-    /// 瓦片被选中时绘制该瓦片的网格
+    /// 瓦片被选中时绘制该瓦片的单元格
     /// </summary>
     void OnDrawGizmosSelected ()
     {
@@ -62,14 +62,14 @@ public class Tile : MonoBehaviour
         //加上瓦片的偏移量
         pos.x += offsetX;
         pos.y += offsetY;
-        //遍历瓦片的每一个网格
+        //遍历瓦片的每一个单元格
         for (int x = 0; x < width; ++x)
         {
             for (int y = 0; y < height; ++y)
             {
                 //根据可通行性设置颜色
                 Gizmos.color = passable ? new Color(1, 1, 1, 0.2f) : new Color(1, 0, 0, 0.3f);
-                //绘制网格,大小为0.9f
+                //绘制单元格,大小为0.9f
                 Iso.GizmosDrawTile(pos + new Vector3(x, y), 0.9f);
             }
         }

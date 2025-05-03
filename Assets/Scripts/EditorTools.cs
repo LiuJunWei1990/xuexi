@@ -1,74 +1,110 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-//这个命名空间会使脚本只在编辑器模式下运行,在游戏打包后不会被打包进游戏
 using UnityEditor;
 
 /// <summary>
-/// Unity 编辑器扩展工具集
+/// 编辑器工具类
 /// </summary>
-public class EditorTools
-{
+public class EditorTools {
+    // 在Unity的Assets菜单中添加一个选项 "Create/Iso Animation"
     [MenuItem("Assets/Create/Iso Animation动画切片生成器")]
     static public void CreateIsoAnimation()
     {
-       ScriptableObjectUtility.CreateAsset<IsoAnimation>();
+        // 调用ScriptableObjectUtility的CreateAsset方法，创建一个IsoAnimation类型的ScriptableObject资源
+        ScriptableObjectUtility.CreateAsset<IsoAnimation>();
+    }
+
+    // 在Unity的Assets菜单中添加一个选项 "Load DS1"
+    [MenuItem("Assets/读取DS1文件")]
+    static public void LoadDS1()
+    {
+        // 获取当前选中的资源路径
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        // 调用DS1类的Import方法，加载并解析选中的DS1文件
+        DS1.Import(assetPath);
+    }
+
+    // 验证 "Load DS1" 菜单项是否可用
+    [MenuItem("Assets/读取DS1文件", true)]
+    static public bool LoadDS1Validate()
+    {
+        // 获取当前选中的资源路径
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        // 检查资源路径是否以 "ds1" 结尾，如果是则返回true，否则返回false
+        return assetPath.EndsWith("ds1");
     }
 }
 
 /// <summary>
-/// ScriptableObject的工具类
-/// ScriptableObject类是Unity自带的一个类,用于把一个类型转换为资源文件,前提是这个类型继承自ScriptableObject
-/// 这个类的序列化字段可以直接在Inspector面板上显示和修改
+/// ScriptableObject类实例化
+/// ScriptableObject类是一个用于把子类变成文件的类型的资源,上面的IsoAnimation就是它的子类
 /// </summary>
 public static class ScriptableObjectUtility
 {
-    /// <summary>
-    /// 创建一个ScriptableObject资源文件
-    /// 把任意一个派生的类型转换为资源文件
-    /// </summary>
-    /// <typeparam name="T">资源类型</typeparam>
-    /// <returns>返回创建的资源</returns>
+    //创建资源
     public static T CreateAsset<T>() where T : ScriptableObject
     {
-        //创建一个ScriptableObject资源实例
+        // 创建一个指定类型的ScriptableObject实例
         T asset = ScriptableObject.CreateInstance<T>();
-        //获取路径，形参是编辑器当前选中的目标
+
+        // 获取当前选中的资源路径
         string path = AssetDatabase.GetAssetPath(Selection.activeObject);
-        //如果没有选中对象,就创建到Assets根目录下
+        // 如果路径为空，则默认使用 "Assets" 目录
         if (path == "")
         {
             path = "Assets";
         }
-        //返回路径的文件扩展名后缀 如果没有后缀,就返回空字符串
-        //不为空就代表选中目标是个文件
+        // 如果路径包含文件扩展名，则去掉文件名，只保留目录路径
         else if (Path.GetExtension(path) != "")
         {
-            //把路径的文件名去掉,只剩下路径
-            //AssetDatabase.GetAssetPath(Selection.activeObject)>>获取当前目标路径
-            //Path.GetFileName>>获取路径的文件名(包括后缀)
-            //path.Replace>>替换成空字符串
             path = path.Replace(Path.GetFileName(AssetDatabase.GetAssetPath(Selection.activeObject)), "");
         }
-        //>>>>如果上面的if都不成立,说明选中的是文件夹,就直接返回路径<<<<<
 
-        
-        //创建文件路径,尝试创建一个路径,如果路径存在就给文件名后面加个1,2,3.....
+        // 生成唯一的资源路径和名称
         string assetPathAndName = AssetDatabase.GenerateUniqueAssetPath(path + "/New" + typeof(T).ToString() + ".asset");
-        //>>>>>下面是创建文件的四个必要步骤
-        //创建资源文件(文件的变量,文件路径)
+
+        // 在指定路径创建资源
         AssetDatabase.CreateAsset(asset, assetPathAndName);
-        //确保写入磁盘
+        // 保存资源
         AssetDatabase.SaveAssets();
-        //刷新资源,保证新文件正确显示
+        // 刷新资源数据库(确保能立即看到创建的文件)
         AssetDatabase.Refresh();
-        //激活资源窗口(就是鼠标点中的那个效果)
+        // 聚焦到项目窗口(就和鼠标点中这个框体的效果一样)
         EditorUtility.FocusProjectWindow();
-        //当前选择项改为刚才创建的文件
+        // 选中新创建的资源
         Selection.activeObject = asset;
-        //返回创建的资源 
+        // 返回创建的资源
         return asset;
     }
 }
 
+/// <summary>
+/// 资源导入处理器类
+/// 这个类继承自AssetPostprocessor，用于处理资源导入事件。
+/// 但是并没有被使用,而是直接在上面的方法实现了相同的功能
+/// </summary>
+public class PostProcessor : AssetPostprocessor
+{
+    // 当资源导入、删除、移动时调用此方法
+    static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+    {
+        // 遍历所有导入的资源
+        foreach (string assetPath in importedAssets)
+        {
+            // 如果资源是 .dt1 文件
+            if (assetPath.EndsWith(".dt1"))
+            {
+                // 注释掉的代码：调用 DT1.Import 方法加载 .dt1 文件
+                //DT1.Import(assetPath);
+            }
+            // 如果资源是 .ds1 文件
+            else if (assetPath.EndsWith(".ds1"))
+            {
+                // 注释掉的代码：调用 DS1.Import 方法加载 .ds1 文件
+                //DS1.Import(assetPath);
+            }
+        }
+    }
+}

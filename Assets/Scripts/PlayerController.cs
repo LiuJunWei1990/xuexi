@@ -111,18 +111,18 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         UpdateHover();
-        //目标的网格
+        //目标的单元格
         Vector3 targetPosition;
         //如果当前互动物体不为空
         if (hover != null)
         {
-            //目标网格直接取当前互动物体的网格
+            //目标单元格直接取当前互动物体的单元格
             targetPosition = Iso.MapToIso(hover.transform.position);
         }
         //当前互动物体为空
         else
         {
-            //目标取鼠标位置的网格
+            //目标取鼠标位置的单元格
             targetPosition = IsoInput.mousePosition;
         }
         //给路径赋值:自身>>>目标

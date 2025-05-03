@@ -9,7 +9,7 @@ using UnityEngine;
 /// 1.行走->PlayerController中外设按钮调用->GoTo()->PathTo()生成路径->Update()刷新Move()方法移动角色
 /// 2.互动->PlayerController中外设按钮调用->target(属性)赋值->Set中执行Use()->PathTo()生成路径->赋值usable->Update()中Move()后检测到路径空了并usable不为空就执行互动
 /// 3.攻击->PlayerController中外设按钮调用->target(属性)赋值->Set中执行Attack()->PathTo()生成路径->赋值targetCharacter->Update()中Move()后检测到路径空了并targetCharacter不为空就执行攻击,并人物进入攻击状态
-/// 4.瞬移->PlayerController中外设按钮调用->Teleport()执行瞬移,如果目的地不可通行就生成路径瞬移到目的地最近的可通行网格
+/// 4.瞬移->PlayerController中外设按钮调用->Teleport()执行瞬移,如果目的地不可通行就生成路径瞬移到目的地最近的可通行单元格
 /// 5.动画->和Move()基本类似,根据角色是否攻击状态,挨打状态,是否有路径来决定播放Idle,Walk,Run,Attack动画
 /// 总结:除瞬移外,其他动作都是生成路径+赋值目标单位,然后在Update()中检测路径是否为空,如果为空就执行相应的动作
 public class Character : MonoBehaviour
@@ -239,7 +239,7 @@ public class Character : MonoBehaviour
     public void Teleport(Vector2 target)
     {
         if (attack || takingDamage) return;
-        //判断目标网格是否可通行
+        //判断目标单元格是否可通行
         if (Tilemap.Passable(target))
         {
             //可通行就直接瞬移
@@ -247,7 +247,7 @@ public class Character : MonoBehaviour
         }
         else
         {
-            //不可通行就画路径,准备瞬移到按照寻路的规则的目标网格
+            //不可通行就画路径,准备瞬移到按照寻路的规则的目标单元格
             var pathToTarget = Pathing.BuildPath(iso.pos, target, directionCount);
             //路径不为空,为空就返回
             if (pathToTarget.Count == 0) return;
@@ -317,7 +317,7 @@ public class Character : MonoBehaviour
             //如果目标有互动组件
             if (usable)
             {
-                //如果目标的网格和角色的网格距离小于等于互动范围,就执行
+                //如果目标的单元格和角色的单元格距离小于等于互动范围,就执行
                 //打瓦片版射线,自身>>可互动物体,最大长度为互动范围+直径/2;;;maxRayLength:(命名参数)代表指定这个新参赋值给maxRayLength:;;也可以单纯做一个装饰,提升代码可读性;;ignore射线忽略角色自身
                 var hit = Tilemap.Raycast(iso.pos, usable.GetComponent<Iso>().pos, maxRayLength: useRange + diameter / 2, ignore: gameObject);
                 //如果打中了物体(代表物体不可通行,不可通行代表是可互动状态)
@@ -493,26 +493,26 @@ public class Character : MonoBehaviour
             MoveAlongPath();
         }
         //到了这一步,能让角色移动的分支都执行完了
-        //新建一个网格对象,赋值角色上一帧坐标的网格
+        //新建一个单元格对象,赋值角色上一帧坐标的单元格
         var cell = Tilemap.GetCell(prevPos);
-        //前一帧网格的对象就是角色自身,代表网格状态没重置
+        //前一帧单元格的对象就是角色自身,代表单元格状态没重置
         if (cell.gameObject == gameObject)
         {
-            //重置网格状态
+            //重置单元格状态
             cell.passable = true;
             cell.gameObject = null;
-            //把新状态设置给容器中的对应网格
+            //把新状态设置给容器中的对应单元格
             Tilemap.SetCell(prevPos, cell);
         }
-        //新建一个新网格对象,赋值角色当前站立的网格
+        //新建一个新单元格对象,赋值角色当前站立的单元格
         var newCell = Tilemap.GetCell(iso.pos);
-        //网格如果为可通行,代表网格状态没更新
+        //单元格如果为可通行,代表单元格状态没更新
         if (newCell.passable)
         {
-            //更新网格状态
+            //更新单元格状态
             newCell.passable = false;
             newCell.gameObject = gameObject;
-            //把新状态设置给容器中的对应网格
+            //把新状态设置给容器中的对应单元格
             Tilemap.SetCell(iso.pos, newCell);
         }        
     }
