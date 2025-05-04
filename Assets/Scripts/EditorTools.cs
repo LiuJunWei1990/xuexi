@@ -33,21 +33,21 @@ public class EditorTools {
         // 获取当前选中的资源路径
         var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
         // 检查资源路径是否以 "ds1" 结尾，如果是则返回true，否则返回false
-        return assetPath.EndsWith("ds1");
+        return assetPath.ToLower().EndsWith("ds1");
     }
 
-    [MenuItem("Assets/Convert DT1 to PNG")]
+    [MenuItem("Assets/将DT1转换为PNG")]
     static public void ConvertDT1ToPNG()
     {
         var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
         DT1.ConvertToPng(assetPath);
     }
 
-    [MenuItem("Assets/Convert DT1 to PNG", true)]
+    [MenuItem("Assets/将DT1转换为PNG", true)]
     static public bool ConvertDT1ToPNGValidate()
     {
         var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-        return assetPath.EndsWith("dt1");
+        return assetPath.ToLower().EndsWith("dt1");
     }
 
     [MenuItem("Assets/Reset DT1 cache")]
@@ -56,6 +56,19 @@ public class EditorTools {
         DT1.ResetCache();
     }
 
+    [MenuItem("Assets/从DC6创建字体")]
+    static public void CreateFontFromDC6()
+    {
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        DC6.CreateFontFromDC6(assetPath);
+    }
+
+    [MenuItem("从DC6创建字体", true)]
+    static public bool CreateFontFromDC6Validate()
+    {
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        return assetPath.ToLower().EndsWith("dc6");
+    }
 }
 /// <summary>
 /// ScriptableObject类实例化

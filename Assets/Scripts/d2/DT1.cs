@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 /// <summary>
-/// DT1文件读取器
+/// DT1类,用于处理DT1格式的地图文件,包括瓦片数据的读取和导入等操作
 /// </summary>
 public class DT1
 {

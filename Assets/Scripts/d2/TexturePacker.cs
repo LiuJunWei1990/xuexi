@@ -4,9 +4,6 @@ using UnityEngine;
 // 纹理打包器类，用于将多个小纹理打包到一个大纹理中
 class TexturePacker
 {
-    // 静态数组，用于存储透明颜色，大小为2048x2048
-    static Color32[] transparentColors = new Color32[2048 * 2048];
-
     // 存储所有生成的纹理的列表
     public List<Texture2D> textures = new List<Texture2D>();
 
@@ -23,6 +20,10 @@ class TexturePacker
     int yPos = 0;
     // 当前行的高度
     int rowHeight = 0;
+    /// <summary>
+    /// 透明颜色数组，用于初始化纹理的像素
+    /// </summary>
+    Color32[] pixels;
 
     // 打包结果结构体
     public struct PackResult
@@ -38,6 +39,7 @@ class TexturePacker
     {
         this.maxWidth = maxWidth;
         this.maxHeight = maxHeight;
+        this.pixels = new Color32[maxWidth * maxHeight];
     }
 
     // 创建新纹理的私有方法
@@ -48,7 +50,7 @@ class TexturePacker
         // 设置纹理过滤模式为Point
         texture.filterMode = FilterMode.Point;
         // 将纹理的所有像素设置为透明
-        texture.SetPixels32(transparentColors);
+        texture.SetPixels32(pixels);
         // 将新纹理添加到纹理列表中
         textures.Add(texture);
         return texture;
