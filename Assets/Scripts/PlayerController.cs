@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
 
     void Awake()
     {
+        instance = this;
         //如果角色组件为空
         if (character == null)
         {

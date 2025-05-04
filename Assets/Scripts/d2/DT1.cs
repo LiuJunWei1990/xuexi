@@ -60,7 +60,7 @@ public class DT1
             blockDatasLength = reader.ReadInt32();  // 读取块数据长度
             blockCount = reader.ReadInt32();  // 读取块数量
             reader.ReadBytes(12); // 跳过读取12字节
-            index = Index(mainIndex, subIndex, orientation); // 计算索引
+            index = Index(mainIndex, subIndex, orientation); // 计算材质索引
         }
         // 计算瓦片的索引
         static public int Index(int mainIndex, int subIndex, int orientation)
@@ -70,16 +70,44 @@ public class DT1
         }
     }
     /// <summary>
-    /// 瓦片像素点数组:是一个颜色数组,看数量应该是对应的像素点数量,2048*2048
+    /// 导入结果结构体
     /// </summary>
-    static Color32[] transparentColors = new Color32[2048 * 2048];  // 透明颜色数组
+    public struct ImportResult
+    {
+        /// <summary>
+        /// 瓦片数组
+        /// </summary>
+        public Tile[] tiles;
+        /// <summary>
+        /// 纹理数组
+        /// </summary>
+        public Texture2D[] textures;
+    }
+    /// <summary>
+    /// 缓存字典,键是文件路径,值是导入结果
+    /// </summary>
+    static Dictionary<string, ImportResult> cache = new Dictionary<string, ImportResult>();
+    /// <summary>
+    /// 重置缓存
+    /// </summary>
+    static public void ResetCache()
+    {
+        cache.Clear();
+    }
     /// <summary>
     /// 导入DT1文件
     /// </summary>
     /// <param name="dt1Path">文件路径</param>
     /// <returns>返回瓦片数组</returns>
-    static public Tile[] Import(string dt1Path)
+    static public ImportResult Import(string dt1Path)
     {
+        ///如果字典中有这个文件,直接返回字典中的结果
+        if(cache.ContainsKey(dt1Path))
+        {
+            return cache[dt1Path];
+        }
+        //新建一个变量,代表导入的结果
+        var importResult = new ImportResult();
         var stream = new BufferedStream(File.OpenRead(dt1Path));  // 打开文件流
         var reader = new BinaryReader(stream);  // 创建二进制读取器
         int version1 = reader.ReadInt32();  // 读取版本号1
@@ -88,86 +116,79 @@ public class DT1
         {
             //版本是7.6就退出,这个版本读取不了
             Debug.Log(string.Format("无法读取dt1文件, 错误的版本: ({0}.{1})", version1, version2));
-            return null;
+            //返回空的导入结果
+            return importResult;
         }
         reader.ReadBytes(260);  // 跳过260字节的未知数据(只读取没赋值)
         int tileCount = reader.ReadInt32();  // 读取瓦片的总数
-        int tileCountFit = 0;  // 新建一个变量,代表瓦片数组已容纳的瓦片数
         reader.ReadInt32(); // 跳过4个字节
         Tile[] tiles = new Tile[tileCount];  // 创建瓦片数组,长度是瓦片总数
-        int height = 2048;  // 纹理高度
-        int width = 2048;  // 纹理宽度
-        int xPos = 0;  // 当前X位置
-        int yPos = 0;  // 当前Y位置
-        int rowHeight = 0;  // 行高
+        //新建一个变量,代表纹理打包器
+        var packer = new TexturePacker(2048, 2048);
+        //新建一个变量,代表材质
+        Material material = null;
         //遍历瓦片总数,把所有合规的瓦片加入到数组中
+        // 遍历所有瓦片
         for (int i = 0; i < tileCount; ++i)
         {
-            //调用上面那个Read方法,读取单个瓦片的数据
+            // 调用Tile结构体的Read方法，读取单个瓦片的数据
             tiles[i].Read(reader);
-            //朝向索引不为0的瓦片跳过
-            if (tiles[i].orientation != 0)
+            // 将瓦片的宽度和高度（取负）放入纹理打包器，获取打包结果
+            var result = packer.put(tiles[i].width, -tiles[i].height);
+            // 如果打包器生成了新的纹理
+            if (result.newTexture)
             {
-                //因为流已经往前走了,下标退回原本位置,
-                i -= 1;
-                //瓦片总数减1
-                tileCount -= 1;
-                //相当于跳过了当前这个流,下一次循环会读取下一个流
-                continue;
-            }
-            tiles[i].textureX = xPos;  // 设置瓦片的纹理X坐标
-            tiles[i].textureY = yPos;  // 设置瓦片的纹理Y坐标
-            rowHeight = Mathf.Max(-tiles[i].height, rowHeight);  // 计算行高,不能低于一个瓦片的高度
-            //如果超出纹理宽度
-            if (xPos + tiles[i].width > width)
-            {
-                //重置X位置
-                xPos = 0;
-                //Y位置加上行高
-                yPos += rowHeight;
-                //重置行高
-                rowHeight = -tiles[i].height;
-                //瓦片纹理X轴为0
-                tiles[i].textureX = 0;
-                //瓦片纹理Y轴为yPos
-                tiles[i].textureY = yPos;
+                // 创建一个新的材质，使用"Sprite"着色器
+                material = new Material(Shader.Find("Sprite"));
+                // 给材质命名，附加文件路径
+                material.name += "(" + dt1Path + ")";
+                // 设置材质的主纹理为打包器生成的纹理
+                material.mainTexture = result.texture;
             }
 
-            xPos += tiles[i].width;  // 更新X位置
+            // 设置瓦片的纹理X坐标
+            tiles[i].textureX = result.x;
+            // 设置瓦片的纹理Y坐标
+            tiles[i].textureY = result.y;
+            // 设置瓦片的纹理
+            tiles[i].texture = result.texture;
+            // 设置瓦片的材质
+            tiles[i].material = material;
 
-            if (yPos + rowHeight > height)  // 如果超出纹理高度,就中止循环
+            // 如果瓦片朝向为0或15，并且高度不为0
+            if ((tiles[i].orientation == 0 || tiles[i].orientation == 15) && tiles[i].height != 0)
             {
-                break;
+                // 地板或屋顶类型，设置固定高度为-80
+                tiles[i].height = -80;
             }
-            //成功到了这步说明瓦片加入到数组了,容纳的瓦片数+1
-            tileCountFit += 1;
+            // 如果瓦片朝向在1到14之间
+            else if (tiles[i].orientation > 0 && tiles[i].orientation < 15)
+            {
+                // 调整纹理Y坐标，减去瓦片高度
+                tiles[i].textureY += (-tiles[i].height);
+            }
         }
-        
-        var texture = new Texture2D(width, height, TextureFormat.ARGB32, false);  // 创建纹理
-        texture.filterMode = FilterMode.Point;  // 设置纹理过滤模式
-        texture.SetPixels32(transparentColors);  // 设置透明颜色
 
-        var material = new Material(Shader.Find("Sprite"));  // 创建材质
-        material.name += "(" + dt1Path + ")";  // 设置材质名称
-        material.mainTexture = texture;  // 设置材质纹理
-
-        Debug.Log("容纳瓦片: " + tileCountFit + " / " + tileCount);  // 输出容纳的瓦片数量
-        byte[] blockData = new byte[1024];  // 创建块数据数组
-        //遍历已容纳的瓦片数组
-        for (int i = 0; i < tileCountFit; ++i)
+        // 输出日志，显示文件路径、瓦片总数和纹理数量
+        Debug.Log(dt1Path + ", 瓦片总数: " + tileCount + ", " +  " 纹理总数: " + packer.textures.Count);
+        // 创建一个1024字节的块数据缓冲区
+        byte[] blockData = new byte[1024];
+        // 遍历所有瓦片
+        for (int i = 0; i < tileCount; ++i)
         {
-            tiles[i].material = material;  // 设置瓦片材质
-            tiles[i].texture = texture;  // 设置瓦片纹理
-            //获取当前遍历到的瓦片
+            // 获取当前瓦片
             var tile = tiles[i];
-            //如果瓦片的宽度或高度为0,就跳过
-            if (tile.width == 0 || tile.height == 0) 
-            {
 
-                Debug.Log(string.Format("瓦片尺寸: {0}x{1}", tile.width, tile.height));
+            // 如果瓦片的宽度或高度为0
+            if (tile.width == 0 || tile.height == 0)
+            {
+                // 输出日志，显示无效的瓦片尺寸
+                Debug.Log(string.Format("错误,瓦片尺寸: {0}x{1}", tile.width, tile.height));
+                // 跳过当前瓦片，继续处理下一个
                 continue;
             }
 
+            // 将文件流定位到当前瓦片的块头指针位置
             stream.Seek(tile.blockHeaderPointer, SeekOrigin.Begin);  // 定位到块头指针
             for (int block = 0; block < tile.blockCount; ++block)  // 遍历块
             {
@@ -188,30 +209,58 @@ public class DT1
                 if (blockData.Length < length)  // 如果块数据数组长度不足,那就扩展到标准长度
                     blockData = new byte[length];
                 reader.Read(blockData, 0, length);  // 读取块数据
-                if (tile.orientation > 0 && tile.orientation < 15)  // 如果朝向在1到14之间
-                {
-                    // 旋转180度,Y轴-瓦片长度,那就是反转了
-                    y += (-tile.height);
-                }
-
                 if (format == 1)  // 如果是等距格式
                 {
-                    drawBlockIsometric(texture, tile.textureX + x, tile.textureY + y, blockData, length);
+                    // 绘制等距块
+                    drawBlockIsometric(tile.texture, tile.textureX + x, tile.textureY + y, blockData, length);
                 }
                 else  // 如果是普通格式
                 {
-                    drawBlockNormal(texture, tile.textureX + x, tile.textureY + y, blockData, length);
+                    // 绘制普通块
+                    drawBlockNormal(tile.texture, tile.textureX + x, tile.textureY + y, blockData, length);
                 }
 
                 stream.Seek(positionBeforeSeek, SeekOrigin.Begin);  // 恢复到之前的位置
             }
         }
-
-        texture.Apply();  // 应用纹理
-        stream.Close();  // 关闭流
-
-        return tiles;  // 返回瓦片数组
+          // 遍历所有纹理,并且应用纹理
+        foreach(var texture in packer.textures) texture.Apply();
+        //关闭文件流
+        stream.Close();
+        //把瓦片数组赋值给导入结果
+        importResult.tiles = tiles;
+        //把纹理数组赋值给导入结果
+        importResult.textures = packer.textures.ToArray();
+        //把导入结果添加到缓存字典中
+        cache[dt1Path] = importResult;
+        //返回导入结果
+        return importResult;
     }
+    // 静态方法，用于将DT1文件转换为PNG格式
+    static public void ConvertToPng(string assetPath)
+    {
+        // 加载调色板，参数1表示使用第一个调色板
+        Palette.LoadPalette(1);
+        // 导入DT1文件，获取导入结果
+        ImportResult result = Import(assetPath);
+        // 初始化计数器
+        int i = 0;
+        // 遍历导入结果中的所有纹理
+        foreach(var texture in result.textures)
+        {
+            // 将纹理编码为PNG格式的字节数组
+            var pngData = texture.EncodeToPNG();
+            // 生成PNG文件的保存路径，附加计数器作为后缀
+            var pngPath = assetPath + "." + i + ".png";
+            // 将PNG数据写入文件
+            File.WriteAllBytes(pngPath, pngData);
+            // 通知Unity资源数据库导入新创建的PNG文件
+            AssetDatabase.ImportAsset(pngPath);
+            // 计数器递增
+            i++;
+        }
+    }
+
     /// <summary>
     /// 绘制块(绘制瓦片的图片)
     /// </summary>
