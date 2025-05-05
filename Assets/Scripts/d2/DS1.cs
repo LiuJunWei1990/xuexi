@@ -134,6 +134,11 @@ public class DS1
     };
     // 地图入口索引，通过DT1.Tile.Index方法生成，参数为(30, 11, 10),它是静态且只读的
     static readonly int mapEntryIndex = DT1.Tile.Index(30, 11, 10);
+    // 城镇入口索引，通过DT1.Tile.Index方法生成，参数为(30, 11, 11),它是静态且只读的
+    static readonly int townEntryIndex = DT1.Tile.Index(30, 0, 10);
+    // 城镇入口索引2，通过DT1.Tile.Index方法生成，参数为(31, 11, 11),它是静态且只读的
+    static readonly int townEntry2Index = DT1.Tile.Index(31, 0, 10);
+
     /// <summary>
     /// 导入一个ds1文件
     /// </summary>
@@ -145,9 +150,12 @@ public class DS1
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
         //>>>>>>>>生成文件流
-        //File.OpenRead(ds1Path)打开一个文件进行读取,返回一个FileStream对象
-        //BufferedStream是用于缓冲读取,提高读取效率,适用于频繁的小数据读取
-        var stream = new BufferedStream(File.OpenRead(ds1Path));
+        //File.ReadAllBytes(ds1Path)打开一个文件进行读取,返回一个FileStream对象
+        //MemoryStream是用于内存读取,提高读取效率,适用于频繁的小数据读取
+        //>>>注释掉的这段代码是缓冲流读取,是读取硬盘中的文件,适用于大文件读取,速度慢
+        //>>>但是DS1文件一般都很小,所以用MemoryStream读取就足够了,而且更快
+        //var stream = new BufferedStream(File.OpenRead(ds1Path));
+        var stream = new MemoryStream(File.ReadAllBytes(ds1Path));
         //BinaryReader是用于从二进制流中读取数据,适用于读取二进制文件
         var reader = new BinaryReader(stream);
 
@@ -339,8 +347,6 @@ public class DS1
         //遍历整个图层总数
         for (int n = 0; n < layerCount; n++)
         {
-            Debug.Log("正在加载图层 " + n + " " + layout[n]);
-            //图层的层级
             int p;
             //当前图层的第几个瓦片
             int i = 0;
@@ -398,44 +404,49 @@ public class DS1
                             if (index == mapEntryIndex)
                             {
                                 importResult.entry = MapToWorld(x, y);
-                                //
                                 Debug.Log("地图入口在此坐标 " + x + " " + y);
+                                break;
                             }
-                            //新建一个变量,用来存储这个瓦片
+                            //如果这个索引是城镇入口,就把这个坐标赋值给importResult.entry
+                            else if (index == townEntryIndex)
+                            {
+                                importResult.entry = MapToWorld(x, y);
+                                Debug.Log("城镇入口在此坐标 " + x + " " + y);
+                                break;
+                            }
                             DT1.Tile tile;
                             //在瓦片映射字典里找到index这一类材质的瓦片,随机一个稀有度不为0的瓦片赋值给tile
                             if (dt1Index.Find(index, out tile))
                             {
-                                //创建这个瓦片
+                                ///创建这个瓦片
                                 var tileObject = CreateTile(tile, x, y);
                                 //把这个瓦片放到墙壁图层的第p层节点下面
                                 tileObject.transform.SetParent(wallLayers[p].transform);
                             }
-                            //如果没找到
                             else
                             {
-                                //输出警告信息,找不到这个瓦片
                                 Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
                             }
-                            //如果朝向索引等于3
+                            //朝向信息等于3
                             if (orientation == 3)
                             {
-                                //读取瓦片的材质索引
+                                //获取材质索引
                                 index = DT1.Tile.Index(mainIndex, subIndex, 4);
-                                //在瓦片映射字典里找到index这一类材质的瓦片,随机一个稀有度不为0的瓦片赋值给tile
+                                //随机再容器中获取一个这类材质的瓦片对象
                                 if (dt1Index.Find(index, out tile))
                                 {
-                                    ///创建这个瓦片
+                                    //创建瓦片
                                     var tileObject = CreateTile(tile, x, y);
                                     //把这个瓦片放到墙壁图层的第p层节点下面
                                     tileObject.transform.SetParent(wallLayers[p].transform);
                                 }
+                                //如果找不到就报错
                                 else
                                 {
-
-                                    Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
+                                Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
                                 }
                             }
+                        
                             //中止switch
                             break;
                         }
@@ -605,11 +616,13 @@ public class DS1
         float w = tile.width / Iso.pixelsPerUnit;
         float h = (-tile.height) / Iso.pixelsPerUnit;
 
-        // 如果瓦片朝向为0（默认朝向）
-        if(tile.orientation == 0)
+        // 如果瓦片朝向为0或者15（默认朝向）
+        if(tile.orientation == 0 || tile.orientation == 15)
         {
             // 设置左上角顶点位置
             var topLeft = new Vector3(-1f, 0.5f);
+            //如果朝向是15,就把y坐标加上瓦片的高度
+            if (tile.orientation == 15) topLeft.y += tile.roofHeight / Iso.pixelsPerUnit;
             // 设置网格顶点
             mesh.vertices = new Vector3[] {
                 topLeft,
@@ -628,7 +641,7 @@ public class DS1
             };
 
             // 设置渲染顺序
-            meshRenderer.sortingLayerName = "Floor";
+            meshRenderer.sortingLayerName = tile.orientation == 0 ? "Floor" : "Roof";
             meshRenderer.sortingOrder = orderInLayer;
         }
         // 其他朝向的瓦片
@@ -653,27 +666,30 @@ public class DS1
                 new Vector2 ((x0 + tile.width) / texture.width, (-y0 - tile.height) / texture.height)
             };
             // 根据位置设置渲染顺序
-            meshRenderer.sortingOrder = Iso.SortingOrder(pos);
+            meshRenderer.sortingOrder = Iso.SortingOrder(pos) - 3;
         }
         // 将网格赋值给MeshFilter
         meshFilter.mesh = mesh;
 
         // 遍历瓦片的标志位数组（5x5网格）
-        int flagIndex = 0;
-        for(int dx = -2; dx < 3; ++dx)
+        if (Application.isPlaying)
         {
-            for(int dy = 2; dy > -3; --dy)
+            int flagIndex = 0;
+            for (int dx = -2; dx < 3; ++dx)
             {
-                // 如果遍历到的标志位结果为1（表示不可通过）(这个数据是在DT1文件中读取的)
-                //(tile.flags[flagIndex] & 1) 由于数据是二进制的,&是二进制和整型的对比,一致的话返回结果true也就是1
-                if ((tile.flags[flagIndex] & 1) != 0)
+                for (int dy = 2; dy > -3; --dy)
                 {
-                    // 计算子单元格位置并设置为不可通过
-                    var subCellPos = Iso.MapToIso(pos) + new Vector3(dx, dy);
-                    Tilemap.SetPassable(subCellPos, false);
+                    // 如果遍历到的标志位结果为1（表示不可通过）(这个数据是在DT1文件中读取的)
+                    //(tile.flags[flagIndex] & 1) 由于数据是二进制的,&是二进制和整型的对比,一致的话返回结果true也就是1
+                    if ((tile.flags[flagIndex] & (1 + 8)) != 0)
+                    {
+                        // 计算子单元格位置并设置为不可通过
+                        var subCellPos = Iso.MapToIso(pos) + new Vector3(dx, dy);
+                        Tilemap.SetPassable(subCellPos, false);
+                    }
+                    //遍历一个格子就+1
+                    ++flagIndex;
                 }
-                //遍历一个格子就+1
-                ++flagIndex;
             }
         }
 

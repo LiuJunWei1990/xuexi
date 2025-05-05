@@ -23,25 +23,20 @@ public class Pathing
         /// </summary>
         public Vector2 pos;
     }
-
-    /// <summary>
-    /// 路径,存储所有的步子
-    /// </summary>
-    static private List<Step> path = new List<Step>();
-
     /// <summary>
     /// 节点类,A*算法的节点
     /// </summary>
     //IEquatable,==相等运算符.IComparable,><比较运算符
     class Node : IEquatable<Node>, IComparable<Node>
     {
-        public float gScore;                    // 节点的移动成本
-        public float hScore;                    // 节点的启发式距离评分
-        public float score;                      // 节点的评分(成本 + 启发式距离)
-        public Vector2 pos;                      // 节点的位置
-        public Node parent;                      // 父节点
-        public Vector2 direction;                // 移动方向
-        public int directionIndex;                // 方向索引
+        /// <summary>
+        /// 节点的移动成本
+        /// </summary>
+        public float gScore;
+        public float hScore;
+        public float score;
+        public Vector2 pos;
+        public Node parent;
 
         private Node()
         {
@@ -66,7 +61,21 @@ public class Pathing
         {
             return this.pos == other.pos;
         }
-
+        /// <summary>
+        /// 重写 GetHashCode 方法，用于哈希表
+        /// 这个方法可以获取数值的哈希码
+        /// 哈希码是一种耗能非常低的对比方法,在有大量对比的代码中使用对性能提升很大
+        /// 这里重写的作用是区分X和Y坐标
+        /// 如果Y轴不乘以100
+        /// 那么(1,99)和(99,1)的哈希码是一样的
+        /// 而这样重写后就是9901和199对比,这样就不一样了
+        /// 当然哈希码对比的准确性也会降低,所以如果遇到相同的对比,就会使用Equals方法再确认一次
+        /// </summary>
+        /// <returns></returns>
+        override public int GetHashCode()
+        {
+            return (int)(pos.x + pos.y * 100);
+        }
         /// <summary>
         /// 节点池,仅用于优化内存分配,没有实际用途
         /// </summary>
@@ -95,8 +104,8 @@ public class Pathing
         /// <summary>
         /// 回收(列表)
         /// </summary>
-        /// <param name="nodes">节点列表</param>
-        static public void Recycle(List<Node> nodes)
+        /// <param name="nodes">ICollection列表容器的主要接口,主要功能就是增删改查,这里应该是为了兼容哈希列表</param>
+        static public void Recycle(ICollection<Node> nodes)
         {
             //把列表中的节点都收到池里,并清空该列表
             pool.AddRange(nodes);
@@ -112,6 +121,10 @@ public class Pathing
             pool.Add(this);
         }
     }
+    /// <summary>
+    /// 路径
+    /// </summary>
+    static private List<Step> path = new List<Step>();
 
     //A*算法相关变量
     /// <summary>
@@ -121,11 +134,11 @@ public class Pathing
     /// <summary>
     /// 开放列表
     /// </summary>
-    static private List<Node> openNodes = new List<Node>();
+    static private BinaryHeap<Node> openNodes = new BinaryHeap<Node>(4096);
     /// <summary>
     /// 关闭列表
     /// </summary>
-    static private List<Node> closeNodes = new List<Node>();
+    static private HashSet<Node> closeNodes = new HashSet<Node>();
 
     /// <summary>
     /// 需要遍历的可能移动的方向,更具判断条件被赋值为8或16个方向
@@ -167,6 +180,10 @@ public class Pathing
         new Vector2(-1, -2)
 
     };
+    /// <summary>
+    /// 方向数量
+    /// </summary>
+    static private int directionCount;
 
     /// <summary>
     /// 走向...(遍历可能方向)
@@ -174,19 +191,16 @@ public class Pathing
     /// <param name="node">节点</param>
     static private void StepTo(Node node)
     {
-        //节点添加到关闭节点列表里
-        closeNodes.Add(node);
         //添加一个空的节点对象,做为新节点
         Node newNode = null;
         //遍厉可能的方向的路径
         for (int i = 0; i < directions.Length; ++i)
         {
-            Vector2 direction = directions[i];
             //中心节点+某一方向路径,等于该方向的节点坐标(用的是等距坐标)
-            Vector2 pos = node.pos + direction;
+            Vector2 pos = node.pos + directions[i];
 
             //单元格库实例的索引器就是取按坐标对应的单元格,获取的是一个bool,代表单元格是否可通行,不通行就不添加进开放列表
-            if (Tilemap.Passable(pos))
+            if (Tilemap.PassableTile(pos, 2))
             {
                 //前面那个空节点,要是还为空,就取节点池里面的第一个节点,不为空就不做这一步
                 if (newNode == null) newNode = Node.Get();
@@ -195,22 +209,20 @@ public class Pathing
                 newNode.pos = pos;
 
                 //Contains:列表中是否包含形参,这里就是判断两个列表中是否都没有newNode,都没有就执行代码
-                if (!closeNodes.Contains(newNode) && !openNodes.Contains(newNode))
+                if (!closeNodes.Contains(newNode))
                 {
                     //中心点为新节点的父节点
                     newNode.parent = node;
-                    //方向,因为只移动1的距离,方向和路径是一样的
-                    newNode.direction = direction;
-                    newNode.directionIndex = i;
                     //>>>>>节点评分:移动成本+启发式距离<<<<<<<<<<
                     //移动成本是自己填写的g分数+这一步的距离,因为每次只遍历中心点周围一圈的距离
-                    newNode.gScore = node.gScore + direction.magnitude;
+                    newNode.gScore = node.gScore + 1;
                     //启发是距离评分是目标点到新节点的距离
-                    newNode.hScore = Vector2.Distance(target, newNode.pos);
+                    newNode.hScore = Mathf.Abs(target.x - newNode.pos.x) + Mathf.Abs(target.y - newNode.pos.y);
                     //移动成本+启发式距离
                     newNode.score = newNode.gScore + newNode.hScore;
                     //添加到开放节点中
                     openNodes.Add(newNode);
+                    closeNodes.Add(newNode);
                     //新节点置空
                     newNode = null;
                 }
@@ -236,8 +248,6 @@ public class Pathing
             }
             //前面没跳出,继续回溯,把祖父节点变成父节点,继续循环
             node.parent = node.parent.parent;
-            node.direction = node.pos - node.parent.pos;
-            node.directionIndex = Iso.Direction(node.parent.pos, node.pos, directions.Length);
         }
 
     }
@@ -255,8 +265,8 @@ public class Pathing
             //新建一个步子
             Step step = new Step();
             //把节点的属性赋值给步子
-            step.direction = node.direction;
-            step.directionIndex = node.directionIndex;
+            step.direction = node.pos - node.parent.pos;
+            step.directionIndex = Iso.Direction(node.parent.pos, node.pos, directionCount);
             step.pos = node.pos;
             //把步子插入到路径的第一个
             path.Insert(0, step);
@@ -281,12 +291,14 @@ public class Pathing
         //来自和目标重合就不用寻了,直接返回空路径吧.
         if (from == target) return path;
         //回收内存,开放节点和关闭节点的
-        Node.Recycle(openNodes);
+        openNodes.Clear();
         Node.Recycle(closeNodes);
-        //判断是8方向还是16方向
-        directions = directionCount == 8 ? directions8 : directions16;
+        //寻路不再使用16向,只用8方向
+        directions = directions8;
+        Pathing.directionCount = directionCount;
         //先把目标点赋给类中的目标点
         Pathing.target = target;
+        bool targetAccessible = Tilemap.Passable(target, 2);
         //创建起始节点,从池里面取节点,优化内存分配
         Node startNode = Node.Get();
         //给起始节点初始化,各种赋值,添入开放列表
@@ -297,6 +309,7 @@ public class Pathing
         startNode.hScore = Mathf.Infinity;
         startNode.score = Mathf.Infinity;
         openNodes.Add(startNode);
+        closeNodes.Add(startNode);
 
 
         ////////////开始生成
@@ -307,14 +320,12 @@ public class Pathing
         //开放列表不为空,就开始吧
         while (openNodes.Count > 0)
         {
-            //开放列表排序,使用IComparable端口,比较的是score节点评分,就是按评分从小到大排序
-            openNodes.Sort();
             //处理第一个,处理完的会移至关闭列表,所以,永远都是处理第一个
-            Node node = openNodes[0];
+            Node node = openNodes.Take();
             //如果当前节点的启发式距离评分小于父节点的启发式距离评分,就把当前节点做新的父节点
             if (node.hScore < bestNode.hScore) bestNode = node;
             //如果目标不可通行 并且 父节点不为空 并且 节点启发式距离的评分大于等于父节点(越寻越远了)
-            if (!Tilemap.Passable(target) && node.parent != null && node.hScore > node.parent.hScore)
+            if (!targetAccessible && node.parent != null && node.hScore > node.parent.hScore)
             {
                 //那还寻个屁,回溯,从父节点的父节点开始生成路径
                 TraverseBack(bestNode.parent);
@@ -323,19 +334,16 @@ public class Pathing
             }
 
             //到目标点的停止距离就结束了,开始回溯路径,然后跳出循环
-            if (Vector2.Distance(node.pos, target) <= minRange)
+            if (node.hScore <= minRange)
             {
                 TraverseBack(node);
                 break;
             }
-
-            //还没到目标点。就删掉开放列表的当前节点,并把它加入关闭列表
-            openNodes.RemoveAt(0);
             //这个方法会把node加入关闭列表,并且把它的所有方向节点加入开放列表
             StepTo(node);
 
             iterCount += 1;
-            if (iterCount > 100)
+            if (iterCount > 500)
             {
                 //寻路循环超过100次,就从父节点的父节点开始回溯,生成路径,避免陷入死循环
                 TraverseBack(bestNode.parent);

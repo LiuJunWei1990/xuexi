@@ -47,6 +47,4 @@ public class IsoAnimationEditor : Editor
         //保存修改到磁盘上,如果不保存修改,下次打开文件就会丢失修改
         EditorUtility.SetDirty(isoAnimation);
     }
-
-    
 }

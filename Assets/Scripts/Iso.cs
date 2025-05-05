@@ -85,14 +85,17 @@ public class Iso : MonoBehaviour
     static public int SortingOrder(Vector3 worldPosition)
     {
         // 计算排序顺序
-        //新建要返回的层级排序,赋值为形参坐标点的Y轴坐标除以tileSizeY的结果,取整,然后取反,
-        int sortingOrder = -Mathf.RoundToInt(worldPosition.y / tileSizeY);
         //计算形参坐标点所在的宏瓦片
         var macroTile = MacroTile(MapToIso(worldPosition));
+        //计算宏瓦片的Y轴世界坐标
+        var macroY = (MapToWorld(macroTile)).y / tileSizeY;
         //新建宏瓦片的层级排序,赋值为宏瓦片的Y轴世界坐标除以tileSizeY的结果,取整,然后取反,
-        int macroTileOrder = -Mathf.RoundToInt((MapToWorld(macroTile)).y / tileSizeY);
-        //层级排序加上宏瓦片的层级排序乘以1000加成得到最终的层级排序
-        sortingOrder += macroTileOrder * 1000;
+        int macroTileOrder = -Mathf.RoundToInt(macroY);
+        //新建要返回的层级排序,赋值为形参坐标点的Y轴坐标除以tileSizeY的结果,取整,然后取反,
+        int sortingOrder = -Mathf.RoundToInt(worldPosition.y / tileSizeY - macroY);
+
+        //层级排序加上宏瓦片的层级排序乘以100加成得到最终的层级排序
+        sortingOrder += macroTileOrder * 100;
         //返回结果
         return sortingOrder;
     }
@@ -120,6 +123,16 @@ public class Iso : MonoBehaviour
 		Debug.DrawLine(topRight, topLeft, color, duration);
 		Debug.DrawLine(bottomRight, bottomLeft, color, duration);
     }
+    /// <summary>
+    /// Debug模式下绘制直线
+    /// </summary>
+    /// <param name="from">起点</param>
+    /// <param name="to">终点</param>
+    static public void DebugDrawLine(Vector3 from, Vector3 to)
+    {
+        Debug.DrawLine(MapToWorld(from), MapToWorld(to));
+    }
+
     /// <summary>
     /// Gizmos模式下绘制单元格,无需程序运行直接显示在Scene视图中,颜色由color参数决定
     /// </summary>
@@ -243,7 +256,6 @@ public class Iso : MonoBehaviour
             //反过来由当前对象世界坐标转换为等距坐标来更新pos,原本是pos更新人物位置,现在是人物位置更新pos,因为编辑模式下,人物位置是可以拖动的
             pos = MapToIso(transform.position);
         }
-
         //是否排序,默认是排序的,因为有些物体不需要排序,比如地板,地板是不会挡住其他物体的,所以不需要排序
         if (sort)
         {

@@ -50,7 +50,7 @@ public class EditorTools {
         return assetPath.ToLower().EndsWith("dt1");
     }
 
-    [MenuItem("Assets/Reset DT1 cache")]
+    [MenuItem("Assets/重置DT1缓存")]
     static public void ResetDT1()
     {
         DT1.ResetCache();

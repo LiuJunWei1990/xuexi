@@ -84,6 +84,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3814624ad443a7d4a9713082d2900cce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  path: act1/tristram/tri_town4.ds1
-  playerPrefab: {fileID: 0}
+  path: act1/town/townE1.ds1
+  playerPrefab: {fileID: 2329752113921451014, guid: 3a57dc46b9045c84fb8c77521988fbc9, type: 3}
   monsterPrefab: {fileID: 4382633656692521427, guid: ddebe38050038cf44a043cd9adfb921d, type: 3}

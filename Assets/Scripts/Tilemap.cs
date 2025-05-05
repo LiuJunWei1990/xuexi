@@ -192,24 +192,44 @@ public class Tilemap : MonoBehaviour
     /// </summary>
     /// <param name="pos">等距坐标</param>
     /// <returns>是否可通行</returns>
-    public static bool Passable(Vector3 pos)
+    public static bool Passable(Vector3 pos, int radius = 0, bool debug = false)
     {
         //坐标取整
         var tilePos = Iso.Snap(pos);
-        //根据坐标获取索引下标
-        int index = instance.MapToIndex(tilePos);
         //返回对应下标单元格的通行状态
-        return instance.map[index].passable;
+        return PassableTile(tilePos, radius, debug);
     }
     /// <summary>
     /// 根据单元格的等距坐标判断是否可通行
     /// </summary>
     /// <param name="tilePos">单元格的等距坐标</param>
     /// <returns>是否可通行</returns>
-    public static bool PassableTile(Vector3 tilePos)
+    public static bool PassableTile(Vector3 tilePos, int radius = 0, bool debug = false)
     {
+        //获取瓦片坐标对应的数组索引
         int index = instance.MapToIndex(tilePos);
-        return instance.map[index].passable;
+        //按索引获取瓦片的可通行性
+        bool passable = instance.map[index].passable;
+        //半径为0就返回
+        if (radius == 0)
+            return passable;
+        
+        //不为零就判断上下左右是否可通行,并赋值给passable
+        passable = passable && instance.map[index - 1].passable;
+        passable = passable && instance.map[index + 1].passable;
+        passable = passable && instance.map[index - instance.width].passable;
+        passable = passable && instance.map[index + instance.width].passable;
+
+        //如果需要debug就绘制单元格
+        if (debug)
+        {
+            Iso.DebugDrawTile(tilePos, 0.1f);
+            Iso.DebugDrawTile(tilePos + new Vector3(1, 0), 0.1f);
+            Iso.DebugDrawTile(tilePos + new Vector3(-1, 0), 0.1f);
+            Iso.DebugDrawTile(tilePos + new Vector3(0, 1), 0.1f);
+            Iso.DebugDrawTile(tilePos + new Vector3(0, -1), 0.1f);
+        }
+        return passable;
     }
     /// <summary>
     /// 修改可通行状态
@@ -269,7 +289,7 @@ public class Tilemap : MonoBehaviour
         //计算射线的向量
         var diff = to - from;
         //设定每步长度,角色移动的步子
-        var stepLen = 0.1f;
+        var stepLen = 0.2f;
         //如果射线长度为无限大,就取射线长度和最大射线长度的较小的那个
         if (rayLength == Mathf.Infinity) rayLength = Mathf.Min(diff.magnitude, maxRayLength);
         //计算射线长度有多少步(取整)
@@ -288,10 +308,11 @@ public class Tilemap : MonoBehaviour
             //获取当前坐标的单元格
             Cell cell = GetCell(pos);
             //如果当前坐标不可通行,并且不是忽略对象
-            if (!cell.passable && (ignore == null || ignore != cell.gameObject))
+            bool passable = Passable(pos, 2);
+            if (!passable && (ignore == null || ignore != cell.gameObject))
             {
                 //不可通行的反向为是,是赋值给hit代表射线击中阻挡
-                hit.hit = !cell.passable;
+                hit.hit = !passable;
                 //当前不可通行单元格的对象赋值成被击中对象
                 hit.gameObject = cell.gameObject;
                 //返回结果是

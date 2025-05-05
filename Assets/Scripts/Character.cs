@@ -450,71 +450,40 @@ public class Character : MonoBehaviour
     {
         //如果不再行走中姿态就直接跳出
         if (!moving) return;
-        //如果距离目标点小于0.5,就直接离开行走中姿态并返回
-        if (Vector2.Distance(iso.pos, targetPoint) < 0.5f)
+        //生成新路径
+        var newPath = Pathing.BuildPath(iso.pos, targetPoint, directionCount);
+        //如果新路径为空,就离开行走中姿态,返回
+        if (newPath.Count == 0)
         {
             moving = false;
             return;
         }
-        //新建上一帧坐标点变量,先保存当前帧坐标点
-        var prevPos = iso.pos;
-
-        //瓦片的射线检测,角色当前位置>>>目标位置,射线最大长度2f,射线忽略自身
-        bool directlyAccesible = !Tilemap.Raycast(iso.pos, targetPoint, maxRayLength: 2.0f, ignore: gameObject);
-        //没打中就代表可通行,执行下面代码
-        if (directlyAccesible)
+        //如果当前路径为空 或者 新路径和当前路径终点不一样
+        if (path.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
         {
-            //获取角色坐标到目标点的方向
+            //放弃当前路径
+            AbortPath();
+            //把新路径做为当前路径
+            path.AddRange(newPath);
+        }
+        //路径画线
+        Pathing.DebugDrawPath(iso.pos, path);
+        //如果当前路径还有最后一段,并且路径终点离目标点距离小于1
+        if (path.Count == 1 && Vector2.Distance(path[0].pos, targetPoint) < 1.0f)
+        {
+            //获取自身到终点的方向
             var dir = (targetPoint - iso.pos).normalized;
-            //当前帧的移动距离
-            float distance = speed * Time.deltaTime;
-            //当前帧的移动
-            iso.pos += dir * distance;
-            //获取预定方向
+            //角色的当前帧移动
+            iso.pos += dir * Time.deltaTime * speed;
+            //获取将要移动的方向
             desiredDirection = Iso.Direction(iso.pos, targetPoint, directionCount);
         }
-        //否则,就是不能直接移动到目标点,那就A*寻路
+        //否则,就是没有什么需要变更的,调用方法,沿着路径移动当前这一帧
         else
         {
-            //生成路径
-            var newPath = Pathing.BuildPath(iso.pos, targetPoint, directionCount);
-            //如果当前路径或者新路径未空,又或者两个路径的终点一致,那就执行下面的代码
-            if (path.Count == 0 || newPath.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
-            {
-                //放弃当前路径
-                AbortPath();
-                //把新路径赋值给当前路径
-                path.AddRange(newPath);
-            }
-            if (path.Count == 0) moving = false;
-
-            Pathing.DebugDrawPath(iso.pos, path);
             //沿路径移动
             MoveAlongPath();
         }
-        //到了这一步,能让角色移动的分支都执行完了
-        //新建一个单元格对象,赋值角色上一帧坐标的单元格
-        var cell = Tilemap.GetCell(prevPos);
-        //前一帧单元格的对象就是角色自身,代表单元格状态没重置
-        if (cell.gameObject == gameObject)
-        {
-            //重置单元格状态
-            cell.passable = true;
-            cell.gameObject = null;
-            //把新状态设置给容器中的对应单元格
-            Tilemap.SetCell(prevPos, cell);
-        }
-        //新建一个新单元格对象,赋值角色当前站立的单元格
-        var newCell = Tilemap.GetCell(iso.pos);
-        //单元格如果为可通行,代表单元格状态没更新
-        if (newCell.passable)
-        {
-            //更新单元格状态
-            newCell.passable = false;
-            newCell.gameObject = gameObject;
-            //把新状态设置给容器中的对应单元格
-            Tilemap.SetCell(iso.pos, newCell);
-        }        
     }
     /// <summary>
     /// 更新动画
@@ -545,7 +514,6 @@ public class Character : MonoBehaviour
             //给动画名称赋值
             animation = "TakeDamage";
         }
-
         //没有路径就是待机状态
         else if (moving)
         {
@@ -557,6 +525,7 @@ public class Character : MonoBehaviour
         {
             animation = "Idle";
         }
+        //给动画组件赋值
         animator.SetState(animation);
     }
 

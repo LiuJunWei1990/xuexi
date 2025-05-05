@@ -35,6 +35,11 @@ class DC6
         // 初始化纹理打包器和相关变量
         //新建一个纹理尺寸的常量
         const int textureSize = 512;
+        //新建一个纹理
+        var texture = new Texture2D(textureSize, textureSize, TextureFormat.ARGB32, false);
+        //新建一个像素点数组
+        var pixels = new Color32[textureSize * textureSize];
+
         //新建一个纹理打包器
         var packer = new TexturePacker(textureSize, textureSize);
         //新建一个字节数据数组,长度为1024
@@ -72,7 +77,7 @@ class DC6
 
             // 将帧打包到纹理中
             var pack = packer.put(f_w, f_h);
-            drawFrame(data, f_len, pack.texture, pack.x, pack.y + f_h);
+            drawFrame(data, f_len, pixels,textureSize, pack.x, pack.y + f_h);
 
             // 设置字符信息
             // 设置字符的索引值
@@ -115,7 +120,7 @@ class DC6
         var filepath = Path.GetDirectoryName(filename) + "/" + name;
 
         // 处理生成的纹理
-        var texture = packer.textures[0];
+        texture.SetPixels32(pixels);
         texture.Apply();
         var pngData = texture.EncodeToPNG();
         Object.DestroyImmediate(texture);
@@ -134,8 +139,9 @@ class DC6
     }
 
     // 绘制单个帧到纹理
-    static void drawFrame(byte[] data, int size, Texture2D texture, int x0, int y0)
+    static void drawFrame(byte[] data, int size, Color32[] pixels, int textureSize, int x0, int y0)
     {
+        int dst = textureSize * textureSize - y0 * textureSize - textureSize;
         int ptr = 0;
         int i2, x = x0, y = y0, c, c2;
 
@@ -149,6 +155,7 @@ class DC6
             {
                 x = x0;
                 y--;
+                dst += textureSize;
             }
             else if ((c & 0x80) != 0) // 透明像素
             {
@@ -161,7 +168,7 @@ class DC6
                     c2 = data[ptr];
                     ++ptr;
                     i++;
-                    texture.SetPixel(x, -y, Palette.palette[c2]);
+                    pixels[dst + x] = Palette.palette[c2];
                     x++;
                 }
             }
