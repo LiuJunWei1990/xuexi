@@ -30,6 +30,7 @@ public class DT1
 
         public Material material;  // 材质
         public Texture2D texture;  // 纹理
+        public Color32[] texturePixels;  // 纹理像素数组
         public int textureX;  // 纹理X坐标
         public int textureY;  // 纹理Y坐标
         /// <summary>
@@ -107,10 +108,11 @@ public class DT1
             return cache[dt1Path];
         }
         //新建一个变量,代表导入的结果
-        var importResult = new ImportResult();
-        var stream = new BufferedStream(File.OpenRead(dt1Path));  // 打开文件流
-        var reader = new BinaryReader(stream);  // 创建二进制读取器
-        int version1 = reader.ReadInt32();  // 读取版本号1
+        var importResult = new ImportResult();  // 创建一个新的ImportResult结构体实例，用于存储导入结果
+        var bytes = File.ReadAllBytes(dt1Path);  // 读取指定路径的DT1文件，将文件内容作为字节数组存储
+        var stream = new MemoryStream(bytes);  // 创建一个内存流，使用读取的字节数组作为数据源
+        var reader = new BinaryReader(stream);  // 创建一个二进制读取器，用于从内存流中读取数据
+        int version1 = reader.ReadInt32();  // 读取版本号2
         int version2 = reader.ReadInt32();  // 读取版本号2
         if (version1 != 7 || version2 != 6)  // 检查版本号
         {
@@ -123,10 +125,15 @@ public class DT1
         int tileCount = reader.ReadInt32();  // 读取瓦片的总数
         reader.ReadInt32(); // 跳过4个字节
         Tile[] tiles = new Tile[tileCount];  // 创建瓦片数组,长度是瓦片总数
+        const int textureSize = 2048;  // 定义纹理尺寸常量，设置为2048x2048像素
+        var textures = new List<Texture2D>();  // 创建一个Texture2D列表，用于存储所有生成的纹理
+        var texturesPixels = new List<Color32[]>();  // 创建一个Color32数组列表，用于存储纹理的像素数据
         //新建一个变量,代表纹理打包器
-        var packer = new TexturePacker(2048, 2048);
+        var packer = new TexturePacker(textureSize, textureSize);  // 创建一个纹理打包器实例，指定纹理尺寸为2048x2048
         //新建一个变量,代表材质
-        Material material = null;
+        Material material = null;  // 初始化材质变量，用于存储生成的材质
+        Texture2D texture = null;  // 初始化纹理变量，用于存储当前处理的纹理
+        Color32[] pixels = null;  // 初始化像素数组变量，用于存储纹理的像素数据
         //遍历瓦片总数,把所有合规的瓦片加入到数组中
         // 遍历所有瓦片
         for (int i = 0; i < tileCount; ++i)
@@ -136,14 +143,16 @@ public class DT1
             // 将瓦片的宽度和高度（取负）放入纹理打包器，获取打包结果
             var result = packer.put(tiles[i].width, -tiles[i].height);
             // 如果打包器生成了新的纹理
-            if (result.newTexture)
+            if (result.newTexture)  // 检查纹理打包器是否生成了新的纹理
             {
-                // 创建一个新的材质，使用"Sprite"着色器
-                material = new Material(Shader.Find("Sprite"));
-                // 给材质命名，附加文件路径
-                material.name += "(" + dt1Path + ")";
-                // 设置材质的主纹理为打包器生成的纹理
-                material.mainTexture = result.texture;
+                texture = new Texture2D(textureSize, textureSize, TextureFormat.ARGB32, false);  // 创建一个新的纹理，使用ARGB32格式
+                texture.filterMode = FilterMode.Point;  // 设置纹理过滤模式为Point模式，保持像素清晰
+                textures.Add(texture);  // 将新创建的纹理添加到纹理列表中
+                material = new Material(Shader.Find("Sprite"));  // 创建一个新的材质，使用"Sprite"着色器
+                material.name += "(" + dt1Path + ")";  // 给材质命名，附加文件路径信息
+                material.mainTexture = texture;  // 设置材质的主纹理为新创建的纹理
+                pixels = new Color32[textureSize * textureSize];  // 创建一个新的像素数组，用于存储纹理的像素数据
+                texturesPixels.Add(pixels);  // 将像素数组添加到像素数据列表中
             }
 
             // 设置瓦片的纹理X坐标
@@ -151,15 +160,17 @@ public class DT1
             // 设置瓦片的纹理Y坐标
             tiles[i].textureY = result.y;
             // 设置瓦片的纹理
-            tiles[i].texture = result.texture;
+            tiles[i].texture = texture;
             // 设置瓦片的材质
             tiles[i].material = material;
+            // 设置瓦片的像素数组
+            tiles[i].texturePixels = pixels;
 
             // 如果瓦片朝向为0或15，并且高度不为0
             if ((tiles[i].orientation == 0 || tiles[i].orientation == 15) && tiles[i].height != 0)
             {
-                // 地板或屋顶类型，设置固定高度为-80
-                tiles[i].height = -80;
+                // 地板或屋顶类型，设置固定高度为-79
+                tiles[i].height = -79;
             }
             // 如果瓦片朝向在1到14之间
             else if (tiles[i].orientation > 0 && tiles[i].orientation < 15)
@@ -170,9 +181,7 @@ public class DT1
         }
 
         // 输出日志，显示文件路径、瓦片总数和纹理数量
-        Debug.Log(dt1Path + ", 瓦片总数: " + tileCount + ", " +  " 纹理总数: " + packer.textures.Count);
-        // 创建一个1024字节的块数据缓冲区
-        byte[] blockData = new byte[1024];
+        Debug.Log(dt1Path + ", 瓦片总数: " + tileCount + ", " +  " 纹理总数: " + textures.Count);
         // 遍历所有瓦片
         for (int i = 0; i < tileCount; ++i)
         {
@@ -202,35 +211,28 @@ public class DT1
                 reader.ReadBytes(2); // 跳过两字节
                 int fileOffset = reader.ReadInt32();  // 读取文件偏移量
                 int blockDataPosition = tile.blockHeaderPointer + fileOffset;  // 计算块数据位置
-
-                var positionBeforeSeek = stream.Position;  // 保存当前位置
-                stream.Seek(blockDataPosition, SeekOrigin.Begin);  // 定位到块数据位置
-
-                if (blockData.Length < length)  // 如果块数据数组长度不足,那就扩展到标准长度
-                    blockData = new byte[length];
-                reader.Read(blockData, 0, length);  // 读取块数据
                 if (format == 1)  // 如果是等距格式
                 {
                     // 绘制等距块
-                    drawBlockIsometric(tile.texture, tile.textureX + x, tile.textureY + y, blockData, length);
+                    drawBlockIsometric(tile.texturePixels, textureSize, tile.textureX + x, tile.textureY + y, bytes, blockDataPosition, length);
                 }
                 else  // 如果是普通格式
                 {
                     // 绘制普通块
-                    drawBlockNormal(tile.texture, tile.textureX + x, tile.textureY + y, blockData, length);
+                    drawBlockNormal(tile.texturePixels, textureSize, tile.textureX + x, tile.textureY + y, bytes, blockDataPosition, length);
                 }
-
-                stream.Seek(positionBeforeSeek, SeekOrigin.Begin);  // 恢复到之前的位置
             }
         }
-          // 遍历所有纹理,并且应用纹理
-        foreach(var texture in packer.textures) texture.Apply();
-        //关闭文件流
-        stream.Close();
+
+        for (int i = 0; i < textures.Count; ++i)  // 遍历所有纹理
+        {
+            textures[i].SetPixels32(texturesPixels[i]);  // 将像素数组应用到对应的纹理上
+            textures[i].Apply();  // 应用纹理的更改，使其生效
+        }
         //把瓦片数组赋值给导入结果
         importResult.tiles = tiles;
         //把纹理数组赋值给导入结果
-        importResult.textures = packer.textures.ToArray();
+        importResult.textures = textures.ToArray();
         //把导入结果添加到缓存字典中
         cache[dt1Path] = importResult;
         //返回导入结果
@@ -250,6 +252,8 @@ public class DT1
         {
             // 将纹理编码为PNG格式的字节数组
             var pngData = texture.EncodeToPNG();
+            // 销毁纹理对象，释放内存
+            Object.DestroyImmediate(texture);
             // 生成PNG文件的保存路径，附加计数器作为后缀
             var pngPath = assetPath + "." + i + ".png";
             // 将PNG数据写入文件
@@ -269,9 +273,10 @@ public class DT1
     /// <param name="y0">Y轴</param>
     /// <param name="data">数据</param>
     /// <param name="length">数据长度</param>
-    static void drawBlockNormal(Texture2D texture, int x0, int y0, byte[] data, int length)
+    static void drawBlockNormal(Color32[] texturePixels, int textureSize, int x0, int y0, byte[] data, int ptr, int length)
     {
-        int ptr = 0;  // 数据索引
+        // 计算绘制像素的起始索引
+        int dst = texturePixels.Length - y0 * textureSize - textureSize + x0;
         int x = 0;  // X坐标
         int y = 0;  // Y坐标
 
@@ -287,7 +292,7 @@ public class DT1
                 length -= b2;  // 减少剩余长度,每次都是1个b2的长度
                 while (b2 != 0)  // 绘制像素
                 {
-                    texture.SetPixel(x0 + x, -y0 - y, Palette.palette[data[ptr]]);  // 设置像素颜色
+                    texturePixels[dst + x] = Palette.palette[data[ptr]];
                     //索引+1
                     ptr++;
                     //x+1
@@ -300,6 +305,8 @@ public class DT1
             {
                 x = 0;  // 重置X坐标
                 y++;  // 增加Y坐标
+                //计算绘制像素的起始索引
+                dst -= textureSize;
             }
         }
     }
@@ -315,9 +322,10 @@ public class DT1
     /// <param name="y0"></param>
     /// <param name="data"></param>
     /// <param name="length"></param>
-    static void drawBlockIsometric(Texture2D texture, int x0, int y0, byte[] data, int length)
+    static void drawBlockIsometric(Color32[] texturePixels, int textureSize, int x0, int y0, byte[] data, int ptr, int length)
     {
-        int ptr = 0;  // 数据指针
+        // 计算绘制像素的起始索引
+        int dst = texturePixels.Length - y0 * textureSize - textureSize + x0;
         int x, y = 0, n;  // X坐标, Y坐标, 像素数量
 
         // 3d-isometric subtile is 256 bytes, no more, no less 
@@ -332,12 +340,13 @@ public class DT1
             length -= n;  // 减少剩余长度
             while (n != 0)  // 绘制像素
             {
-                texture.SetPixel(x0 + x, -y0 - y, Palette.palette[data[ptr]]);  // 设置像素颜色
+                texturePixels[dst + x] = Palette.palette[data[ptr]];
                 ptr++;
                 x++;
                 n--;
             }
-            y++;  // 增加Y坐标
+            y++;
+            dst -= textureSize;
         }
     }
 }
