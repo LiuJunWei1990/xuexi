@@ -238,10 +238,13 @@ public class Tilemap : MonoBehaviour
     /// <param name="passable">输入可通行状态</param>
     public static void SetPassable(Vector3 tilePos, bool passable)
     {
-        //获取到索引下标
-        int index = instance.MapToIndex(tilePos);
-        //修改对应下标单元格的通行状态
-        instance.map[index].passable = passable; 
+        if(!passable)
+        {
+            //获取到索引下标
+            int index = instance.MapToIndex(tilePos);
+            //修改对应下标单元格的通行状态
+            instance.map[index].passable = passable; 
+        }
     }
     /// <summary>
     /// 射线(单元格版)

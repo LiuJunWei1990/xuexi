@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.Animations;
 /// <summary>
 /// 定义一个IsoAnimation类,用于存储动画相关的属性,继承自ScriptableObject类
 /// ScriptableObject类是Unity自带的一个类,用于把一个类型转换为资源文件,前提是这个类型继承自ScriptableObject

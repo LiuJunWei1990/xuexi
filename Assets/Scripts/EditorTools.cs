@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using UnityEditor;
 
@@ -50,6 +48,21 @@ public class EditorTools {
         return assetPath.ToLower().EndsWith("dt1");
     }
 
+    // [MenuItem("Assets/将DDC转换为PNG")]
+    // static public void ConvertDCCToPNG()
+    // {
+    //     var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+    //     DCC.ConvertToPng(assetPath);
+    // }
+
+    // [MenuItem("Assets/将DDC转换为PNG", true)]
+    // static public bool ConvertDCCToPNGValidate()
+    // {
+    //     var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+    //     return assetPath.ToLower().EndsWith("dcc");
+    // }
+
+
     [MenuItem("Assets/重置DT1缓存")]
     static public void ResetDT1()
     {
@@ -69,7 +82,16 @@ public class EditorTools {
         var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
         return assetPath.ToLower().EndsWith("dc6");
     }
+    [MenuItem("Assets/测试序列化")]
+    static public void TestSerialization()
+    {
+        var rb = Obj.Find(1, 2, 2);
+        Debug.Log(rb.TR);
+    }
 }
+
+
+
 /// <summary>
 /// ScriptableObject类实例化
 /// ScriptableObject类是一个用于把子类变成文件的类型的资源,上面的IsoAnimation就是它的子类

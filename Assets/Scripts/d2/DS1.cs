@@ -143,7 +143,7 @@ public class DS1
     /// 导入一个ds1文件
     /// </summary>
     /// <param name="ds1Path">ds1文件路径</param>
-	static public ImportResult Import(string ds1Path, GameObject monsterPrefab = null)
+	static public ImportResult Import(string ds1Path, GameObject monsterPrefab = null, GameObject objectPrefab = null)
     {
         //System.Diagnostics.Stopwatch时.NET自带的计时器,可以用来测量代码执行时间
         //StartNew()方法用于创建一个新的计时器实例并开始计时
@@ -482,7 +482,7 @@ public class DS1
                                 //放在地板层的第p层节点下面
                                 tileObject.transform.SetParent(floorLayers[p].transform);
                             }
-                                break;
+                            break;
                         }
                         //11是阴影层,跳过4个字节(读取了没赋值)
                         case 11:
@@ -544,6 +544,8 @@ public class DS1
                     //读取对象的flags,读4个字节
                     int flags = reader.ReadInt32();
                 }
+                //新建一个变量,用来读取地图的对象
+                Obj obj = Obj.Find(act, type, id);
                 //如果对象类型是1,并且有怪物预制体
                 if (type == 1 && monsterPrefab != null)
                 {
@@ -551,8 +553,20 @@ public class DS1
                     var pos = MapSubCellToWorld(x, y);
                     //创建一个怪物对象,并把这个坐标赋值给它
                     var monster = GameObject.Instantiate(monsterPrefab, pos, Quaternion.identity);
-                    //如果有怪物预制体,就把这个怪物的名字赋值给它
-                    monster.name = monsterPrefab.name;
+                    //给怪物名字赋值
+                    monster.name = obj.description;
+                    //放在根目录下面
+                    monster.transform.SetParent(root.transform);
+                }
+                //如果对象类型是2,并且有对象预制体
+                if (type == 2 && objectPrefab != null)
+                {
+                    //获取XY坐标上的单元格对象的世界坐标
+                    var pos = MapSubCellToWorld(x, y);
+                    //创建一个新的怪物对象
+                    var monster = GameObject.Instantiate(objectPrefab, pos, Quaternion.identity);
+                    //给怪物命名
+                    monster.name = obj.description;
                     //把这个怪物放到根节点下面
                     monster.transform.SetParent(root.transform);
                 }
@@ -578,7 +592,12 @@ public class DS1
         return pos;
     }
 
-    // 将子单元格坐标转换为世界坐标
+    /// <summary>
+    /// 将子单元格坐标转换为世界坐标
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
     static Vector3 MapSubCellToWorld(int x, int y)
     {
         // 使用Iso.MapToWorld方法将子单元格坐标转换为世界坐标，并减去偏移量(2,2)
@@ -666,7 +685,7 @@ public class DS1
                 new Vector2 ((x0 + tile.width) / texture.width, (-y0 - tile.height) / texture.height)
             };
             // 根据位置设置渲染顺序
-            meshRenderer.sortingOrder = Iso.SortingOrder(pos) - 3;
+            meshRenderer.sortingOrder = Iso.SortingOrder(pos) - 4;
         }
         // 将网格赋值给MeshFilter
         meshFilter.mesh = mesh;

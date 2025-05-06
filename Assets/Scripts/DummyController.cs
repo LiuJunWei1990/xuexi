@@ -69,7 +69,7 @@ public class DummyController : MonoBehaviour
         //等待一帧,等待协程执行完毕,再执行下面的代码
         yield return new WaitForEndOfFrame();
         //死循环,靠携程中止来跳出
-        while (!target)
+        while (!this.target)
         {
             //生成一个周围8格的随机坐标,作为目标点
             var target = iso.pos + new Vector2(Random.Range(-8f, 8f), Random.Range(-8f, 8f));

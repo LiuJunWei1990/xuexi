@@ -8,18 +8,28 @@ using UnityEngine;
 /// </summary>
 public class MapBuilder : MonoBehaviour
 {
-    // 地图文件路径
+    /// <summary>
+    /// 地图文件路径
+    /// </summary>
     public string path;
-    // 玩家角色预制体
+    /// <summary>
+    /// 玩家角色预制体
+    /// </summary>
     public Character playerPrefab;
-    // 怪物预制体
+    /// <summary>
+    /// 怪物预制体
+    /// </summary>
     public GameObject monsterPrefab;
+    /// <summary>
+    /// 对象预制体
+    /// </summary>
+    public GameObject objectPrefab;
 
     // 游戏开始时执行
     void Start ()
     {
         // 导入地图数据，返回包含入口位置和生成怪物的结果
-        var result = DS1.Import("Assets/d2/data/global/tiles/" + path, monsterPrefab);
+        var result = DS1.Import("Assets/d2/data/global/tiles/" + path, monsterPrefab, objectPrefab);
         // 获取玩家出生位置
         var playerPos = result.entry;
 

@@ -166,6 +166,14 @@ public class IsoAnimator : MonoBehaviour
         spriteRenderer.sprite = variation.sprites[spriteIndex];
     }
     /// <summary>
+    /// 获取当前动画状态(动作)
+    /// </summary>
+    /// <returns></returns>
+    public State GetState()
+    {
+        return state;
+    }
+    /// <summary>
     /// 设置动画状态，跑步，攻击等状态(取状态名称做形参)
     /// </summary>
     /// <param name="stateName"></param>
