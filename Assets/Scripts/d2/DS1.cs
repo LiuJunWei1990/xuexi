@@ -558,18 +558,39 @@ public class DS1
                     //放在根目录下面
                     monster.transform.SetParent(root.transform);
                 }
-                //如果对象类型是2,并且有对象预制体
+                // 如果对象类型是2（物体）并且有物体预制体
                 if (type == 2 && objectPrefab != null)
                 {
-                    //获取XY坐标上的单元格对象的世界坐标
+                    // 获取子单元格的世界坐标
                     var pos = MapSubCellToWorld(x, y);
-                    //创建一个新的怪物对象
-                    var monster = GameObject.Instantiate(objectPrefab, pos, Quaternion.identity);
-                    //给怪物命名
-                    monster.name = obj.description;
-                    //把这个怪物放到根节点下面
-                    monster.transform.SetParent(root.transform);
-                }
+                    // 声明一个游戏对象变量
+                    GameObject gameObject;
+                    // 如果当前幕是1，对象类型是2，对象ID是2（特定物体）
+                    if (act == 1 && type == 2 && id == 2)
+                    {
+                        // 加载DCC动画文件
+                        var dcc = DCC.Load("Assets/d2/data/global/objects/RB/TR/rbtrlitonhth.dcc");
+                        // 输出对象的基础信息
+                        Debug.Log(obj._base + " " + obj.token + " " + obj.mode + " " + obj._class);
+                        // 创建新的游戏对象
+                        gameObject = new GameObject();
+                        // 设置对象位置
+                        gameObject.transform.position = pos;
+                        // 添加SpriteRenderer组件
+                        gameObject.AddComponent<SpriteRenderer>();
+                        // 添加IsoAnimator组件并设置动画
+                        var animator = gameObject.AddComponent<IsoAnimator>();
+                        animator.anim = dcc.anim;
+                    }
+                    else
+                    {
+                        // 使用预制体实例化对象
+                        gameObject = GameObject.Instantiate(objectPrefab, pos, Quaternion.identity);
+                    }
+                    // 设置对象名称
+                    gameObject.name = obj.description;
+                    // 将对象设置为根节点的子对象
+                    gameObject.transform.SetParent(root.transform);                }
             }
         }
         //关闭流

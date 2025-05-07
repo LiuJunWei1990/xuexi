@@ -48,19 +48,19 @@ public class EditorTools {
         return assetPath.ToLower().EndsWith("dt1");
     }
 
-    // [MenuItem("Assets/将DDC转换为PNG")]
-    // static public void ConvertDCCToPNG()
-    // {
-    //     var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-    //     DCC.ConvertToPng(assetPath);
-    // }
+    [MenuItem("Assets/将DDC转换为PNG")]
+    static public void ConvertDCCToPNG()
+    {
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        DCC.ConvertToPng(assetPath);
+    }
 
-    // [MenuItem("Assets/将DDC转换为PNG", true)]
-    // static public bool ConvertDCCToPNGValidate()
-    // {
-    //     var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-    //     return assetPath.ToLower().EndsWith("dcc");
-    // }
+    [MenuItem("Assets/将DDC转换为PNG", true)]
+    static public bool ConvertDCCToPNGValidate()
+    {
+        var assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        return assetPath.ToLower().EndsWith("dcc");
+    }
 
 
     [MenuItem("Assets/重置DT1缓存")]
