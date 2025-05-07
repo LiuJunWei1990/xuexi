@@ -563,34 +563,43 @@ public class DS1
                 {
                     // 获取子单元格的世界坐标
                     var pos = MapSubCellToWorld(x, y);
-                    // 声明一个游戏对象变量
-                    GameObject gameObject;
-                    // 如果当前幕是1，对象类型是2，对象ID是2（特定物体）
-                    if (act == 1 && type == 2 && id == 2)
+                    try
                     {
-                        // 加载DCC动画文件
-                        var dcc = DCC.Load("Assets/d2/data/global/objects/RB/TR/rbtrlitonhth.dcc");
-                        // 输出对象的基础信息
-                        Debug.Log(obj._base + " " + obj.token + " " + obj.mode + " " + obj._class);
-                        // 创建新的游戏对象
-                        gameObject = new GameObject();
-                        // 设置对象位置
+                        //导入COF文件
+                        var cof = COF.Load(obj._base, obj.token, obj.mode, obj._class);
+                        //导入DCC文件
+                        var dcc = DCC.Load(cof.layers[0]);
+                        GameObject gameObject = new GameObject();                        // 设置对象位置
                         gameObject.transform.position = pos;
                         // 添加SpriteRenderer组件
-                        gameObject.AddComponent<SpriteRenderer>();
+                        var spriteRenderer =  gameObject.AddComponent<SpriteRenderer>();
                         // 添加IsoAnimator组件并设置动画
                         var animator = gameObject.AddComponent<IsoAnimator>();
                         animator.anim = dcc.anim;
+                        //给对象赋值:名称和父节点
+                        gameObject.name = obj.description;
+                        gameObject.transform.SetParent(root.transform);
+                        //给对象赋值赋值图层排序
+                        spriteRenderer.sortingOrder = Iso.SortingOrder(pos);
                     }
-                    else
+                    //如果try代码报错,
+                    // 捕获DirectoryNotFoundException异常，表示目录未找到
+                    catch (DirectoryNotFoundException e)
                     {
-                        // 使用预制体实例化对象
-                        gameObject = GameObject.Instantiate(objectPrefab, pos, Quaternion.identity);
+                       // 输出警告日志，包含对象描述和异常信息
+                       Debug.LogWarning("找不到对应目录 (" + obj.description + "): " + e.Message);
+                        // 跳过当前循环，继续处理下一个对象
+                        continue;
                     }
-                    // 设置对象名称
-                    gameObject.name = obj.description;
-                    // 将对象设置为根节点的子对象
-                    gameObject.transform.SetParent(root.transform);                }
+                    // 捕获FileNotFoundException异常，表示文件未找到
+                    catch (FileNotFoundException e)
+                    {
+                        // 输出警告日志，包含对象描述和未找到的文件名
+                        Debug.LogWarning("找不到对应文件 (" + obj.description + "): " + e.FileName);
+                        // 跳过当前循环，继续处理下一个对象
+                        continue;
+                    }
+                }
             }
         }
         //关闭流

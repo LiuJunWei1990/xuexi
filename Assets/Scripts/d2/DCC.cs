@@ -13,10 +13,25 @@ public class DCC
         public List<Texture2D> textures;  // 存储生成的纹理列表
         public IsoAnimation anim;         // 存储生成的动画
     }
-
-    // 静态方法，用于加载DCC文件
-    static public ImportResult Load(string filename)
+    /// <summary>
+    /// 字典，用于缓存已加载的DCC文件
+    /// </summary>
+    static Dictionary<string, ImportResult> cache = new Dictionary<string, ImportResult>();
+    /// <summary>
+    /// 静态方法，用于加载DCC文件
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <param name="ignoreCache"></param>
+    /// <returns></returns>
+    static public ImportResult Load(string filename, bool ignoreCache = false)
     {
+        // 把文件路径字符串转换为全小写形式
+        filename = filename.ToLower();
+        // 如果不忽略缓存且缓存中包含该文件，则直接返回缓存中的结果
+        if (!ignoreCache && cache.ContainsKey(filename))
+        {
+            return cache[filename];
+        }
         // 初始化导入结果
         ImportResult result = new ImportResult();
         result.textures = new List<Texture2D>();  // 初始化纹理列表
@@ -205,6 +220,8 @@ public class DCC
         result.anim.states[0].name = "Generated from DCC";
         // 设置动画状态的精灵
         result.anim.states[0].sprites = sprites.ToArray();
+        //把导入的结果添加到缓存字典中
+        cache.Add(filename,result);
 
         // 返回导入结果
         return result;
@@ -216,7 +233,7 @@ public class DCC
         // 加载调色板
         Palette.LoadPalette(1);
         // 加载DCC文件
-        ImportResult result = Load(assetPath);
+        ImportResult result = Load(assetPath, ignoreCache: true);
         int i = 0;
         // 遍历所有纹理
         foreach (var texture in result.textures)
