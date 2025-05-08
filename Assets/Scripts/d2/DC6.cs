@@ -77,7 +77,7 @@ class DC6
 
             // 将帧打包到纹理中
             var pack = packer.put(f_w, f_h);
-            drawFrame(data, f_len, pixels,textureSize, pack.x, pack.y + f_h);
+            drawFrame(data, f_len, pixels, textureSize, pack.x, pack.y + f_h);
 
             // 设置字符信息
             // 设置字符的索引值

@@ -238,7 +238,7 @@ public class Tilemap : MonoBehaviour
     /// <param name="passable">输入可通行状态</param>
     public static void SetPassable(Vector3 tilePos, bool passable)
     {
-        if(!passable)
+        if (!passable)
         {
             //获取到索引下标
             int index = instance.MapToIndex(tilePos);

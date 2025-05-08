@@ -305,6 +305,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3267771554033274495, guid: 2246277530e674f49a6dcd68b85cd59c, type: 3}
+      propertyPath: path
+      value: act1/tristram/tri_town4.ds1
+      objectReference: {fileID: 0}
     - target: {fileID: 5756775492918979727, guid: 2246277530e674f49a6dcd68b85cd59c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

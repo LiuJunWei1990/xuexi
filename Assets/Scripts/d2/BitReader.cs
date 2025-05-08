@@ -1,76 +1,84 @@
-﻿// 引入IO命名空间，用于流操作
-using System.IO;
-
-// 定义BitReader类，用于按bit读取数据
+﻿// 定义 BitReader 类，用于按位读取字节数组
 public class BitReader
 {
-    // 用于读取的流对象
-    private Stream stream;
-    // 当前读取的字节
-    private int current;
-    // 索引,默认再已经读取完的位置,即8,这样第一次读取的时候会读取一个新的字节
-    private int index = 8;
+    // 字节数组
+    private byte[] bytes;
+    // 当前字节的索引
+    private int byteIndex = 0;
+    // 当前字节
+    private int currentByte;
+    // 当前位索引
+    public int bitIndex = 8;
 
-    // 构造函数，接收一个流对象
-    public BitReader(Stream stream)
+    // 构造函数，初始化 BitReader
+    public BitReader(byte[] bytes, long offset = 0)
     {
-        // 初始化流对象
-        this.stream = stream;
+        // 设置字节数组
+        this.bytes = bytes;
+        // 计算字节索引(因为一个字节有8位比特)
+        byteIndex = (int) offset / 8;
+        // 计算位索引(因为一个字节有8位比特)
+        bitIndex = (int) (offset % 8);
+        // 读取当前字节
+        currentByte = bytes[byteIndex++];
     }
 
-    // 读取单个bit
+    // 读取一个位
     public int ReadBit()
     {
-        // 如果当前字节的所有bit都已读取
-        if (index >= 8)
+        // 如果当前位索引超过 8，读取下一个字节
+        if (bitIndex >= 8)
         {
-            // 读取一个新的字节
-            current = stream.ReadByte();
-            // 重置bit位置
-            index = 0;
+            currentByte = bytes[byteIndex++];
+            bitIndex = 0;
         }
-        // 读取current字节的第index个字
-        int result = (current >> index) & 1;
-        // 移动到下一个bit位置
-        ++index;
-        // 返回读取的bit值
+        // 获取当前位的值
+        int result = (currentByte >> bitIndex) & 1;
+        // 增加位索引
+        ++bitIndex;
         return result;
     }
 
-    // 读取指定数量的bit
+    // 读取多个位
     public int ReadBits(int count)
     {
-        // 初始化结果
         int result = 0;
-        // 循环读取每个bit
+        // 逐个读取位并组合成结果
         for (int i = 0; i < count; ++i)
         {
-            // 将读取的bit值按位组合
             result += ReadBit() << i;
         }
-        // 返回组合后的结果
         return result;
     }
 
     // 读取有符号数
     public int ReadSigned(int count)
     {
-        // 先读取指定数量的bit
+        // 读取无符号数
         int result = ReadBits(count);
-        // 如果最高位是1（表示负数）
+        // 如果最高位为 1，表示负数，扩展符号位
         if ((result & (1 << (count - 1))) != 0)
         {
-            // 负数：扩展符号位
             result |= ~((1 << count) - 1);
         }
-        // 返回最终的有符号数
         return result;
     }
 
-    // 重置读取状态
+    // 重置位索引
     public void Reset()
     {
-        // 将bit位置重置为8，表示需要读取新字节
-        index = 8;
+        bitIndex = 8;
+    }
+
+    // 获取剩余位数
+    public int bitsLeft
+    {
+        get { return 8 - bitIndex; }
+    }
+
+    // 获取当前偏移量
+    public long offset
+    {
+        get { return byteIndex * 8 - bitsLeft; }
     }
 }

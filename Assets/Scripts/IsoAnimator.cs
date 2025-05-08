@@ -13,6 +13,10 @@ public class IsoAnimator : MonoBehaviour
     /// </summary>
     public IsoAnimation anim;
     /// <summary>
+    /// 动画朝向索引
+    /// </summary>
+    public int direction = 0;
+    /// <summary>
     /// 动画播放速度系数
     /// </summary>
     /// 特性:字段会显示在Inspector面板上
@@ -155,7 +159,7 @@ public class IsoAnimator : MonoBehaviour
     void UpdateAnimation()
     {
         //初始化动画朝向
-        int direction = 0;
+        int direction = this.direction;
         //如果角色组件不为空
         if (character)
         //动画朝向=(角色朝向+动画朝向偏移量)%动画朝向数量,这些量都是索引

@@ -45,6 +45,8 @@ public class Palette
                 palette[i] = new Color32(r, g, b, 255);
             }
         }
+        //
+        palette[0] = new Color(0, 0, 0, 0);
         // 将调色板存储在字典中，以便后续使用
         palettes[act] = palette;
         // 返回调色板

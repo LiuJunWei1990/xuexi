@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -138,12 +139,15 @@ public class DS1
     static readonly int townEntryIndex = DT1.Tile.Index(30, 0, 10);
     // 城镇入口索引2，通过DT1.Tile.Index方法生成，参数为(31, 11, 11),它是静态且只读的
     static readonly int townEntry2Index = DT1.Tile.Index(31, 0, 10);
-
+    // 尸体位置索引，通过DT1.Tile.Index方法生成，参数为(30, 11, 12),它是静态且只读的
+    static readonly int corpseLocationIndex = DT1.Tile.Index(32, 0, 10);
+    // 传送门位置索引，通过DT1.Tile.Index方法生成，参数为(30, 11, 13),它是静态且只读的
+    static readonly int portalLocationIndex = DT1.Tile.Index(33, 0, 10);
     /// <summary>
     /// 导入一个ds1文件
     /// </summary>
     /// <param name="ds1Path">ds1文件路径</param>
-	static public ImportResult Import(string ds1Path, GameObject monsterPrefab = null, GameObject objectPrefab = null)
+	static public ImportResult Import(string ds1Path, GameObject monsterPrefab = null)
     {
         //System.Diagnostics.Stopwatch时.NET自带的计时器,可以用来测量代码执行时间
         //StartNew()方法用于创建一个新的计时器实例并开始计时
@@ -414,42 +418,58 @@ public class DS1
                                 Debug.Log("城镇入口在此坐标 " + x + " " + y);
                                 break;
                             }
+                            //如果这个索引是城镇入口2,就中止switch
+                            else if (index == townEntry2Index)
+                            {
+                                break;
+                            }
+                            //如果这个索引是尸体位置,就中止switch
+                            else if (index == corpseLocationIndex)
+                            {
+                                break;
+                            }
+                            //如果这个索引是传送门位置,就中止switch
+                            else if (index == portalLocationIndex)
+                            {
+                                break;
+                            }
                             DT1.Tile tile;
-                            //在瓦片映射字典里找到index这一类材质的瓦片,随机一个稀有度不为0的瓦片赋值给tile
                             if (dt1Index.Find(index, out tile))
                             {
-                                ///创建这个瓦片
+                                //创建瓦片
                                 var tileObject = CreateTile(tile, x, y);
                                 //把这个瓦片放到墙壁图层的第p层节点下面
                                 tileObject.transform.SetParent(wallLayers[p].transform);
                             }
+                            //如果找不到就报错
                             else
                             {
-                                Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
+                            Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
                             }
-                            //朝向信息等于3
+                            // 如果当前朝向为3（特定方向的墙壁）
                             if (orientation == 3)
                             {
-                                //获取材质索引
-                                index = DT1.Tile.Index(mainIndex, subIndex, 4);
-                                //随机再容器中获取一个这类材质的瓦片对象
-                                if (dt1Index.Find(index, out tile))
-                                {
-                                    //创建瓦片
-                                    var tileObject = CreateTile(tile, x, y);
-                                    //把这个瓦片放到墙壁图层的第p层节点下面
-                                    tileObject.transform.SetParent(wallLayers[p].transform);
-                                }
-                                //如果找不到就报错
-                                else
-                                {
-                                Debug.LogWarning("找不到墙壁瓦片的材质 (材质索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
-                                }
+                            // 计算新的索引值，将朝向改为4（可能是另一种墙壁显示方式）
+                            index = DT1.Tile.Index(mainIndex, subIndex, 4);
+                            
+                            // 尝试在DT1索引中查找该索引对应的瓦片
+                            if (dt1Index.Find(index, out tile))
+                            {
+                            // 如果找到，创建该瓦片的游戏对象
+                            var tileObject = CreateTile(tile, x, y);
+                            // 将瓦片对象添加到对应的墙壁图层中
+                            tileObject.transform.SetParent(wallLayers[p].transform);
                             }
-                        
-                            //中止switch
+                            else
+                            {
+                            // 如果找不到，输出警告日志，显示材质索引和坐标信息
+                            Debug.LogWarning("墙壁瓦片无法找到 (索引: " + mainIndex + " " + subIndex + " " + orientation + ") 等距坐标: " + x + ", " + y);
+                            }
+                            }
+                            // 中止switch语句
                             break;
                         }
+                        
                         //9-10是地板层,p=n-9,应该就是地板的第几层,从0-1,读取4个字节,分别是prop1,prop2,prop3,prop4,四个属性
                         case 9:
                         case 10:
@@ -544,66 +564,16 @@ public class DS1
                     //读取对象的flags,读4个字节
                     int flags = reader.ReadInt32();
                 }
-                //新建一个变量,用来读取地图的对象
+                var pos = MapSubCellToWorld(x, y);
+                //新建一个变量,用来读取角色对象
                 Obj obj = Obj.Find(act, type, id);
-                //如果对象类型是1,并且有怪物预制体
-                if (type == 1 && monsterPrefab != null)
-                {
-                    //获取这个子单元格的世界坐标
-                    var pos = MapSubCellToWorld(x, y);
-                    //创建一个怪物对象,并把这个坐标赋值给它
-                    var monster = GameObject.Instantiate(monsterPrefab, pos, Quaternion.identity);
-                    //给怪物名字赋值
-                    monster.name = obj.description;
-                    //放在根目录下面
-                    monster.transform.SetParent(root.transform);
-                }
-                // 如果对象类型是2（物体）并且有物体预制体
-                if (type == 2 && objectPrefab != null)
-                {
-                    // 获取子单元格的世界坐标
-                    var pos = MapSubCellToWorld(x, y);
-                    try
-                    {
-                        //导入COF文件
-                        var cof = COF.Load(obj._base, obj.token, obj.mode, obj._class);
-                        //导入DCC文件
-                        var dcc = DCC.Load(cof.layers[0]);
-                        GameObject gameObject = new GameObject();                        // 设置对象位置
-                        gameObject.transform.position = pos;
-                        // 添加SpriteRenderer组件
-                        var spriteRenderer =  gameObject.AddComponent<SpriteRenderer>();
-                        // 添加IsoAnimator组件并设置动画
-                        var animator = gameObject.AddComponent<IsoAnimator>();
-                        animator.anim = dcc.anim;
-                        //给对象赋值:名称和父节点
-                        gameObject.name = obj.description;
-                        gameObject.transform.SetParent(root.transform);
-                        //给对象赋值赋值图层排序
-                        spriteRenderer.sortingOrder = Iso.SortingOrder(pos);
-                    }
-                    //如果try代码报错,
-                    // 捕获DirectoryNotFoundException异常，表示目录未找到
-                    catch (DirectoryNotFoundException e)
-                    {
-                       // 输出警告日志，包含对象描述和异常信息
-                       Debug.LogWarning("找不到对应目录 (" + obj.description + "): " + e.Message);
-                        // 跳过当前循环，继续处理下一个对象
-                        continue;
-                    }
-                    // 捕获FileNotFoundException异常，表示文件未找到
-                    catch (FileNotFoundException e)
-                    {
-                        // 输出警告日志，包含对象描述和未找到的文件名
-                        Debug.LogWarning("找不到对应文件 (" + obj.description + "): " + e.FileName);
-                        // 跳过当前循环，继续处理下一个对象
-                        continue;
-                    }
-                }
+                //生成一个角色游戏对象
+                var gameObject = CreateObject(obj, pos);
+                //把角色对象放到根节点
+                gameObject.transform.SetParent(root.transform);
             }
         }
-        //关闭流
-        stream.Close();
+    
         //中止计时器,并debug输出DS1文件的加载时间
         sw.Stop();
         Debug.Log("DT1 加载 用 " + sw.Elapsed + "时间");
@@ -746,5 +716,54 @@ public class DS1
         meshRenderer.material = tile.material;
         //返回瓦片对象
         return gameObject;
+    }
+    
+    // 创建一个游戏对象的方法，用于根据角色数据和位置生成对象
+    static GameObject CreateObject(Obj obj, Vector3 pos)
+    {
+    // 创建一个新的游戏对象
+    GameObject gameObject = new GameObject();
+    // 设置游戏对象的位置
+    gameObject.transform.position = pos;
+    // 设置游戏对象的名称，使用Obj的描述字段
+    gameObject.name = obj.description;
+    
+    // 如果Obj的_base字段为空，直接返回空游戏对象
+    if (obj._base == null)
+    return gameObject;
+    
+    // 为游戏对象添加COFAnimator组件，用于处理动画
+    var animator = gameObject.AddComponent<COFAnimator>();
+    
+    // 如果对象类型为2（静态对象）
+    if (obj.type == 2)
+    {
+    // 从ObjectInfo数据表中获取对象信息
+    ObjectInfo objectInfo = ObjectInfo.sheet.rows[obj.objectId];
+    // 在对象名称后追加对象描述
+    gameObject.name += " " + objectInfo.description;
+    
+    // 添加StaticObject组件
+    var staticObject = gameObject.AddComponent<StaticObject>();
+    // 设置StaticObject的obj属性
+    staticObject.obj = obj;
+    // 设置StaticObject的objectInfo属性
+    staticObject.objectInfo = objectInfo;
+    // 设置StaticObject的方向属性
+    staticObject.direction = obj.direction;
+    }
+    // 如果对象类型不是2（可能是角色或其他动态对象）
+    else
+    {
+    // 加载COF文件
+    var cof = COF.Load(obj, obj.mode);
+    // 设置animator的COF数据
+    animator.SetCof(cof);
+    // 设置animator的方向
+    animator.direction = obj.direction;
+    }
+    
+    // 返回创建的游戏对象
+    return gameObject;
     }
 }

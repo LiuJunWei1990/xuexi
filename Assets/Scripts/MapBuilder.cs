@@ -20,16 +20,11 @@ public class MapBuilder : MonoBehaviour
     /// 怪物预制体
     /// </summary>
     public GameObject monsterPrefab;
-    /// <summary>
-    /// 对象预制体
-    /// </summary>
-    public GameObject objectPrefab;
-
     // 游戏开始时执行
     void Start ()
     {
         // 导入地图数据，返回包含入口位置和生成怪物的结果
-        var result = DS1.Import("Assets/d2/data/global/tiles/" + path, monsterPrefab, objectPrefab);
+        var result = DS1.Import("Assets/d2/data/global/tiles/" + path, monsterPrefab);
         // 获取玩家出生位置
         var playerPos = result.entry;
 
