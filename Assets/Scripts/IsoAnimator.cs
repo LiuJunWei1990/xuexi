@@ -1,154 +1,155 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 /// <summary>
-/// 等距人物动画组件
-/// 管理多朝向的人物动作动画
+/// 等距场景下的动画状态机
 /// </summary>
-public class IsoAnimator : MonoBehaviour
-{
+/// <remarks>
+/// [应用表][所有有动画效果的对象的组件]存处一个对象的动画文件的所有数据,Update主要用来回调动画事件,LateUpdate主要用来更新动画
+/// </remarks>
+public class IsoAnimator : MonoBehaviour {
     /// <summary>
-    /// 获取IsoAnimation文件引用,界面上框框,直接拖
+    /// 引用角色的动画文件,在Unity面板中赋值
     /// </summary>
     public IsoAnimation anim;
     /// <summary>
-    /// 动画朝向索引
+    /// 动画的方向索引
     /// </summary>
     public int direction = 0;
     /// <summary>
-    /// 动画播放速度系数
+    /// 动画速度
     /// </summary>
-    /// 特性:字段会显示在Inspector面板上
+    /// <remarks>
+    /// 目前就是攻击动画会修改一下
+    /// </remarks>
     [HideInInspector]
     public float speed = 1.0f;
     /// <summary>
-    /// 精灵渲染器组件引用
+    /// 引用角色的渲染器
     /// </summary>
     SpriteRenderer spriteRenderer;
     /// <summary>
-    /// 角色组件引用
+    /// 引用角色组件
     /// </summary>
     Character character;
     /// <summary>
-    /// 累计动画时间
+    /// 记录Update的事件,没更新一帧动画,重置一次
     /// </summary>
     float time = 0;
     /// <summary>
-    /// 当前(状态)动作
+    /// 状态机当前的动画姿态 -- 当前动画参数1
     /// </summary>
     State state;
-
     /// <summary>
-    /// 引用的isoAnimation文件中的状态(动作)
+    /// 状态机当前的动画(如Attack1) -- 当前动画参数2
     /// </summary>
     IsoAnimation.State variation;
     /// <summary>
-    /// 当前动画帧索引
+    /// 当前动画帧数索引 -- 当前动画参数3
     /// </summary>
     int frameIndex = 0;
     /// <summary>
-    /// 每帧动画持续时间
+    /// 当前动画每帧的持续时间 -- 当前动画参数4
     /// </summary>
     float frameDuration;
     /// <summary>
-    /// 每个朝向的动画帧数量(当前动作动画的索引总数)
+    /// 当前动画每个方向有多少帧(这个项目中现在所有动画都是12帧) -- 当前动画参数5
     /// </summary>
     int spritesPerDirection;
-
     /// <summary>
-    /// 人物的状态(动作)库
+    /// 动画状态字典
     /// </summary>
+    /// <remarks>
+    /// 这个字典成员的State其实时一个数组,储存了这个姿态的所有动画,如野蛮人的攻击有两个动画; 
+    /// 这里的string也是姿态名字,和State类里面的name一样和[动画文件]的State类的name也一样
+    /// </remarks>
     Dictionary<string, State> states = new Dictionary<string, State>();
-
     /// <summary>
-    /// 动画状态类(动画状态机那个状态,就是动作),注意isoAnimation文件中的状态(动作)和这个类是不同的类,一个在IsoAnimation.cs文件中,一个在IsoAnimator.cs文件中
+    /// 动画姿态
     /// </summary>
+    /// <remarks>
+    /// 这是动画状态机的动画姿态类,和动画文件的姿态类不同
+    /// 这个姿态类,是一个数组,储存了这个姿态的所有动画,如野蛮人的攻击有两个动画
+    /// </remarks>
     public class State
     {
         /// <summary>
-        /// 状态名称 (跑,待命,挨打等)
+        /// 姿态的名字
         /// </summary>
         public string name;
         /// <summary>
-        /// 变化库
-        /// isoAnimation文件中的状态(动作)变化的数组,比如向右跑,向左跑,向上跑,向下跑等
+        /// 这个姿态的所有动画数组,如Attack1,Attack2
         /// </summary>
         public List<IsoAnimation.State> variations = new List<IsoAnimation.State>();
     }
 
-    void Start()
-    {
-        //get渲染器和角色组件
+    void Start () {
         spriteRenderer = GetComponent<SpriteRenderer>();
         character = GetComponent<Character>();
 
-
-        //初始化当前状态
         State firstState = null;
-        //遍历引用的isoAnimation文件中的states数组
+        //这里有点绕备注一下
+        //遍历[动画文件]的姿态数组
         foreach(var state in anim.states)
         {
-            //如果人物的动作库里有遍历的动作
+            //如果遍历的姿态的名称存在于[动画状态机]的姿态字典里
             if (states.ContainsKey(state.name))
             {
-                //把他加入到人物的这个动作的变化库里面(iosAnimation文件中的状态(动作)对应的是变化库
+                //那么,把这个[动画文件]的姿态动画,收入到字典对应的姿态数组里
                 states[state.name].variations.Add(state);
             }
-            //否则
+            //字典里没有就新建一个姿态,并且把这个姿态做为firstState
             else
             {
-                //创建一个新的状态(动作)
                 var newState = new State();
-                //把遍历的动作的名字赋值给新的状态(动作)的名字
                 newState.name = state.name;
-                //把遍历到的动作赋值给新的状态(动作)的变化库;
                 newState.variations.Add(state);
-                //把新的状态(动作)加入到人物的动作库里面
                 states.Add(state.name, newState);
-                //如果第一个状态为空,就把新的状态(动作)赋值给第一个状态(动作)
                 if (firstState == null)
                     firstState = newState;
             }
         }
-
+        //设置状态机的当前状态为firstState
         SetState(firstState);
     }
+	/// <summary>
+    /// 更新
+    /// </summary>
+    /// <remarks>
+    /// 回调动画事件,如动画中间,动画结束
+    /// </remarks>
+	void Update () {
+        //非循环的动画,索引到最后一帧了,就不更新了直接返回
+        if (!variation.loop && frameIndex >= spritesPerDirection)
+            return;
+        //[注]:Time.deltaTime是Unity的每帧事件大概1/60-1/30秒左右; frameDuration是动画每帧的时间1/12秒; Unity的每帧时间是远小于动画的
 
-    void Update()
-    {
-        //如果当前动画帧的索引大于等于执行的动作的索引总数-1(就是当前动作动画执行完了)就跳出
-        if (!variation.loop && frameIndex >= spritesPerDirection) return;
-        //记录累计时间+=每帧时间*动画速度系数
+        //按动画速度系数累加Unity每帧时间,直到时间超过1/12秒的动画每帧时间,就更新一帧动画
         time += Time.deltaTime * speed;
-        //如果累计时间大于等于每帧动画时间,就执行
         while (time >= frameDuration)
         {
-            //累计时间-=每帧动画的时间
+            //把动画更新的这一帧时间减掉,重新计数
             time -= frameDuration;
-
-            //>>>>帧数加一
-            //如果动画当前帧索引<执行的动作的索引总数(就是当前动作动画还没执行完)
+            //没到事件帧就索引加一, 到了事件根据不同事件做相应处理
             if (frameIndex < spritesPerDirection)
-            //那么动作索引+1(就是动作动画进行到下一帧)
                 frameIndex += 1;
-
-            //>>>>触发动画事件
-            //如果动画当前帧索引==执行的动作的索引总数/2(就是当前动作动画执行到一半了)
             if (frameIndex == spritesPerDirection / 2)
-            //向所有MonoBehaviour组件光比发"OnAnimationMiddle"消息,形参2的作用是不要求接受者必须有这个方法,没有就不执行不会报错
                 SendMessage("OnAnimationMiddle", SendMessageOptions.DontRequireReceiver);
-            //如果动画当前帧索引==执行的动作的索引总数(就是当前动作动画执行完了)
             if (frameIndex == spritesPerDirection)
             {
-            //向所有MonoBehaviour组件光比发"OnAnimationFinish"消息,形参2的作用是不要求接受者必须有这个方法,没有就不执行不会报错
                 SendMessage("OnAnimationFinish", SendMessageOptions.DontRequireReceiver);
-                //如果动画循环播放,就重置动作索引为0(就是动作动画重新播放)
-                if (variation.loop) SetupState();
+                //动画如果循环,那就重新装载动画
+                if (variation.loop)
+                    SetupState();
             }
         }
     }
-
+    /// <summary>
+    /// 后期更新
+    /// </summary>
+    /// <remarks>
+    /// 更新动画
+    /// </remarks>
     void LateUpdate()
     {
         UpdateAnimation();
@@ -158,19 +159,16 @@ public class IsoAnimator : MonoBehaviour
     /// </summary>
     void UpdateAnimation()
     {
-        //初始化动画朝向
         int direction = this.direction;
-        //如果角色组件不为空
         if (character)
-        //动画朝向=(角色朝向+动画朝向偏移量)%动画朝向数量,这些量都是索引
-            direction = (character.directionIndex + anim.directionOffset) % anim.directionCount;
-        //精灵索引 = 动画朝向*每个朝向的动画帧数量(定位到当前的动作)+(当前帧索引 || 每个朝向的动画帧数量(选两个值中较小的那个,就是保证不会溢出当前朝向动画帧的总数))
+            direction = (character.directionIndex + anim.directionOffset) % anim.directionCount; //方向索引余一下总数保证不溢出
+        //精灵指针定位到动画当前帧的精灵
         int spriteIndex = direction * spritesPerDirection + Mathf.Min(frameIndex, spritesPerDirection - 1);
-        //渲染器中的精灵引用=当前动作的精灵数组[精灵索引](就是渲染器中的精灵引用=当前动作的精灵数组[当前帧索引])
+        //给渲染器的精灵赋值
         spriteRenderer.sprite = variation.sprites[spriteIndex];
     }
     /// <summary>
-    /// 获取当前动画状态(动作)
+    /// 获取状态机的当前状态(State类版)
     /// </summary>
     /// <returns></returns>
     public State GetState()
@@ -178,46 +176,45 @@ public class IsoAnimator : MonoBehaviour
         return state;
     }
     /// <summary>
-    /// 设置动画状态，跑步，攻击等状态(取状态名称做形参)
+    /// 设置状态机的当前状态(string版)
     /// </summary>
     /// <param name="stateName"></param>
+    /// <remarks>
+    /// 这个string是状态机的状态的名字,和从动画状态字典里取对应的动画状态类,之后调重载的SetState(State类版)
+    /// </remarks>
     public void SetState(string stateName)
     {
-        //获取的isoAnimation文件的状态，与当前状态相同，直接返回
-        if (stateName == state.name) return;
-        //不跳出就执行方法
+        if (stateName == state.name)
+            return;
+
         SetState(states[stateName]);
     }
-
     /// <summary>
-    /// 设置动画状态，跑步，攻击等状态(取isoAnimation文件中的状态做形参)
+    /// 设置状态机的当前状态(State类版)
     /// </summary>
-    /// <param name="state">返回动画状态</param>
+    /// <param name="state"></param>
     public void SetState(State state)
     {
-        //获取的isoAnimation文件的状态，与当前状态相同，直接返回
         if (this.state == state)
             return;
-        //不跳出就赋值
+
         this.state = state;
-        //上面换了新状态，初始化一下动画的相关设置
         SetupState();
     }
     /// <summary>
-    /// 初始化状态参数，这个方法是在上面方法中赋值新状态后面，给新的状态初始化参数。
+    /// 装载动画,当前动画(如Attack1)
     /// </summary>
-
     void SetupState()
     {
-        //帧索引赋值为0，动画播放重置到开头
+        //帧索引
         frameIndex = 0;
-
         variation = state.variations[Random.Range(0, state.variations.Count)];
-        //重新计算没个朝向的精灵数量
+        //一个方向上动画动作的帧数,现在用的都是12帧
         spritesPerDirection = variation.sprites.Length / anim.directionCount;
-        //怕有空引用导致乘以0，所以如果是0 至少赋值个1保底
-        if (spritesPerDirection == 0) spritesPerDirection = 1;
-        //计算每帧动画持续时间
+        
+        if (spritesPerDirection == 0)
+            spritesPerDirection = 1;
+        //当前动画姿态的每帧时间
         frameDuration = 1.0f / variation.fps;
     }
 }

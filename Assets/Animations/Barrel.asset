@@ -17,14 +17,14 @@ MonoBehaviour:
   states:
   - name: Idle
     loop: 1
-    texture: {fileID: 0}
     fps: 12
+    texture: {fileID: 0}
     sprites:
     - {fileID: 21300000, guid: ae6d538a352719c449bd92c1fe00e8b3, type: 3}
   - name: Use
     loop: 0
-    texture: {fileID: 0}
     fps: 12
+    texture: {fileID: 0}
     sprites:
     - {fileID: 21300002, guid: ae6d538a352719c449bd92c1fe00e8b3, type: 3}
     - {fileID: 21300004, guid: ae6d538a352719c449bd92c1fe00e8b3, type: 3}

@@ -1,28 +1,39 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 实时获取鼠标在等距坐标中的位置
+/// 等距输入组件
 /// </summary>
-public class IsoInput : MonoBehaviour
-{
-    /// <summary>
-    /// 鼠标在等距坐标中的位置
-    /// </summary>
+public class IsoInput : MonoBehaviour {
+	/// <summary>
+	/// 鼠标指向的等距坐标
+	/// </summary>
     static public Vector2 mousePosition;
-    /// <summary>
-    /// 鼠标指向的瓦片坐标
-    /// </summary>
+	/// <summary>
+	/// 鼠标指向的单元格的等距坐标
+	/// </summary>
     static public Vector3 mouseTile;
 
-    void Update()
+    // 用于在Inspector面板上显示静态字段的值
+    [SerializeField]
+    private Vector2 _displayMousePosition;
+    [SerializeField]
+    private Vector3 _displayMouseTile;
+	/// <summary>
+	/// 刷新
+	/// </summary>
+	/// <remarks>
+	/// 每帧刷新:鼠标坐标 >> 转等距 >> 取整 || 因为单元格刚好1单位,所以取整后就是单元格坐标
+	/// </remarks>
+    void Update ()
     {
-        //获取鼠标在世界坐标中的位置
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //转换为等距坐标
         mousePosition = Iso.MapToIso(mousePos);
-        //取整,得到鼠标指向的瓦片坐标
         mouseTile = Iso.Snap(mousePosition);
+
+        // 更新显示字段的值
+        _displayMousePosition = mousePosition;
+        _displayMouseTile = mouseTile;
     }
 }

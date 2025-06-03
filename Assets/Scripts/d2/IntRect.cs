@@ -1,19 +1,41 @@
-﻿// 定义 IntRect 结构体，用于表示一个整数矩形
+﻿
+/// <summary>
+/// 整数矩形
+/// </summary>
+/// <remarks>
+/// 类似于vector类型,这个类代表一个矩形的几何形状,它是整型的
+/// </remarks>
 public struct IntRect
 {
-    // 静态变量，表示一个零矩形
+    /// <summary>
+    /// 一个0矩形
+    /// </summary>
     public static IntRect zero = new IntRect(0, 0, 0, 0);
 
-    // 矩形的 X 坐标
+    /// <summary>
+    /// 锚点x(左上)
+    /// </summary>
     int _x;
-    // 矩形的 Y 坐标
+    /// <summary>
+    /// 锚点y(左上)
+    /// </summary>
     int _y;
-    // 矩形的宽度
+    /// <summary>
+    /// 宽
+    /// </summary>
     int _width;
-    // 矩形的高度
+    /// <summary>
+    /// 高
+    /// </summary>
     int _height;
 
-    // 构造函数，初始化矩形
+    /// <summary>
+    /// 整数矩形的构造函数
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
     public IntRect(int x, int y, int width, int height)
     {
         _x = x;
@@ -22,7 +44,9 @@ public struct IntRect
         _height = height;
     }
 
-    // 获取或设置矩形的最大 X 坐标
+    /// <summary>
+    /// 矩形在X轴上的最大值
+    /// </summary>
     public int xMax
     {
         get
@@ -35,8 +59,9 @@ public struct IntRect
             _width = value - _x + 1;
         }
     }
-
-    // 获取或设置矩形的最大 Y 坐标
+    /// <summary>
+    /// 矩形在Y轴上的最大值
+    /// </summary>
     public int yMax
     {
         get
@@ -52,7 +77,9 @@ public struct IntRect
         }
     }
 
-    // 获取或设置矩形的最小 X 坐标
+    /// <summary>
+    /// 矩形在X轴上的最小值
+    /// </summary>
     public int xMin
     {
         get
@@ -68,7 +95,9 @@ public struct IntRect
         }
     }
 
-    // 获取或设置矩形的最小 Y 坐标
+    /// <summary>
+    /// 矩阵在Y轴上的最小值
+    /// </summary>
     public int yMin
     {
         get
@@ -82,7 +111,9 @@ public struct IntRect
         }
     }
 
-    // 获取或设置矩形的宽度
+    /// <summary>
+    /// 宽
+    /// </summary>
     public int width
     {
         get
@@ -96,7 +127,9 @@ public struct IntRect
         }
     }
 
-    // 获取或设置矩形的高度
+    /// <summary>
+    /// 高
+    /// </summary>
     public int height
     {
         get
@@ -110,7 +143,10 @@ public struct IntRect
         }
     }
 
-    // 返回矩形的字符串表示
+    /// <summary>
+    /// 输出字符串
+    /// </summary>
+    /// <returns></returns>
     public string AsString()
     {
         return string.Format("({0}, {1})  --->  ({2}, {3})  =  {4} * {5}", xMin, yMin, xMax, yMax, width, height);

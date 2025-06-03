@@ -1,50 +1,58 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+
 /// <summary>
-/// IosAnimation的编辑器
-/// 给IosAnimation添加一个编辑器
-/// 编辑器类型Editor
-/// 用来给资产文件添加选项,例子就是图片文件的选项那样,不是脚本,是直接在资源文件上添加选项
-/// 这个脚本中是给IsoAnimation添加了一个按钮,用来更新动画
+/// IsoAnimation的自定义编辑器
 /// </summary>
-/// 特性这个类是IsoAnimation的编辑器(就是IsoAnimation文件在Inspector面板上显示的属性)
+/// <remarks>
+/// 可以给IsoAnimation添加自定义的功能,比如这个类加了个按钮,和相关的功能,继承自Editor
+/// </remarks>
 [CustomEditor(typeof(IsoAnimation))]
 public class IsoAnimationEditor : Editor
 {
+    /// <summary>
+    /// 重写OnInspectorGUI方法,可以在Inspector面板中添加自定义的功能
+    /// </summary>
+    /// <remarks>
+    /// 包含两个功能,一个是Inspector面板参数改变时自动更新,一个是更新按钮,都是调用Build方法
+    /// </remarks>
     public override void OnInspectorGUI()
     {
-        //绘制默认面板并后续检测属性是否被修改
-        //绘制默认面板就是把IsoAnimation的public属性都加到面板上并初始化
-        //后续检测属性是否被修改,如果被修改就立即调用Build方法更新动画
-        if (DrawDefaultInspector()) Build(); 
+        if (DrawDefaultInspector())
+        {
+            Build();
+        }
 
-        //这是保底,如果属性修改没有正确更新,点击更新按钮强制更新
-        if (GUILayout.Button("更新")) Build();
+        if (GUILayout.Button("更新"))
+        {
+            Build();
+        }
     }
+    /// <summary>
+    /// 构建IsoAnimation的动画切片
+    /// </summary>
+    /// <remarks>
+    /// 添加一个动画姿态,放入图片,填写帧数,方向数量,偏移,是否循环.之后,这个方法会把图片下的精灵导入到精灵数组
+    /// </remarks>
     void Build()
     {
-        //这里指的应该是当前选中的isoAnimation文件
+        //这里target是Editor的一个属性,代表正在编辑的对象,也就是IsoAnimation的文件
         var isoAnimation = target as IsoAnimation;
-        //遍历isoAnimation文件中的states数组
+
         foreach (var state in isoAnimation.states)
         {
-            //如果state的texture图片文件不为空,就继续
             if (state.texture)
             {
-                //如果state的名字为空或者名字长度为0,就继续
                 if (state.name == null || state.name.Length == 0)
-                    //state的名字 = IsoAnimation文件中引用texture文件的名字
                     state.name = state.texture.name;
-                //获取IsoAnimation文件中引用texture文件的路径
                 var spritesPath = AssetDatabase.GetAssetPath(state.texture);
-                //加载路径下的所有资源,并先按照名字长度排序,次按照名字首字母排序,然后转成数组,赋值给state的sprites数组
                 state.sprites = AssetDatabase.LoadAllAssetsAtPath(spritesPath).OfType<Sprite>().OrderBy(s => s.name.Length).ThenBy(s => s.name).ToArray();
-            }        
+            }
         }
-        //保存修改到磁盘上,如果不保存修改,下次打开文件就会丢失修改
+        //标记当前文件为"脏"状态,意思是它被修改过.这样系统在自动保存时会把改动写入硬盘已保证不被丢失
         EditorUtility.SetDirty(isoAnimation);
     }
 }

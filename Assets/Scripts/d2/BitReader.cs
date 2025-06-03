@@ -1,49 +1,73 @@
-﻿// 定义 BitReader 类，用于按位读取字节数组
+﻿
+/// <summary>
+/// 比特流
+/// </summary>
+/// <remarks>
+/// 自定义流, 用于以比特为单位读取流; 
+/// 它有两个索引, 一个是字节索引, 一个是比特索引;
+/// 字节索引从文件头开始, 比特索引从当前字节的第一个比特开始;
+/// </remarks>
 public class BitReader
 {
-    // 字节数组
+    /// <summary>
+    /// 做为流的字节数据
+    /// </summary>
     private byte[] bytes;
-    // 当前字节的索引
+    /// <summary>
+    /// 字节索引
+    /// </summary>
     private int byteIndex = 0;
-    // 当前字节
+    /// <summary>
+    /// 当前字节
+    /// </summary>
     private int currentByte;
-    // 当前位索引
+    /// <summary>
+    /// 比特索引
+    /// </summary>
     public int bitIndex = 8;
 
-    // 构造函数，初始化 BitReader
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="bytes">赋值给流的字节数据</param>
+    /// <param name="offset">流在文件中的起始位</param>
+    /// <remarks>
+    /// 给BitReader赋值,形参1: 文件的字节数组, 形参2: 流在文件中的起始位
+    /// </remarks>
     public BitReader(byte[] bytes, long offset = 0)
     {
-        // 设置字节数组
+        //赋值字节数据
         this.bytes = bytes;
-        // 计算字节索引(因为一个字节有8位比特)
-        byteIndex = (int) offset / 8;
-        // 计算位索引(因为一个字节有8位比特)
-        bitIndex = (int) (offset % 8);
-        // 读取当前字节
+        //字节索引
+        byteIndex = (int)offset / 8;
+        //比特索引
+        bitIndex = (int)(offset % 8);
+        //当前字节
         currentByte = bytes[byteIndex++];
     }
-
-    // 读取一个位
+    /// <summary>
+    /// 读取一个比特
+    /// </summary>
+    /// <returns></returns>
     public int ReadBit()
     {
-        // 如果当前位索引超过 8，读取下一个字节
         if (bitIndex >= 8)
         {
             currentByte = bytes[byteIndex++];
             bitIndex = 0;
         }
-        // 获取当前位的值
         int result = (currentByte >> bitIndex) & 1;
-        // 增加位索引
         ++bitIndex;
         return result;
     }
-
-    // 读取多个位
+    /// <summary>
+    /// 读取多个比特
+    /// </summary>
+    /// <param name="count">读取的比特数量</param>
+    /// <returns></returns>
     public int ReadBits(int count)
     {
         int result = 0;
-        // 逐个读取位并组合成结果
         for (int i = 0; i < count; ++i)
         {
             result += ReadBit() << i;
@@ -51,32 +75,41 @@ public class BitReader
         return result;
     }
 
-    // 读取有符号数
+    /// <summary>
+    /// 读带符号的比特
+    /// </summary>
+    /// <param name="count"></param>
+    /// <returns></returns>
     public int ReadSigned(int count)
     {
-        // 读取无符号数
         int result = ReadBits(count);
-        // 如果最高位为 1，表示负数，扩展符号位
         if ((result & (1 << (count - 1))) != 0)
         {
+            // negative : extend its sign
             result |= ~((1 << count) - 1);
         }
         return result;
     }
 
-    // 重置位索引
+    /// <summary>
+    /// 重置比特索引, 回到字节索引的起始位置
+    /// </summary>
     public void Reset()
     {
         bitIndex = 8;
     }
 
-    // 获取剩余位数
+    /// <summary>
+    /// 计算当前字节剩余的比特数量
+    /// </summary>
     public int bitsLeft
     {
         get { return 8 - bitIndex; }
     }
 
-    // 获取当前偏移量
+    /// <summary>
+    /// 获取当前比特流的读取位置(以比特为单位)
+    /// </summary>
     public long offset
     {
         get { return byteIndex * 8 - bitsLeft; }

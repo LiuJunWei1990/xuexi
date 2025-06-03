@@ -1,47 +1,42 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 /// <summary>
-/// 桶组件
+/// 桶物体组件
 /// </summary>
+/// <remarks>
+/// 自带Usable组件，OnUse方法被Usable组件回调
+/// </remarks>
 [RequireComponent(typeof(Usable))]
-public class Barrel : MonoBehaviour
-{
-    /// <summary>
-    /// 动画
-    /// </summary>
-    IsoAnimator animator;
-    /// <summary>
-    /// 互动组件
-    /// </summary>
-    Usable usable;
-    /// <summary>
-    /// 材质
-    /// </summary>
-    SpriteRenderer spriteRenderer;
+public class Barrel : MonoBehaviour {
+	/// <summary>
+	/// 动画状态机组件引用
+	/// </summary>
+	IsoAnimator animator;
+	/// <summary>
+	/// Usable组件引用
+	/// </summary>
+	Usable usable;
+	/// <summary>
+	/// 精灵渲染器组件引用
+	/// </summary>
+	SpriteRenderer spriteRenderer;
 
-
-    void Awake()
-    {
-        //获取各种组件
-        animator = GetComponent<IsoAnimator>();
-        usable = GetComponent<Usable>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-    }
-
-    /// <summary>
-    /// 使用,所有可互动物体都有的方法,会被Usable互动组件调用
-    /// </summary>
-    void OnUse()
-    {
-        //播放使用动画
-        animator.SetState("Use");
-        //使用组件的激活字段,设置为否.因为使用后桶打碎了
-        usable.active = false;
-        //桶碎了,单元格自然也就可通行了
-        Tilemap.SetPassable(Iso.MapToIso(transform.position), true);
-        //修改图层,以保证不会挡住其他物体
-        spriteRenderer.sortingLayerName = "OnFloor";
-    }
+	void Awake() {
+		animator = GetComponent<IsoAnimator>();
+		usable = GetComponent<Usable>();
+		spriteRenderer = GetComponent<SpriteRenderer>();
+	}
+	/// <summary>
+	/// 交互方法
+	/// </summary>
+	/// <remarks>
+	/// 被Usable组件回调,桶被交互后的一系列代码处理
+	/// </remarks>
+	void OnUse() {
+		animator.SetState("Use");
+		usable.active = false;
+		Tilemap.SetPassable(Iso.MapToIso(transform.position), true);
+		spriteRenderer.sortingLayerName = "OnFloor";
+	}
 }

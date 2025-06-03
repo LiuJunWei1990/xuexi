@@ -1,549 +1,553 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 角色组件
 /// </summary>
-/// 脚本实现的功能流程如下:
-/// 1.行走->PlayerController中外设按钮调用->GoTo()->PathTo()生成路径->Update()刷新Move()方法移动角色
-/// 2.互动->PlayerController中外设按钮调用->target(属性)赋值->Set中执行Use()->PathTo()生成路径->赋值usable->Update()中Move()后检测到路径空了并usable不为空就执行互动
-/// 3.攻击->PlayerController中外设按钮调用->target(属性)赋值->Set中执行Attack()->PathTo()生成路径->赋值targetCharacter->Update()中Move()后检测到路径空了并targetCharacter不为空就执行攻击,并人物进入攻击状态
-/// 4.瞬移->PlayerController中外设按钮调用->Teleport()执行瞬移,如果目的地不可通行就生成路径瞬移到目的地最近的可通行单元格
-/// 5.动画->和Move()基本类似,根据角色是否攻击状态,挨打状态,是否有路径来决定播放Idle,Walk,Run,Attack动画
-/// 总结:除瞬移外,其他动作都是生成路径+赋值目标单位,然后在Update()中检测路径是否为空,如果为空就执行相应的动作
-public class Character : MonoBehaviour
-{
+/// <remarks>
+/// 表驱动,update通过扫描人物属性来判断是否执行对应的方法
+/// </remarks>
+/// <example>
+/// 受害者属性:Update中根据目标的组件来判断,互动还是攻击
+/// 姿态属性:Update中根据人物的姿态来执行动作和动画,移动,攻击,受击,死亡,死亡中
+/// 
+/// ----------------------------------------------------------------------------------------
+/// 修改表[方法]:这类方法会修改人物的属性,然后Update会根据属性来判断是否执行对应的方法
+/// 应用表[方法]:这类方法会更具人物的属性来判断是否执行对应的动作和动画
+/// 表参数[字段]:即Character的所有字段,属性;例如Pathing类本身没有实例,向[表参数]path提供值得,会给它标上[表参数]
+/// 也有即修改也应用的方法
+/// </example>
+public class Character : MonoBehaviour {
     /// <summary>
-    /// 朝向数量
+    /// 角色的朝向 -- 朝向属性1
     /// </summary>
-    [Tooltip("角色动画朝向数量")]
+    /// <remarks>
+    /// 用于寻路,动画的相关赋值
+    /// ||| 方向索引对应表
+    /// 0: 左上（(-1, -1)）
+    /// 1: 左（(-1, 0)）
+    /// 2: 左下（(-1, 1)）
+    /// 3: 下（(0, 1)）
+    /// 4: 右下（(1, 1)）
+    /// 5: 右（(1, 0)）
+    /// 6: 右上（(1, -1)）
+    /// 7: 上（(0, -1)）
+    /// </remarks>
     public int directionCount = 8;
     /// <summary>
-    /// 速度
+    /// 角色的移动速度 -- 移动属性5
     /// </summary>
-    [Tooltip("角色移动速度")]
-    public float speed = 3.5f;
+	public float speed = 3.5f;
     /// <summary>
-    /// 攻击速度
+    /// 角色的攻击速度 -- 动画属性4/战斗属性1
     /// </summary>
-    [Tooltip("角色攻击速度")]
-    public float attackSpeed = 1.0f;
+    /// <remarks>
+    /// 这个属性作用于攻击动画的播放速度,动画会触发攻击
+    /// </remarks>
+	public float attackSpeed = 1.0f;
     /// <summary>
-    /// 互动范围
+    /// 互动范围 -- 移动属性1
     /// </summary>
-    [Tooltip("寻路至互动物体会在这个距离停下并开始互动")]
     public float useRange = 1f;
     /// <summary>
-    /// 攻击范围
+    /// 攻击范围 -- 移动属性2
     /// </summary>
-    [Tooltip("寻路至敌人会在这个距离停下并开始攻击")]
     public float attackRange = 1f;
     /// <summary>
-    /// 角色模型直径
-    /// </summary>
-    [Tooltip("攻击/互动范围要加上这个直径的半径")]
+    /// 角色直径 -- 移动属性3
     /// </summary>
     public float diameter = 1f;
     /// <summary>
-    /// 姿态:奔跑
+    /// 是否奔跑 -- 移动属性4/动画属性3
     /// </summary>
-    [Tooltip("姿态:奔跑")]
     public bool run = false;
     /// <summary>
-    /// 转向速度,每秒的转速
+    /// 角色转向速度 -- 朝向属性5
     /// </summary>
-    [Tooltip("人物转向的速度")]
-    static float turnSpeed = 4f;
+    static float turnSpeed = 4f; // full rotations per second
     /// <summary>
-    /// 受到伤害委托
+    /// 挨打委托
     /// </summary>
-    /// <param name="originator">施暴者</param>
-    /// <param name="damage">伤害</param>
+    /// <param name="originator"></param>
+    /// <param name="damage"></param>
+    /// <remarks>
+    /// 在傀儡控制器中被赋值响应,回调时OnTakeDamage方法
+    /// </remarks>
     public delegate void TakeDamageHandler(Character originator, int damage);
+    /// <summary>
+    /// 挨打事件
+    /// </summary>
+    /// <remarks>
+    /// 在傀儡控制器中被赋值响应,回调时OnTakeDamage方法
+    /// </remarks>
+    public event TakeDamageHandler OnTakeDamage;
 
     /// <summary>
-    /// 受到伤害事件
+    /// 目标[属性]
     /// </summary>
-    public event TakeDamageHandler OnTakeDamage;
-    /// <summary>
-    /// 角色的目标(属性)
-    /// </summary>
-    //特性:不显示在面板上
-    [HideInInspector]
+    /// <remarks>
+    /// m_Target[字段]的壳子  
+    /// set时会自动调用Use()或Attack();
+    /// </remarks>
+    [HideInInspector] //隐藏
     public GameObject target
     {
         get
         {
-            ///读取目标字段
             return m_Target;
         }
+        //取到哪个组件就调对应方法, 没有就返回
         set
         {
-            //>>>>>>>>>>>>>>设定目标<<<<<<<<<<<<<<<
-            //尝试获取将要做为目标的对象的互动组件
             var usable = value.GetComponent<Usable>();
-            //如果互动组件不为空就代表是可互动的对象,就调<使用/互动>Use方法,<使用>目标
-            if (usable != null) Use(usable);
-            //否则,即目标没有互动组件
+            if (usable != null)
+                Use(usable);
             else
             {
-                //尝试获取将要做为目标的对象的角色组件
                 var targetCharacter = value.GetComponent<Character>();
-                //如果有角色组件,就代表是可攻击的对象,就调<攻击>Attack方法,<攻击>目标
-                if (targetCharacter) Attack(targetCharacter);
-                //都没有,就return不做任何动作
+                if (targetCharacter) {
+                    Attack(targetCharacter);
+                }
                 else
                 {
                     return;
                 }
             }
-
-            //无论上面代码执行任一动作,都要把目标赋值给当前角色的目标
+            //不管取没取到都赋值
             m_Target = value;
         }
     }
-
     /// <summary>
-    /// 角色的当前朝向(索引)
+    /// 角色实际朝向的方向(索引) -- 朝向属性2
     /// </summary>
-    /// 特性:在Inspector面板中隐藏
+    /// <remarks>
+    /// 会在Update中逐步的朝期望的方向desiredDirection[字段]变化
+    /// </remarks>
     [HideInInspector]
-    public int directionIndex = 0;
+	public int directionIndex = 0;
     /// <summary>
-    /// 角色的当前朝向(矢量)
+    /// 角色实际朝向的方向(浮点版) -- 朝向属性3
     /// </summary>
+    /// <remarks>
+    /// directionIndex的浮点版,directionIndex是由本字段计算来的,使用本字段使转向更加平滑
+    /// </remarks>
     float direction = 0;
     /// <summary>
-    /// 等距坐标组件
+    /// 角色的坐标(等距) -- 移动属性8
     /// </summary>
+    /// <remarks>
+    /// 等距坐标,并不直接作用于角色,而是通过iso.pos来赋值给角色的transform.position
+    /// </remarks>
     Iso iso;
     /// <summary>
-    /// 动画组件
+    /// 角色的动画组件 -- 动画属性1
     /// </summary>
-    IsoAnimator animator;
+	IsoAnimator animator;
     /// <summary>
-    /// 渲染器组件
+    /// 角色的渲染组件 -- 动画属性2
     /// </summary>
     SpriteRenderer spriteRenderer;
     /// <summary>
-    /// 路径,表现为一个装坐标的容器,存的是Step<步>
+    /// 角色的路径 -- 移动属性6
     /// </summary>
     List<Pathing.Step> path = new List<Pathing.Step>();
-
     /// <summary>
-    /// 当前步的已经移动的距离
+    /// 记录一次步骤中,已经走过的距离 -- 移动属性7
     /// </summary>
-    float traveled = 0;
-
+	float traveled = 0;
     /// <summary>
-    /// 预定的方向,角色应该面对的朝向;为了动画平滑,人物朝向会缓慢的改变至预定方向
+    /// 角色期望朝向的方向(索引) -- 朝向属性4
     /// </summary>
-    int desiredDirection = 0;
+    /// <remarks>
+    /// 使转向更平滑,一般需要变更朝向会赋值这个字段,然后实际朝向会逐步向这个方向变化
+    /// ||| 方向索引对应表
+    /// 0: 左上（(-1, -1)）
+    /// 1: 左（(-1, 0)）
+    /// 2: 左下（(-1, 1)）
+    /// 3: 下（(0, 1)）
+    /// 4: 右下（(1, 1)）
+    /// 5: 右（(1, 0)）
+    /// 6: 右上（(1, -1)）
+    /// 7: 上（(0, -1)）
+    /// </remarks>
+	int desiredDirection = 0;
     /// <summary>
-    /// 是否正在移动
+    /// 移动中[姿态] -- 姿态属性2
     /// </summary>
     bool moving = false;
     /// <summary>
-    /// 是否正在攻击
+    /// 攻击[姿态] -- 姿态属性1
     /// </summary>
-    bool attack = false;
+	bool attack = false;
     /// <summary>
-    /// 是否正在挨打
+    /// 受击[姿态] -- 姿态属性3
     /// </summary>
     bool takingDamage = false;
     /// <summary>
-    /// 是否正在死亡(播放死亡动画中)
+    /// 死亡中[姿态] -- 姿态属性4
     /// </summary>
     bool dying = false;
     /// <summary>
-    /// 是否死亡(死亡动画播放完)
+    /// 死亡[姿态] -- 姿态属性5
     /// </summary>
     bool dead = false;
     /// <summary>
-    /// 本角色的目标<物体或其他角色>
+    /// 目标[字段] -- 受害者属性1
     /// </summary>
     GameObject m_Target;
-    ///>>>>>>>>>>>>>>>>>>>>>下面这两位是被检测的,被检测到有互动组件
     /// <summary>
-    /// 目标的互动组件
+    /// 目标的互动组件 -- 受害者属性2
     /// </summary>
     Usable usable;
     /// <summary>
-    /// 目标角色组件
+    /// 目标的角色组件 -- 受害者属性3
     /// </summary>
     Character targetCharacter;
     /// <summary>
-    /// 攻击力
+    /// 攻击力 -- 战斗属性2
     /// </summary>
     public int attackDamage = 30;
     /// <summary>
-    /// 生命值
+    /// 生命值 -- 战斗属性3
     /// </summary>
     public int health = 100;
     /// <summary>
-    /// 最大生命值
+    /// 最大生命值 -- 战斗属性4
     /// </summary>
     public int maxHealth = 100;
     /// <summary>
-    /// 目标的坐标点
+    /// 目标的坐标(等距) -- 受害者属性4
     /// </summary>
     Vector2 targetPoint;
 
+
+
+    /// <summary>
+    /// 初始化
+    /// </summary>
+    /// <remarks>
+    /// 获取组件
+    /// </remarks>
     void Awake()
     {
-        //获取组件
-        iso = GetComponent<Iso>();
-        animator = GetComponent<IsoAnimator>();
+		iso = GetComponent<Iso>();
+		animator = GetComponent<IsoAnimator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
     /// <summary>
-    /// 使用/互动
+    /// 设定互动对象
     /// </summary>
-    /// <param name="usable">使用的目标物</param>
-    public void Use(Usable usable)
-    {
-        //正在攻击动作中就不能使用,直接返回
-        if (attack || takingDamage || dying || dead) return;
-        //赋值目标的坐标
+    /// <param name="usable">受害者的互动组件</param>
+    /// <remarks>
+    /// [修改表]把相应的目标属性修改为受害者的,Update刷新时会移动并与受害者互动
+    /// </remarks>
+	public void Use(Usable usable) {
+        if (attack || takingDamage || dying || dead)
+            return;
         targetPoint = usable.GetComponent<Iso>().pos;
-        //生成路径后把当前互动物置为现在使用的这个,因为生成路径会重置当前互动物体为空,所以放在后面
-        this.usable = usable;
-        //既然是互动,删除目标角色
+		this.usable = usable;
         targetCharacter = null;
-        //进入行走中姿态
         moving = true;
     }
-
     /// <summary>
-    /// 行走...至
-    /// 点击地板或怪物巡逻调用的方法,通过赋值targetPoint来实现
+    /// 设定移动点位
     /// </summary>
-    /// <param name="target">目标点</param>
+    /// <param name="target">要移动到的目标坐标</param>
+    /// <remarks>
+    /// [修改表]仅保留目标点赋值,Update刷新时会移动至目标点
+    /// </remarks>
     public void GoTo(Vector2 target)
     {
-        //如果角色正在攻击,挨打,死亡,死亡中姿态,就直接返回
-        if (attack || takingDamage || dying || dead) return;
-        //进入行走中姿态
+        if (attack || takingDamage || dying || dead)
+            return;
+
         moving = true;
-        //给目标的坐标点赋值
         targetPoint = target;
-        //可互动物体和目标角色都置为空
         usable = null;
         targetCharacter = null;
     }
     /// <summary>
-    /// 瞬移
+    /// 实施瞬移
     /// </summary>
-    /// <param name="target">目标点</param>
-    public void Teleport(Vector2 target)
-    {
-        if (attack || takingDamage) return;
-        //判断目标单元格是否可通行
-        if (Tilemap.Passable(target))
+    /// <param name="target">目标点位(等距)</param>
+    /// <remarks>
+    /// [应用表]严格算不在表驱动范围内,目标单元格可通行就直接穿,不可通行就传到离目标点最近的位置,结束后离开行走中[姿态]
+    /// </remarks>
+    public void Teleport(Vector2 target) {
+		if (attack || takingDamage)
+			return;
+
+		if (Tilemap.Passable(target)) {
+			iso.pos = target;
+		} 
+        //目标点不可通行,那就找到里目标最近的点传送
+        else 
         {
-            //可通行就直接瞬移
-            iso.pos = target;
-        }
-        else
-        {
-            //不可通行就画路径,准备瞬移到按照寻路的规则的目标单元格
-            var pathToTarget = Pathing.BuildPath(iso.pos, target, directionCount);
-            //路径不为空,为空就返回
-            if (pathToTarget.Count == 0) return;
-            //长度-1,就是路径容器中的最后一个路点,瞬移过去
-            iso.pos = pathToTarget[pathToTarget.Count - 1].pos;
-        }
-        //既然是瞬移,就把路径清空
-        path.Clear();
-        //行走距离也清零
-        traveled = 0;
-        //离开行走中姿态
+			var pathToTarget = Pathing.BuildPath(iso.pos, target, directionCount);
+			if (pathToTarget.Count == 0)
+				return;
+			iso.pos = pathToTarget[pathToTarget.Count - 1].pos;
+		}
+        //清空路径
+		path.Clear();
+		traveled = 0;
         moving = false;
-    }
+	}
     /// <summary>
-    /// 攻击
+    /// 设定强制攻击的坐标点
     /// </summary>
+    /// <param name="target">被攻击的坐标点</param>
+    /// <remarks>
+    /// [修改表]进入攻击[姿态],设置强制攻击的坐标点,Update时会刷新攻击动作
+    /// </remarks>
     public void Attack(Vector3 target)
     {
-        //如果不在攻击中,人物朝向时目标,路径为空那么就开始攻击了
         if (!dead && !dying && !attack && !takingDamage && directionIndex == desiredDirection && !moving)
         {
-            //进入攻击姿态
             attack = true;
-            //给目标坐标点赋值
             targetPoint = target;
         }
     }
     /// <summary>
-    /// 攻击(重载,有目标版)
+    /// 设定攻击对象
     /// </summary>
-    /// <param name="targetCharacter">目标</param>
+    /// <param name="targetCharacter">被攻击的游戏对象</param>
+    /// <remarks>
+    /// [修改表]进入行走中[姿态]这个攻击的重载是攻击角色的,Update时会根据条件刷新进入攻击动作
+    /// </remarks>
     public void Attack(Character targetCharacter)
     {
-        //如果正在攻击就返回
-        if (attack || takingDamage || dead || dying) return;
-        //获取目标的Iso组件
+        if (attack || takingDamage || dead || dying)
+            return;
+
         Iso targetIso = targetCharacter.GetComponent<Iso>();
-        //获取目标的坐标
         targetPoint = targetIso.pos;
-        //获取目标的角色组件
         this.targetCharacter = targetCharacter;
-        //由于有了攻击目标可互动目标置空
         usable = null;
-        //进入行走中姿态
         moving = true;
     }
     /// <summary>
-    /// 放弃当前路径
+    /// 放弃寻路
     /// </summary>
+    /// <remarks>
+    /// [修改表]放弃寻路,清空路径[字段]
+    /// </remarks>
     void AbortPath()
     {
-        //把关于路径的所有变量都清空
         m_Target = null;
-        //路径清空
         path.Clear();
-        //移动距离也清零
         traveled = 0;
     }
-
-    void Update()
-    {
-        //>>>>>>>>>>>>>角色行为代码<<<<<<<<<<<<<<
-        //行为的运作方式是在,诸如<行走>,<攻击>,<使用>等方法中给usable,targetCharacter字段赋值,当下面的代码检测到字段不为空时,就会执行相应的行为
-        //当没有挨打,死亡,死亡中姿态时,执行
-        if (!takingDamage && !dead && !dying)
-        {
-            //如果目标有互动组件
+    /// <summary>
+    /// 更新
+    /// </summary>
+    /// <remarks>
+    /// [应用表][每帧调用]应用表的核心,根据角色属性来判断是否执行对应的动作
+    /// </remarks>
+	void Update() {
+        if (!takingDamage && !dead && !dying) {
+            //互动动作,每帧打射线,打中就停下来互动
             if (usable)
             {
-                //如果目标的单元格和角色的单元格距离小于等于互动范围,就执行
-                //打瓦片版射线,自身>>可互动物体,最大长度为互动范围+直径/2;;;maxRayLength:(命名参数)代表指定这个新参赋值给maxRayLength:;;也可以单纯做一个装饰,提升代码可读性;;ignore射线忽略角色自身
                 var hit = Tilemap.Raycast(iso.pos, usable.GetComponent<Iso>().pos, maxRayLength: useRange + diameter / 2, ignore: gameObject);
-                //如果打中了物体(代表物体不可通行,不可通行代表是可互动状态)
                 if (hit.gameObject == usable.gameObject)
                 {
-                    //执行可互动目标的互动方法
                     usable.Use();
-                    //离开行走中姿态
                     moving = false;
-                    //执行完毕后,把目标置空
                     usable = null;
                     m_Target = null;
                 }
             }
-            //如果目标有角色组件
+            //有目标的攻击(非强制攻击),就进入攻击姿态
             if (targetCharacter && !attack)
             {
-                //获取目标角色的坐标点
                 Vector2 target = targetCharacter.GetComponent<Iso>().pos;
-                //如果目标和角色的距离 <= 攻击范围 + 角色直径 / 2 + 目标直径 / 2,就执行攻击
                 if (Vector2.Distance(target, iso.pos) <= attackRange + diameter / 2 + targetCharacter.diameter / 2)
                 {
-                    //离开行走中姿态
                     moving = false;
-                    //状态修改为攻击中
                     attack = true;
-                    //获取到目标的方向的编号
                     LookAtImmidietly(target);
                 }
             }
         }
-        //朝目标移动
-        MoveToTargetPoint();
-        //更新个朝向吧
-        Turn();
-    }
 
+        MoveToTargetPoint();
+        Turn();
+	}
+    /// <summary>
+    /// 后期更新
+    /// </summary>
+    /// <remarks>
+    /// [应用表][每帧调用]应用表的另一核心,根据角色属性来判断是否执行对应的动画
+    /// </remarks>
     void LateUpdate()
     {
         UpdateAnimation();
     }
     /// <summary>
-    /// 转头
-    /// 每帧更新一次
+    /// 转向
     /// </summary>
+    /// <remarks>
+    /// [应用表][每帧调用]实际朝向索引, 按照旋转速度, 朝期望朝向索引转动一帧的角度
+    /// </remarks>
     void Turn()
     {
-        //不再死亡|死亡中|攻击中|挨打中|当前朝向不等于预定的朝向,就执行
         if (!dead && !dying && !attack && !takingDamage && directionIndex != desiredDirection)
         {
-            //Tools.ShortestDelta计算两个方向的角度差,如果是顺时针,返回值为正,逆时针为负
+            //计算两个方向索引之间的差值(逆时针为负数)
             float diff = Tools.ShortestDelta(directionIndex, desiredDirection, directionCount);
-            //获取绝对值,去掉顺逆时针,只保留角度
+            //计算这个差值的绝对值
             float delta = Mathf.Abs(diff);
-            // 当前帧转向的角度 : (转向方向顺逆 * 转向速度 * 每帧事件 * 朝向数量)
-            //Mathf.Clamp(..., -delta, delta): 限制形参1角度差的范围,防止超出形参2-形参3的范围
-            //direction += ...: 把当前帧的角度差加到当前朝向上
+            //direction += 当前帧的旋转角度(范围不超过±差值绝对值)
             direction += Mathf.Clamp(Mathf.Sign(diff) * turnSpeed * Time.deltaTime * directionCount, -delta, delta);
-            //取余数,防止超出方向数量
+            //对朝向模运算,避免超出方向总数
             direction = Tools.Mod(direction + directionCount, directionCount);
-            //取整,获得最终的方向索引(余了一下朝向总数,防止超出方向数量)
+            //取个整再取余,得到实际朝向索引
             directionIndex = Mathf.RoundToInt(direction) % directionCount;
         }
     }
     /// <summary>
-    /// 沿着路径移动角色
+    /// 按着路径寻路
     /// </summary>
-    void MoveAlongPath()
-    {
-        //分支1.路径为空,攻击中,挨打中,死亡中,死亡了,就直接返回
-        if (path.Count == 0 || !moving || attack || takingDamage || dead || dying) return;
-
-
-        //获取当前步
-        Vector2 step = path[0].direction;
-        //计算当前步的长度;
-        float stepLen = step.magnitude;
-
-        //计算当前帧的移动距离
+    /// <remarks>
+    /// [应用表][每帧调用]如果当前帧会超过步骤长度,本帧就只走完当前步骤,并且轮换下一步骤,其他情况就正常叠数值就行
+    /// </remarks>
+	void MoveAlongPath() {
+        //路径空了就返回
+		if (path.Count == 0 || !moving || attack || takingDamage || dead || dying)
+			return;
+        //读取当前步骤
+		Vector2 step = path[0].direction;
+        //步骤长度
+		float stepLen = step.magnitude;
+        //每帧能走的长度
         float distance = speed * Time.deltaTime;
-
-        //分支2.如果当步已移动距离+当前帧的移动距离,超出了当前的步长就循环
-        while (traveled + distance >= stepLen)
-        {
-            //算距离当前步的坐标点的距离
-            float firstPart = stepLen - traveled;
-            //角色移动到当前步的坐标点,具体操作是把当前步归一化(变成方向),乘以距离就成了到当前步坐标点的向量,加上角色当前坐标,就成了当前步的坐标了.
+        //如果当前帧会超过步骤长度,本帧就只走完当前步骤,并且轮换下一步骤
+		while (traveled + distance >= stepLen) {
+            //计算并走到步骤的终点
+			float firstPart = stepLen - traveled;
             Vector2 newPos = iso.pos + step.normalized * firstPart;
-            //最后复制给角色坐标
             iso.pos = newPos;
-            //因为前面移动掉了一部分,所以当前帧的移动距离要减去掉的那部分
-            distance -= firstPart;
-            //重置当前步的已移动距离firstPart - stepLen = -traveled
-            //traveled += -traveled = 0;
-            //这样的操作应该是担心到了float类型的精度问题,所以用这种方式来重置
-            //当前步的已移动距离归零
-            traveled += firstPart - stepLen;
-            //当前步已经走完了,删除
-            path.RemoveAt(0);
-            //路径不为空就继续获取下面的路径
+            //当前帧的移动距离,要去掉刚才走掉的距离
+			distance -= firstPart;
+            //清空当前步骤已走的距离
+			traveled += firstPart - stepLen;
+            //删除当前步骤
+			path.RemoveAt(0);
+            //如果还有路径载入下一步骤
             if (path.Count > 0)
             {
                 step = path[0].direction;
             }
-        }
-        //分支3.路径不为空就开走
-        if (path.Count > 0)
-        {
-            traveled += distance;
-            iso.pos += step.normalized * distance;
-        }
-        //分支4.上面代码执行完之后路径空了,转为待机
-        if (path.Count == 0)
-        {
-            //移动距离归零
-            traveled = 0;
-        }
-        //分支5.如果以上条件皆不成立,那么预定的朝向就是当前路径的朝向
+		}
+        //如果还有路径,就正常走一步
+		if (path.Count > 0) {
+			traveled += distance;
+			iso.pos += step.normalized * distance;
+		}
+        //没有路径了,步骤已走过距离清零
+        if (path.Count == 0) {
+			traveled = 0;
+		}
+        //BUG兜底,如果到了这里,至少保证人物朝向与最后寻路的方向一致
         else
         {
             desiredDirection = path[0].directionIndex;
         }
     }
-
     /// <summary>
     /// 移动到目标点
-    /// 处于没有路径的状态下,又有目标点,就移动到目标点,会在每一步的间隙中生效是移动更顺滑并且不会半路中断了
     /// </summary>
+    /// <remarks>
+    /// [应用表][每帧调用]这个版本的代码摒弃了直接移动,全部由生成路径移动了
+    /// </remarks>
     void MoveToTargetPoint()
     {
-        //如果不再行走中姿态就直接跳出
-        if (!moving) return;
-        //生成新路径
+        //[分支1]不再行走中姿态,就直接反回
+        if (!moving)
+            return;
+        //尝试另外生成一个新路径
         var newPath = Pathing.BuildPath(iso.pos, targetPoint, directionCount);
-        //如果新路径为空,就离开行走中姿态,返回
+        //[分支2]自身与目标点之间生成不出路径,就直接返回
         if (newPath.Count == 0)
         {
             moving = false;
             return;
         }
-        //如果当前路径为空 或者 新路径和当前路径终点不一样
+        //[分支3]原路径为空,新生成路径不为空,就用新路径
         if (path.Count == 0 || newPath[newPath.Count - 1].pos != path[path.Count - 1].pos)
         {
-            //放弃当前路径
             AbortPath();
-            //把新路径做为当前路径
             path.AddRange(newPath);
         }
-        //路径画线
+        //画路径的辅助线(鼠标点击后的)
         Pathing.DebugDrawPath(iso.pos, path);
-        //如果当前路径还有最后一段,并且路径终点离目标点距离小于1
+        //[分支4]目标点与自身距离小于1,向目标点走一帧,准备停止移动
         if (path.Count == 1 && Vector2.Distance(path[0].pos, targetPoint) < 1.0f)
         {
-            //获取自身到终点的方向
             var dir = (targetPoint - iso.pos).normalized;
-            //角色的当前帧移动
             iso.pos += dir * Time.deltaTime * speed;
-            //获取将要移动的方向
             desiredDirection = Iso.Direction(iso.pos, targetPoint, directionCount);
         }
-        //否则,就是没有什么需要变更的,调用方法,沿着路径移动当前这一帧
+        //[分支5]以上条件都不是就正常按路径寻路
         else
         {
-            //沿路径移动
             MoveAlongPath();
         }
     }
     /// <summary>
     /// 更新动画
     /// </summary>
-    void UpdateAnimation()
-    {
-        //动画名称
+    /// <remarks>
+    /// [应用表][每帧调用]根据角色属性来判断是否执行对应的动画, 没有任何姿态那就待命动画,现版本这个动画系统貌似只用于玩家了
+    /// </remarks>
+    void UpdateAnimation() {
         string animation;
-        //给动画组件赋初始值
-        animator.speed = 1.0f;
-        //如果死亡
+		animator.speed = 1.0f;
         if (dying || dead)
         {
-            //给动画名称赋值
             animation = "Death";
         }
-        //如果正在攻击
         else if (attack)
         {
-            //给动画名称赋值
             animation = "Attack";
-            //给动画速度赋值
-            animator.speed = attackSpeed;
+			animator.speed = attackSpeed;
         }
-        //如果正在挨打
         else if (takingDamage)
         {
-            //给动画名称赋值
             animation = "TakeDamage";
         }
-        //没有路径就是待机状态
         else if (moving)
         {
-            //给动画名赋值
             animation = run ? "Run" : "Walk";
         }
-        //否则就是行走
         else
         {
             animation = "Idle";
         }
-        //给动画组件赋值
+
         animator.SetState(animation);
     }
-
     /// <summary>
-    /// 注释(转向)
-    /// 面向目标
-    /// </summary>
-    /// <param name="target">鼠标</param>
-    public void LookAt(Vector3 target)
-    {
-        //如果不再行走中,目标方向 = 自身-目标的方向
-        if (!moving) desiredDirection = Iso.Direction(iso.pos, target, directionCount);
-    }
-    /// <summary>
-    /// 立刻注释(转向)
-    /// 立刻面向目标不进行平滑处理
+    /// 注释
     /// </summary>
     /// <param name="target"></param>
+    /// <remarks>
+    /// [应用表][每帧调用]修改期望朝向,在update里实际朝向逐步转向至期望朝向
+    /// </remarks>
+	public void LookAt(Vector3 target)
+    {
+        if (!moving)
+            desiredDirection = Iso.Direction(iso.pos, target, directionCount);
+    }
+    /// <summary>
+    /// 立刻注视
+    /// </summary>
+    /// <param name="target">目标</param>
+    /// <remarks>
+    /// [应用表]立即转向,用于攻击和被杀死时,有即使性的要求,所以不再逐步转向
+    /// </remarks>
     public void LookAtImmidietly(Vector3 target)
     {
         directionIndex = desiredDirection = Iso.Direction(iso.pos, target, directionCount);
@@ -551,93 +555,81 @@ public class Character : MonoBehaviour
     /// <summary>
     /// 挨打
     /// </summary>
-    /// <param name="originator">打人者</param>
+    /// <param name="originator">施暴者</param>
     /// <param name="damage">伤害</param>
+    /// <remarks>
+    /// [动画事件调用]扣血; 傀儡控制器触发反击; 离开攻击姿态(这个作用可能是后续打断施法用的,试不了这个版本怪物没有挂脚本,懒得试)
+    /// </remarks>
     public void TakeDamage(Character originator, int damage)
     {
-        //每次动画播放时执行该方法
-
-        //生命减去伤害
         health -= damage;
-        //如果还有生命
         if (health > 0)
         {
-            if (OnTakeDamage != null) OnTakeDamage(originator, damage);
-            //挨打状态置是
+            // 回调正在挨打事件,只有怪物角色会生效,因为只有傀儡控制器会给这个事件赋值响应
+            if (OnTakeDamage != null)
+                OnTakeDamage(originator, damage);
             takingDamage = true;
             attack = false;
         }
-        //如果生命打光了
+        //死了尸体立即注视施暴者
         else
         {
-            //目标方向(索引) = 人物朝向(索引) = 当前对象 向着 打人者的方向(索引)
             LookAtImmidietly(originator.iso.pos);
-            //死亡状态置是
             dying = true;
-            //攻击状态置否
             attack = false;
         }
         moving = false;
         targetCharacter = null;
     }
     /// <summary>
-    /// 在动画播放时执行的方法(不是系统的api哈,就是自己取得名字)
+    /// 动画中期事件,回调方法
     /// </summary>
+    /// <remarks>
+    /// [应用表][动画事件调用]动画播放到一半就调用这个方法,这个方法用于攻击,被攻击,死亡等,这个版本中只有攻击和死亡
+    /// </remarks>
     void OnAnimationMiddle()
     {
-        //如果正在攻击
         if (attack)
         {
-            //如果目标角色为空
             if (targetCharacter == null)
             {
-                //打一个射线:从自己>>目标坐标;;长度:身体半径+攻击范围;;排除对象:自身;;是否画线:是
                 var hit = Tilemap.Raycast(iso.pos, targetPoint, rayLength: diameter / 2 + attackRange, ignore: gameObject, debug: true);
-                //射线打中目标
                 if (hit.gameObject != null)
                 {
-                    //目标角色就是射线打中的这个
                     targetCharacter = hit.gameObject.GetComponent<Character>();
                 }
             }
-            //如果目标角色不为空
+
             if (targetCharacter)
             {
-                //获取目标角色的坐标点
                 Vector2 target = targetCharacter.GetComponent<Iso>().pos;
-                //如果目标和角色的距离 <= 攻击范围 + 角色半径 + 目标半径,就执行攻击
                 if (Vector2.Distance(target, iso.pos) <= attackRange + diameter / 2 + targetCharacter.diameter / 2)
                 {
+                    //实际的攻击是在这个事件中调用的
                     targetCharacter.TakeDamage(this, attackDamage);
                 }
-                //攻击完后,目标角色置空
-                targetCharacter = null;                
-                //目标也置空
+                targetCharacter = null;
                 m_Target = null;
             }
         }
-        //如果正在死亡中
+        // 死了就修改下图层,躺地板上
         if (dying)
         {
-            //把渲染层级改为躺在地板上
             spriteRenderer.sortingLayerName = "OnFloor";
         }
     }
-
     /// <summary>
-    /// 在动画完成时执行的方法(不是系统的api哈,就是自己取得名字)
+    /// 动画结尾事件,回调方法
     /// </summary>
-    void OnAnimationFinish()
-    {
-        //动画完成后,就把攻击状态和挨打状态置为false
+    /// <remarks>
+    /// [应用表][动画事件调用]动画播放到结束就调用这个方法, 用于: 结束攻击, 被攻击姿态; 死亡中姿态转入死亡姿态; 更新下一个动作动画
+    /// </remarks>
+    void OnAnimationFinish() {
         attack = false;
         takingDamage = false;
-        //如果是死亡中(动画播放中),这是动画结束事件,所以就转入死亡状态
         if (dying)
         {
-            //死亡中状态为否
             dying = false;
-            //死亡状态置为true
             dead = true;
         }
         UpdateAnimation();

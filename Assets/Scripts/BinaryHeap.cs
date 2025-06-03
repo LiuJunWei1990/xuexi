@@ -1,82 +1,90 @@
 ﻿using System;
-
-// 二叉堆类，T 必须实现 IComparable 接口以便比较大小
+/// <summary>
+/// 二叉堆(一种强化了找最小数的容器)
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <remarks>
+/// 叉状树结构的容器,可以迅速找出最小值放在堆顶,添加或者摘取元素都会重新排序,以保证二叉堆的结构
+/// </remarks>
 public class BinaryHeap<T> where T: IComparable<T>
 {
-    // 存储堆元素的数组
+    /// <summary>
+    /// 堆本体
+    /// </summary>
     T[] items;
-    // 当前堆中元素的数量
+    /// <summary>
+    /// 堆中元素个数[字段]
+    /// </summary>
     int count = 0;
-    // 堆的最大容量
+    /// <summary>
+    /// 堆的最大容量[字段]
+    /// </summary>
     int maxSize;
 
-    // 构造函数，初始化堆
     public BinaryHeap(int maxSize)
     {
-        // 数组大小为 maxSize + 1，因为索引 0 不使用
+        //原作者注:为了简化处理,堆的第一个元素不使用,所以容量要+1
         items = new T[maxSize + 1];
         this.maxSize = maxSize;
     }
-
-    // 向堆中添加元素
+    /// <summary>
+    /// 加入元素
+    /// </summary>
+    /// <param name="item"></param>
+    /// <remarks>
+    /// 加入新元素会按大小放在容器对应的位置,而不是末尾
+    /// </remarks>
     public void Add(T item)
     {
-        // 元素数量加 1
         ++count;
-        // 新元素的初始位置
         int index = count;
-        // 将新元素放入数组
         items[index] = item;
-
-        // 获取父节点位置
+        //因为是二叉树,所以父节点的索引是当前节点的索引除以2
         int parent = index / 2;
-        // 上浮操作：如果当前节点比父节点小，就交换位置
+        //拓扑,比大小一路到堆顶或者父更小中止
         while (index > 1 && items[parent].CompareTo(items[index]) > 0)
         {
-            //交换两个变量的引用
             Swap(ref items[parent], ref items[index]);
             index = parent;
             parent = index / 2;
         }
     }
-
-    // 取出堆顶元素（最小元素）
+    /// <summary>
+    /// 摘取堆顶
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="Exception(溢出)"></exception>
+    /// <remarks>
+    /// 摘走堆顶后,重新排序
+    /// </remarks>
     public T Take()
     {
-        // 获取堆顶元素
+        //摘走第一个,最后一个放第一
         T result = items[1];
-        // 将最后一个元素移到堆顶
         items[1] = items[count];
-        // 元素数量减 1
         --count;
 
-        // 迭代计数器，防止死循环
+        //赋值计数器,索引,子节点
         int iterCount = 0;
-
-        // 下沉操作
         int index = 1;
         int child = index * 2;
+        //循环比大小,直到现在的第一个值到达了应该在的位置
         while (child <= count)
         {
-            // 防止无限循环
             if (iterCount++ > 1000)
                 throw new Exception("溢出");
-
-            // 获取左右子节点
+            //节点的三个点,父,左,右,找最小的
             int left = child;
             int right = child + 1;
-            // 假设当前节点是最小的
             int smallest = index;
-            // 如果左子节点更小
+            //CompareTo,前大后小为1,反之为0
             if (items[smallest].CompareTo(items[left]) > 0)
                 smallest = left;
-            // 如果右子节点存在且更小
             if (right <= count && items[smallest].CompareTo(items[right]) > 0)
                 smallest = right;
-            // 如果当前节点不是最小的
+            //例如[3]比[1]小,交换值,index指向[3],child指向[6]
             if (index != smallest)
             {
-                // 交换位置
                 Swap(ref items[index], ref items[smallest]);
                 index = smallest;
                 child = index * 2;
@@ -86,17 +94,25 @@ public class BinaryHeap<T> where T: IComparable<T>
                 break;
             }
         }
-
+        //值在第一步就定好了,中间的代码都在重新排序,和它没关系
         return result;
     }
-
-    // 清空堆
+    /// <summary>
+    /// 清空
+    /// </summary>
+    /// <remarks>
+    /// 只是把count置0,并不清除主体,因为Add的时候会覆盖掉
+    /// </remarks>
     public void Clear()
     {
         count = 0;
     }
-
-    // 获取当前堆中元素数量
+    /// <summary>
+    /// 堆中元素个数[属性]
+    /// </summary>
+    /// <remarks>
+    /// count[字段]的壳子
+    /// </remarks>
     public int Count
     {
         get
@@ -104,8 +120,12 @@ public class BinaryHeap<T> where T: IComparable<T>
             return count;
         }
     }
-
-    // 获取堆的最大容量
+    /// <summary>
+    /// 堆的最大容量[属性]
+    /// </summary>
+    /// <remarks>
+    /// maxSize[字段]的壳子
+    /// </remarks>
     public int MaxSize
     {
         get
@@ -113,8 +133,10 @@ public class BinaryHeap<T> where T: IComparable<T>
             return maxSize;
         }
     }
-
-    // 将堆转换为字符串表示
+    /// <summary>
+    /// 本体所有元素输出字符串
+    /// </summary>
+    /// <returns></returns>
     public override string ToString()
     {
         if (count == 0)
@@ -129,8 +151,11 @@ public class BinaryHeap<T> where T: IComparable<T>
         
         return "[" + result + "]";
     }
-
-    // 交换两个元素的值
+    /// <summary>
+    /// 交换两个形参的值
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
     static void Swap(ref T a, ref T b)
     {
         T tmp = a;

@@ -1,51 +1,78 @@
-using UnityEngine;
+﻿using UnityEngine;
+
 /// <summary>
-/// 定义一个IsoAnimation类,用于存储动画相关的属性,继承自ScriptableObject类
-/// ScriptableObject类是Unity自带的一个类,用于把一个类型转换为资源文件,前提是这个类型继承自ScriptableObject
-/// 这个类的序列化字段可以直接在Inspector面板上显示和修改
+/// 等距场景下的动画文件
 /// </summary>
-//特性:字段会显示在Inspector面板上
+/// <remarks>
+/// [表参数]这个类就是储存一个角色的动画数据
+/// 这个脚本继承ScriptableObject,可以把一个类保存成一个文件
+/// </remarks>
+/// 特性可序列化
 [System.Serializable]
 public class IsoAnimation : ScriptableObject
 {
     /// <summary>
-    /// 状态(人物状态,就是动画,比如 idle,run,jump...)
+    /// 动画姿态
     /// </summary>
-    //特性:字段会显示在Inspector面板上
+    /// <remarks>
+    /// 储存一个姿态的动画数据,如行走中[姿态]的动画
+    /// </remarks>
+    /// 特性:可序列化
     [System.Serializable]
     public class State
     {
         /// <summary>
-        /// 状态名字(跑,待命,挨打等)
+        /// 姿态的名字
         /// </summary>
         public string name;
         /// <summary>
-        /// 是否循环播放动画
+        /// 动画是否循环播放
         /// </summary>
+        /// <remarks>
+        /// 比如死亡中就不能循环播放,不然人物一直不停重复倒地的动作
+        /// </remarks>
         public bool loop = true;
         /// <summary>
-        /// 动画文件的fps
+        /// 动画的帧率
         /// </summary>
+        /// <remarks>
+        /// 就是由几张精灵组成,12帧就是12张精灵
+        /// </remarks>
         public float fps = 12.0f;
         /// <summary>
-        /// 动画文件引用(编辑器面板上那个框框),需要自己赋值,赋值这个texture后,会自动生成sprites数组
+        /// 动画的原图片
         /// </summary>
-        public Texture2D texture; 
+        /// <remarks>
+        /// 是由这张图片切成的精灵数组(Unity自带工具切的)
+        /// </remarks>
+        public Texture2D texture;
         /// <summary>
-        /// texture的精灵文件数组,由生成按钮生成,不需要自己赋值
+        /// 动画的精灵数组
         /// </summary>
+        /// <remarks>
+        /// 组成当前动画的精灵数组
+        /// </remarks>
         public Sprite[] sprites;
     }
     /// <summary>
-    /// 朝向数量
+    /// 动画的方向数量
     /// </summary>
+    /// <remarks>
+    /// 精灵切片会根据方向数量进行切图,8方向就是12*8张精灵
+    /// </remarks>
     public int directionCount = 8;
     /// <summary>
-    /// 朝向偏移量
+    /// 动画的方向偏移量
     /// </summary>
+    /// <remarks>
+    /// 如果你的精灵切片是从左下角开始的,那么你需要偏移一下,让它从左上角开始
+    /// </remarks>
     public int directionOffset = 0;
     /// <summary>
-    /// 状态数组,需手动添加
+    /// 动画的姿态数组
     /// </summary>
+    /// <remarks>
+    /// 这个数组就是储存当前动画的所有姿态
+    /// </remarks>
     public State[] states;
 }

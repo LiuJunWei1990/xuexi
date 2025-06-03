@@ -1,148 +1,125 @@
-// 引入系统集合命名空间，用于使用集合类型
 using System.Collections;
-
-// 引入系统集合泛型命名空间，用于使用泛型集合类型
 using System.Collections.Generic;
-
-// 引入 Unity 引擎的命名空间，用于访问 Unity 的核心功能
 using UnityEngine;
 
-
-
 /// <summary>
-/// 定义 Iso 类，用于处理等距坐标和世界坐标之间的转换,绘制地图标线(用于调试模式,和寻路遮挡)
+/// 等距组件
 /// </summary>
-/// 特性:会在编辑模式下运行该脚本
+/// <remarks>
+/// [角色的组件]将等距坐标转为为世界坐标,更新给角色的trensform.position; [Iso工具类]提供各种坐标转换的静态方法;
+/// 特性:编辑模式下,不运行游戏也可生效; 会自动添加SpriteRenderer组件;
+/// </remarks>
 [ExecuteInEditMode]
-/// 特性:该脚本携带一个组件
 [RequireComponent (typeof(SpriteRenderer))]
-public class Iso : MonoBehaviour
-{
+public class Iso : MonoBehaviour {
     /// <summary>
-    /// 常量，瓦片的素材像素(80*80)
+    /// 一个瓦片素材的像素单位大小,80像素单位
     /// </summary>
     public const float pixelsPerUnit = 80;
-
     /// <summary>
-    /// 常量，瓦片的尺寸（世界坐标单位,X轴）
+    /// 一个单元格的X轴,世界坐标中0.2单位
     /// </summary>
     public const float tileSize = 0.2f;
-
     /// <summary>
-    /// 常量，瓦片的尺寸（世界坐标单位,Y轴，为X轴的一半）
+    /// 一个单元格的Y轴,世界坐标中0.1单位
     /// </summary>
     public const float tileSizeY = tileSize / 2;
     /// <summary>
-    /// 当前对象的位置（等距坐标）
+    /// 游戏对象的等距坐标
     /// </summary>
-    [Tooltip("位置(等距)")]
     public Vector2 pos;
-
     /// <summary>
-    /// 是否瓦片,瓦片拖动时按瓦片对齐,否则按单元格对齐
+    /// 编辑模式下,该对象拖动时,吸附瓦片素材的边框
     /// </summary>
-    [Tooltip("与瓦片对齐")]
     public bool macro = false;
-
     /// <summary>
-    /// 是否排序(渲染层级),默认是排序的,因为有些物体不需要排序,比如地板,整个图层都是地板,地板是不会挡住其他物体的,所以不需要排序
+    /// 是否按等距地图坐标排序
     /// </summary>
-    [Tooltip("与同层级按分数排序")]
-    public bool sort = true;
-
+    /// <remarks>
+    /// 先排宏瓦片Y轴,同一个宏瓦片的再排世界坐标Y轴
+    /// </remarks>
+	public bool sort = true;
     /// <summary>
-    /// 精灵材质渲染器
+    /// 渲染器组件引用
     /// </summary>
-    SpriteRenderer spriteRenderer;
-
-
+	SpriteRenderer spriteRenderer;
     /// <summary>
-    /// 将等距坐标转换为世界坐标
+    /// 等距坐标转世界坐标
     /// </summary>
-    /// <param name="iso">等距坐标</param>
+    /// <param name="iso"></param>
     /// <returns></returns>
-    static public Vector3 MapToWorld(Vector3 iso)
-    {
-        // 根据等距坐标计算世界坐标
-        return new Vector3(iso.x - iso.y, (iso.x + iso.y) / 2) * tileSize;
-    }
-
+	static public Vector3 MapToWorld(Vector3 iso) {
+		return new Vector3(iso.x - iso.y, (iso.x + iso.y) / 2) * tileSize;
+	}
     /// <summary>
-    /// 将世界坐标转换为等距坐标
+    /// 世界坐标转等距坐标
     /// </summary>
-    /// <param name="world">世界坐标</param>
+    /// <param name="world"></param>
     /// <returns></returns>
-    static public Vector3 MapToIso(Vector3 world)
-    {
-        // 根据世界坐标计算等距坐标
-        return new Vector3(world.y + world.x / 2, world.y - world.x / 2) / tileSize;
-    }
+	static public Vector3 MapToIso(Vector3 world) {
+		return new Vector3(world.y + world.x / 2, world.y - world.x / 2) / tileSize;
+	}
     /// <summary>
-    /// 计算渲染顺序
+    /// 等距地图排序
     /// </summary>
-    /// <param name="worldPosition">世界坐标下的坐标点</param>
-    /// <returns>形参坐标点处于的渲染顺序标号</returns>
+    /// <param name="worldPosition"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// 计算方式: 宏瓦片Y轴*100 再加上 角色以宏瓦片坐标为原点的世界坐标Y轴
+    /// 解释一下就是: 先按宏瓦片Y轴排,同一宏瓦片的就比Y轴的世界坐标
+    /// </remarks>
     static public int SortingOrder(Vector3 worldPosition)
     {
-        // 计算排序顺序
-        //计算形参坐标点所在的宏瓦片
         var macroTile = MacroTile(MapToIso(worldPosition));
-        //计算宏瓦片的Y轴世界坐标
         var macroY = (MapToWorld(macroTile)).y / tileSizeY;
-        //新建宏瓦片的层级排序,赋值为宏瓦片的Y轴世界坐标除以tileSizeY的结果,取整,然后取反,
         int macroTileOrder = -Mathf.RoundToInt(macroY);
-        //新建要返回的层级排序,赋值为形参坐标点的Y轴坐标除以tileSizeY的结果,取整,然后取反,
         int sortingOrder = -Mathf.RoundToInt(worldPosition.y / tileSizeY - macroY);
-
-        //层级排序加上宏瓦片的层级排序乘以100加成得到最终的层级排序
         sortingOrder += macroTileOrder * 100;
-        //返回结果
         return sortingOrder;
     }
     /// <summary>
-    /// Debug模式下绘制单元格,需要程序运行时才会显示在Scene视图中,颜色由color参数决定
+    /// 画格子辅助线(Debug版)
     /// </summary>
-    /// <param name="pos">等距坐标</param>
-    /// <param name="color">线条颜色</param>
-    /// <param name="margin">偏移，就是单元格中间的小方块，A*寻路用的那种</param>
-    /// <param name="duration">画线的持续时间</param>
-    static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0, float duration = 0f)
-    {
-        // 计算标线单元格的一半边长
-        float d = 0.5f - margin;
-
-        // 绘制单元格的四条边
-        // 计算四个顶点的世界坐标
+    /// <param name="pos"></param>
+    /// <param name="color"></param>
+    /// <param name="margin"></param>
+    /// <param name="duration"></param>
+    /// <remarks>
+    /// Debug.DrawLine需要在运行模式才会在场景界面显示
+    /// 这个重载可以自定义颜色
+    /// </remarks>
+	static public void DebugDrawTile(Vector3 pos, Color color, float margin = 0, float duration = 0f) {
+		float d = 0.5f - margin;
         var topRight = MapToWorld(pos + new Vector3(d, d));
         var topLeft = MapToWorld(pos + new Vector3(-d, d));
         var bottomRight = MapToWorld(pos + new Vector3(d, -d));
         var bottomLeft = MapToWorld(pos + new Vector3(-d, -d));
-        // 绘制四条边
         Debug.DrawLine(topRight, bottomRight, color, duration);
 		Debug.DrawLine(bottomLeft, topLeft, color, duration);
 		Debug.DrawLine(topRight, topLeft, color, duration);
 		Debug.DrawLine(bottomRight, bottomLeft, color, duration);
-    }
+	}
     /// <summary>
-    /// Debug模式下绘制直线
+    /// 画直线辅助线(Debug版)
     /// </summary>
-    /// <param name="from">起点</param>
-    /// <param name="to">终点</param>
+    /// <param name="from"></param>
+    /// <param name="to"></param>
     static public void DebugDrawLine(Vector3 from, Vector3 to)
     {
         Debug.DrawLine(MapToWorld(from), MapToWorld(to));
     }
-
     /// <summary>
-    /// Gizmos模式下绘制单元格,无需程序运行直接显示在Scene视图中,颜色由color参数决定
+    /// 画格子辅助线(Gizmos版)
     /// </summary>
-    /// <param name="pos">等距坐标</param>
-    /// <param name="size">长度</param>
+    /// <param name="pos"></param>
+    /// <param name="size"></param>
+    /// <remarks>
+    /// 默认尺寸是画单元格的
+    /// Gizmos.DrawLine即使不在运行模式也会在场景界面显示
+    /// </remarks>
     static public void GizmosDrawTile(Vector3 pos, float size = 1.0f)
     {
-        // 计算标线单元格的一半边长
         float d = 0.5f * size;
-        // 绘制单元格的四条边
         var topRight = MapToWorld(pos + new Vector3(d, d));
         var topLeft = MapToWorld(pos + new Vector3(-d, d));
         var bottomRight = MapToWorld(pos + new Vector3(d, -d));
@@ -152,114 +129,104 @@ public class Iso : MonoBehaviour
         Gizmos.DrawLine(topRight, topLeft);
         Gizmos.DrawLine(bottomRight, bottomLeft);
     }
-
     /// <summary>
-    /// 不提供颜色的重载debug单元格画线，默认颜色为白色
+    /// 画直线辅助线(Debug版)
     /// </summary>
-    /// <param name="pos">等距坐标</param>
-    /// <param name="margin">偏移</param>
-    /// <param name="duration">持续时间</param>
-    static public void DebugDrawTile(Vector3 pos, float margin = 0, float duration = 0f)
-    {
-        DebugDrawTile(pos, Color.white, margin, duration);
-    }
-
+    /// <param name="pos"></param>
+    /// <param name="color"></param>
+    /// <param name="margin"></param>
+    /// <param name="duration"></param>
+    /// <remarks>
+    /// Debug.DrawLine需要在运行模式才会在场景界面显示
+    /// 这个重载颜色强制是白色
+    /// </remarks>
+    static public void DebugDrawTile(Vector3 pos, float margin = 0, float duration = 0f) {
+		DebugDrawTile(pos, Color.white, margin, duration);
+	}
     /// <summary>
-    /// 对坐标进行取整操作
+    /// 坐标取整
     /// </summary>
-    /// <param name="pos">等距坐标</param>
+    /// <param name="pos">用来取整的坐标</param>
     /// <returns></returns>
-    static public Vector3 Snap(Vector3 pos)
-    {
-        pos.x = Mathf.Round(pos.x);
-        pos.y = Mathf.Round(pos.y);
-        return pos;
-    }
-
+	static public Vector3 Snap(Vector3 pos) {
+		pos.x = Mathf.Round(pos.x);
+		pos.y = Mathf.Round(pos.y);
+		return pos;
+	}
     /// <summary>
-    /// 用作大尺寸瓦片，坐标取整
+    /// 宏瓦片坐标,等距坐标乘以5倍取整(就是瓦片素材的大小)
     /// </summary>
-    /// 把坐标除以5。调用这个方法的代码后面会乘以5，保证坐标一直是5的倍数，从而对齐瓦片坐标
-    /// <param name="pos">等距坐标</param>
-    /// <returns>XY轴分别除以5并取整的结果</returns>
+    /// <param name="pos"></param>
+    /// <returns></returns>
     static public Vector3 MacroTile(Vector3 pos)
     {
-        //保持Z轴不变
         var macroTile = pos;
-        //X,Y轴除以5后取整
         macroTile.x = Mathf.Round(pos.x / 5);
         macroTile.y = Mathf.Round(pos.y / 5);
-        //返回处理后的坐标
         return macroTile;
     }
-
     /// <summary>
-    /// 获取两点之间的方向的索引(directionCount:8向或者16向)
+    /// [Iso工具]计算两点之间的方向索引
     /// </summary>
-    /// <param name="from">来自</param>
-    /// <param name="target">目标</param>
-    /// <param name="directionCount">8向或者16向</param>
+    /// <param name="from"></param>
+    /// <param name="target"></param>
+    /// <param name="directionCount"></param>
     /// <returns></returns>
+    /// <remarks>
+    /// 方向索引对应表
+    /// 0: 左上（(-1, -1)）
+    /// 1: 左（(-1, 0)）
+    /// 2: 左下（(-1, 1)）
+    /// 3: 下（(0, 1)）
+    /// 4: 右下（(1, 1)）
+    /// 5: 右（(1, 0)）
+    /// 6: 右上（(1, -1)）
+    /// 7: 上（(0, -1)）
+    /// </remarks>
     static public int Direction(Vector2 from, Vector3 target, int directionCount)
     {
-        //终点减起点得到两点之间的向量
         var dir = target - (Vector3)from;
-        //获取Vector3(-1,-1)(左下方向)和向量dir之间的夹角
-        //Mathf.Sign(dir.y - dir.x)判断的是-1,-1到1,1之间,负数是下半,正数是上半
-        //给夹角加上正负数,可以代表360度中的任一角度
         var angle = Vector3.Angle(new Vector3(-1, -1), dir) * Mathf.Sign(dir.y - dir.x);
-        //360°除以方向数,得到每一个方向的角度
         var directionDegrees = 360.0f / directionCount;
-        //获取方向索引
         return Mathf.RoundToInt((angle + 360) % 360 / directionDegrees) % directionCount;
     }
 
-    void Awake()
-    {
-        //获取当前对象坐标
-        pos = MapToIso(transform.position);
-        //取组件,这和上面两条代码是专门给互动物体准备的,我估计后面互动相关代码会验证spriteRenderer是否为空
-        spriteRenderer = GetComponent<SpriteRenderer>();
-    }
+	void Awake() {
+		pos = MapToIso(transform.position);
+		spriteRenderer = GetComponent<SpriteRenderer>();
+	}
 
-    // Start 方法，在游戏开始时调用
-    void Start()
-    {
-        // 空方法，未实现具体逻辑
-    }
-    // Update 方法，每帧调用一次
-    void Update()
-    {
-        // 如果当前对象处于游戏状态
+	void Start () {
+		
+	}
+    /// <summary>
+    /// 运行模式下坐标转换，编辑器模式下坐标转换
+    /// </summary>
+    void Update () {
+        //如果处在游戏运行状态下,等距坐标直接转成世界坐标,主要用于角色移动
         if (Application.isPlaying)
         {
-            // 每帧将当前对象的等距坐标转换为世界坐标，并设置对象的位置
             transform.position = MapToWorld(pos);
         }
-        // 如果当前对象处于编辑状态
+        //否则就是在编辑模式下,这个坐标处理主要应用于编辑模式下拖动对象
         else
         {
-            //>>>>>>>>>>这里代码的作用时,在编辑模式下,可以拖动游戏对象位置,并且自动对齐单元格,一格一格的动<<<<<<<<<<<<
-            //如果是大尺寸瓦片,每格就是瓦片大小
+            //宏瓦片对齐就是把等距坐标乘以5倍,于瓦片素材的大小一致
             if (macro)
             {
-                //MacroTile把等距坐标除以五之后取整,再乘以五,保证坐标一直是5的倍数,这样就是大尺寸瓦片的坐标了.
                 transform.position = MapToWorld(MacroTile(MapToIso(transform.position))) * 5;
             }
-            //如果不是,每格就是单元格大小
+            //否则就按瓦片单元格对齐就行
             else
             {
-                // 将当前对象的位置转换为等距坐标，并取整再转换为世界坐标，设置对象的位置.(作用是对齐单元格)
                 transform.position = MapToWorld(Snap(MapToIso(transform.position)));
             }
-            
-            //反过来由当前对象世界坐标转换为等距坐标来更新pos,原本是pos更新人物位置,现在是人物位置更新pos,因为编辑模式下,人物位置是可以拖动的
+            //角色的transform.position同时也会更新给iso.pos.以保证实时一致
             pos = MapToIso(transform.position);
         }
-        //是否排序,默认是排序的,因为有些物体不需要排序,比如地板,地板是不会挡住其他物体的,所以不需要排序
-        if (sort)
+        //是否按等距地图坐标排序
+		if (sort)
         {
-            //得到物体的渲染层级
             spriteRenderer.sortingOrder = SortingOrder(transform.position);
         }
     }
