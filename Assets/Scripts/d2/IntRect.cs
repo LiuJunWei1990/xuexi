@@ -1,9 +1,10 @@
 ﻿
 /// <summary>
-/// 整数矩形
+/// [自定义几何类] 整数矩形类
 /// </summary>
 /// <remarks>
-/// 类似于vector类型,这个类代表一个矩形的几何形状,它是整型的
+/// <para> Unity中Rect只能处理浮点数, 所以自己写一个整数矩形类</para>
+/// <para> 用代码表述一个矩形, 可以方便计算</para>
 /// </remarks>
 public struct IntRect
 {
@@ -13,11 +14,11 @@ public struct IntRect
     public static IntRect zero = new IntRect(0, 0, 0, 0);
 
     /// <summary>
-    /// 锚点x(左上)
+    /// 起始点x(左上)
     /// </summary>
     int _x;
     /// <summary>
-    /// 锚点y(左上)
+    /// 起始点y(左上)
     /// </summary>
     int _y;
     /// <summary>
@@ -30,12 +31,15 @@ public struct IntRect
     int _height;
 
     /// <summary>
-    /// 整数矩形的构造函数
+    /// 初始化整数矩形类
     /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
+    /// <param name="x">起始点x(左上)</param>
+    /// <param name="y">起始点y(左上)</param>
+    /// <param name="width">宽</param>
+    /// <param name="height">高</param>
+    /// <remarks>
+    /// 用代码表述一个整数单位的矩形
+    /// </remarks>
     public IntRect(int x, int y, int width, int height)
     {
         _x = x;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 
 /// <summary>
@@ -7,11 +7,10 @@ using System.IO;
 public class COF
 {
     /// <summary>
-    /// 单个游戏对象图层容器(单个对象貌似可以有多个图层)
+    /// 游戏对象的动画目录
     /// </summary>
     /// <remarks>
-    /// 用于游戏对象的显示图像的子节点(挂spriteRenderer组件的那个); 
-    /// 容器中的数据用来给spriteRenderer组件赋值
+    /// 保存游戏对象的DCC文件路径和动画名称(攻击,行走,死亡,受击等)
     /// </remarks>
     public Layer[] layers;
     /// <summary>
@@ -21,19 +20,35 @@ public class COF
     /// 例如:向右跑/向左攻击,这种是一个动作
     /// </remarks>
     public int framesPerDirection;
+    /// <summary>
+    /// 朝向总数
+    /// </summary>
     public int directionCount;
+    /// <summary>
+    /// 动画总数
+    /// </summary>
     public int layerCount;
+    
     public int mode;
+    /// <summary>
+    /// 优先级?
+    /// </summary>
     public byte[] priority;
     /// <summary>
-    /// 游戏对象图层
+    /// 游戏对象的动画数据
     /// </summary>
     /// <remarks>
-    /// 保存游戏对象的图像参数
+    /// 保存游戏对象的DCC文件路径和动画名称
     /// <remarks>
     public struct Layer
     {
+        /// <summary>
+        /// DCC文件路径
+        /// </summary>
         public string dccFilename;
+        /// <summary>
+        /// 动画名称
+        /// </summary>
         public string name;
     }
 
@@ -77,14 +92,16 @@ public class COF
         var reader = new BinaryReader(stream);
 
         //读取cof文件的头信息
-        cof.layerCount = reader.ReadByte();                                //层级数量
+        cof.layerCount = reader.ReadByte();                                //动画总数
         cof.framesPerDirection = reader.ReadByte();                        //每方向动画的帧数量
         cof.directionCount = reader.ReadByte();                            //方向数量
         cof.mode = System.Array.IndexOf(ModeNames[obj.type], mode);        //mode字符串在,ModeNames[obj.type]数组中的索引编号
         stream.Seek(25, SeekOrigin.Current);                                //跳过25个字节
 
+        //初始化游戏动画目录,可保存16种动画DCC文件路径和动画名称
         cof.layers = new Layer[16];
 
+        //遍历所有动画,读取DCC文件路径和动画名称
         for (int i = 0; i < cof.layerCount; ++i)
         {
             int compositIndex = reader.ReadByte();
@@ -103,12 +120,14 @@ public class COF
             string weaponClass = System.Text.Encoding.Default.GetString(reader.ReadBytes(3));
             reader.ReadByte(); // zero byte from zero-terminated weapon class string
             string sptr = obj.layers[compositIndex];
-            //
+            //获取层级DCC文件路径,和层级名称
             cof.layers[compositIndex].dccFilename = "Assets/d2/" + basePath + "/" + token + "/" + compositName + "/" + token + compositName + sptr + mode + weaponClass + ".dcc";
             cof.layers[compositIndex].name = compositName + " " + sptr;
         }
 
+        //跳过一个方向动画帧数的字节
         stream.Seek(cof.framesPerDirection, SeekOrigin.Current);
+        //读取优先级?  长度为一个对象的所有动画的帧数总数,相当于每帧一个字节
         cof.priority = reader.ReadBytes(cof.directionCount * cof.framesPerDirection * cof.layerCount);
 
         AnimData animData = new AnimData();

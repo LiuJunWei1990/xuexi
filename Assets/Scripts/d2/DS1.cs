@@ -69,7 +69,7 @@ class DT1Index
         //DT1文件数量加1
         dt1Count += 1;
     }
-    
+
     /// <summary>
     /// 根据索引找到DT1文件字典中的对应瓦片
     /// </summary>
@@ -110,6 +110,13 @@ class DT1Index
     }
 }
 
+/// <summary>
+/// 地图配置文件,DS1文件类
+/// </summary>
+/// <remarks>
+/// <para>最核心的配置文件之一,用来加载场景中的所有游戏对象(地板,家具,怪物,火焰等)</para>
+/// <para>加载过程中会导入其他诸如DT1,DCC,COF等场景相关的配置文件</para>
+/// </remarks>
 public class DS1
 {
     /// <summary>
@@ -168,7 +175,7 @@ public class DS1
                };
 
     //特殊点位的索引
-    
+
     /// <summary>
     /// 地图入口
     /// </summary>
@@ -189,44 +196,43 @@ public class DS1
     /// 传送门位置索引(未实装)
     /// </summary>
     static readonly int portalLocationIndex = DT1.Tile.Index(33, 0, 10);
+
     /// <summary>
-    /// 导入DS1文件
+    /// DS1文件导入器
     /// </summary>
     /// <param name="ds1Path">文件路径</param>
-    /// <param name="monsterPrefab">需要布置的怪物的预制体</param>
+    /// <param name="monsterPrefab">需要布置的怪物的预制体(并未用到,怪物通过配置文件生成)</param>
     /// <returns>导入结果</returns>
     static public ImportResult Import(string ds1Path, GameObject monsterPrefab = null)
     {
         //开始记录导入时间
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        //把DS1文件导入成内存流
+        //二进制流,后面代码都是按字节图
         var stream = new MemoryStream(File.ReadAllBytes(ds1Path));
-        //把内存流转换为二进制流
         var reader = new BinaryReader(stream);
         //读取DS1文件的版本号(4个字节)
         int version = reader.ReadInt32();
-        //地图长度(瓦片对象数量)
+        //地图长度(大瓦片单位)
         int width = reader.ReadInt32() + 1; //读取的数值加1,因为0也算了一个
-        //地图宽度(瓦片对象数量)
+        //地图宽度(大瓦片单位)
         int height = reader.ReadInt32() + 1;
         //幕数
         int act = 1;
-        
+
         #region 版本8及以上读幕数,否则默认幕数1
         if (version >= 8)
         {
             //读取幕数
-            act = reader.ReadInt32() + 1; //第0幕不算,从1开始
+            act = reader.ReadInt32() + 1; //幕数从1开始,所以要+1
             act = Mathf.Min(act, 5);      //最多5幕
         }
-        #endregion
-        
         //读取对应幕的调色板
         Palette.LoadPalette(act);
-        //标签类型? 貌似没有用过
-        int tagType = 0;
+        #endregion
 
-        #region 版本10及以上读取标签类型,否则默认为0
+        #region 版本10及以上读取标签类型,否则默认为0(这个标签后面没用到过)
+        //标签类型,没有用过
+        int tagType = 0;
         if (version >= 10)
         {
             tagType = reader.ReadInt32();
@@ -237,18 +243,19 @@ public class DS1
         }
         #endregion
 
-
+        //创建临时变量, DT1文件目录
         var dt1Index = new DT1Index();
 
-        //总瓦片数
+        //创建临时变量, 总瓦片数
         int totalTiles = 0;
 
-       #region 版本3及以上读取DT1文件,并储存
+        #region 版本3及以上读取DT1文件,并储存
         if (version >= 3)
         {
-            //文件数量
+            //读取文件数量
             int fileCount = reader.ReadInt32();
 
+            //遍历所有文件,把文件中的瓦片导入DT1文件目录中
             for (int i = 0; i < fileCount; i++)
             {
                 string filename = "";
@@ -260,7 +267,7 @@ public class DS1
                 }
                 //把文件路径中的.tg1替换成.dt1
                 filename = filename.Replace(".tg1", ".dt1");
-                //导入
+                //导入DT1文件
                 var imported = DT1.Import("Assets" + filename);
                 //总瓦片数,增量
                 totalTiles += imported.tiles.Length;
@@ -585,7 +592,7 @@ public class DS1
                             //}
                             //bptr += 4;
                             break;
-                        #endregion
+                            #endregion
                     }
                     ++i;
                 }
@@ -669,27 +676,27 @@ public class DS1
         var texture = tile.texture;
         // 将地图坐标转换为世界坐标
         var pos = MapToWorld(x, y);
-    
+
         // 创建新的游戏对象
         GameObject gameObject = new GameObject();
         // 设置对象名称为"主索引_子索引_方向"
         gameObject.name = tile.mainIndex + "_" + tile.subIndex + "_" + tile.orientation;
         // 设置对象位置
         gameObject.transform.position = pos;
-        
+
         // 添加MeshRenderer和MeshFilter组件
         var meshRenderer = gameObject.AddComponent<MeshRenderer>();
         var meshFilter = gameObject.AddComponent<MeshFilter>();
-        
+
         // 创建新的Mesh
         Mesh mesh = new Mesh();
-        
+
         // 获取纹理坐标和尺寸
         float x0 = tile.textureX;
         float y0 = tile.textureY;
         float w = tile.width / Iso.pixelsPerUnit;
         float h = (-tile.height) / Iso.pixelsPerUnit;
-    
+
         // 根据瓦片方向设置不同的顶点和UV
         if (tile.orientation == 0 || tile.orientation == 15)
         {
@@ -697,7 +704,7 @@ public class DS1
             var topLeft = new Vector3(-1f, 0.5f);
             if (tile.orientation == 15)
                 topLeft.y += tile.roofHeight / Iso.pixelsPerUnit;
-        
+
             // 设置顶点
             mesh.vertices = new Vector3[] {
                 topLeft,
@@ -705,10 +712,10 @@ public class DS1
                 topLeft + new Vector3(w, -h),
                 topLeft + new Vector3(w, 0)
             };
-            
+
             // 设置三角形
             mesh.triangles = new int[] { 2, 1, 0, 3, 2, 0 };
-            
+
             // 设置UV坐标
             mesh.uv = new Vector2[] {
                 new Vector2 (x0 / texture.width, -y0 / texture.height),
@@ -716,7 +723,7 @@ public class DS1
                 new Vector2 ((x0 + tile.width) / texture.width, (-y0 +tile.height) / texture.height),
                 new Vector2 ((x0 + tile.width) / texture.width, -y0 / texture.height)
             };
-    
+
             // 设置渲染顺序
             meshRenderer.sortingLayerName = tile.orientation == 0 ? "Floor" : "Roof";
             meshRenderer.sortingOrder = orderInLayer;
@@ -746,10 +753,10 @@ public class DS1
             // 设置渲染顺序,按Iso类的排序方法排
             meshRenderer.sortingOrder = Iso.SortingOrder(pos) - 4;
         }
-    
+
         // 将Mesh赋值给MeshFilter
         meshFilter.mesh = mesh;
-    
+
         // 在游戏运行时处理瓦片的碰撞标志(flag = 游戏本体代码中的单元格)
         if (Application.isPlaying)
         {
@@ -772,7 +779,7 @@ public class DS1
                 }
             }
         }
-    
+
         // 设置材质
         meshRenderer.material = tile.material;
         //返回瓦片对象
@@ -790,7 +797,7 @@ public class DS1
             return gameObject;
 
         var animator = gameObject.AddComponent<COFAnimator>();
-        
+        //静态对象(火焰之类的)
         if (obj.type == 2)
         {
             ObjectInfo objectInfo = ObjectInfo.sheet.rows[obj.objectId];
@@ -801,6 +808,7 @@ public class DS1
             staticObject.objectInfo = objectInfo;
             staticObject.direction = obj.direction;
         }
+        //动态对象(怪物之类的)
         else
         {
             var cof = COF.Load(obj, obj.mode);

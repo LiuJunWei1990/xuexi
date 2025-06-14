@@ -72,7 +72,7 @@ class TexturePacker
     /// <param name="height">瓦片的宽度(起始坐标在原图的左上,所以形参会先转负数)</param>
     /// <returns>切片的锚点信息,或者需要创建新的原图</returns>
     /// <remarks>
-    /// 按照DT1获取的宽高信息,顺序排列,这刚好对应了需切的图; 
+    /// 形参的宽高信息,顺序排列,这刚好对应了需切的图; 
     /// 然后返回锚点信息, 以便后续读取素材
     /// </remarks>
     public PackResult put(int width, int height)

@@ -8,7 +8,7 @@ class COFAnimator : MonoBehaviour
     /// </summary>
     COF cof;
     /// <summary>
-    /// 角色动画朝向
+    /// 角色动画朝向(索引)
     /// </summary>
     public int direction = 0;
     /// <summary>
@@ -170,7 +170,7 @@ class COFAnimator : MonoBehaviour
         if (cof == null)
             return;
         
-        //遍历当前COF文件种所有游戏对象图层
+        //遍历当前COF文件中的所有动画数据
         for (int i = 0; i < cof.layerCount; ++i)
         {
             //取出游戏对象图层
@@ -181,11 +181,12 @@ class COFAnimator : MonoBehaviour
             // 
             int layerIndex = cof.priority[(direction * cof.framesPerDirection * cof.layerCount) + (frameIndex * cof.layerCount) + i];
             var cofLayer = cof.layers[layerIndex];
+            //读取对应的DCC文件
             var dcc = DCC.Load(cofLayer.dccFilename);
 
             //精灵索引 = 方向 * 动作帧数 + 帧起始位置 + 帧索引
             int spriteIndex = direction * dcc.framesPerDirection + frameStart + frameIndex;
-            //刷新当前游戏对象图层的精灵渲染器
+            //刷新当前游戏对象图层的精灵
             layer.spriteRenderer.sprite = dcc.sprites[spriteIndex];
         }
     }

@@ -3,9 +3,7 @@
 /// 比特流
 /// </summary>
 /// <remarks>
-/// 自定义流, 用于以比特为单位读取流; 
-/// 它有两个索引, 一个是字节索引, 一个是比特索引;
-/// 字节索引从文件头开始, 比特索引从当前字节的第一个比特开始;
+/// [自定义流]按比特读取数据
 /// </remarks>
 public class BitReader
 {
@@ -27,20 +25,22 @@ public class BitReader
     public int bitIndex = 8;
 
     /// <summary>
-    /// 构造函数
+    /// 比特流构造函数
     /// </summary>
-    /// <param name="bytes">赋值给流的字节数据</param>
-    /// <param name="offset">流在文件中的起始位</param>
+    /// <param name="bytes">文件数据</param>
+    /// <param name="offset">流在文件中的起始位(默认从0开始)</param>
     /// <remarks>
-    /// 给BitReader赋值,形参1: 文件的字节数组, 形参2: 流在文件中的起始位
+    /// <para>创建成比特流</para>
+    /// <para>形参1: 文件的数据(字节数组)</para>
+    /// <para>形参2: 流在文件中的起始位</para>
     /// </remarks>
     public BitReader(byte[] bytes, long offset = 0)
     {
-        //赋值字节数据
+        //赋值文件数据
         this.bytes = bytes;
-        //字节索引
+        //赋值字节索引
         byteIndex = (int)offset / 8;
-        //比特索引
+        //赋值比特索引
         bitIndex = (int)(offset % 8);
         //当前字节
         currentByte = bytes[byteIndex++];
