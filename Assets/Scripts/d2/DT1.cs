@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -239,7 +239,7 @@ public class DT1
         }
         //跳过260字节
         reader.ReadBytes(260);
-        //到达了17行的第13个字节,16进制的15,10进制的21,这是瓦片种数
+        //到达了17行的第13个字节,这是瓦片种类数量
         int tileCount = reader.ReadInt32();
         reader.ReadInt32(); // 到此指针指向了文件中瓦片信息的开头（= 276）
         #endregion
@@ -264,7 +264,7 @@ public class DT1
         Color32[] pixels = null;
         #endregion
 
-        #region 遍历瓦片数据
+        #region 遍历瓦片种类数据
         //tileCount是头信息中获取的瓦片种数
         for (int i = 0; i < tileCount; ++i)
         {

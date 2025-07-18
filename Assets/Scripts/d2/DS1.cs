@@ -8,7 +8,7 @@ using UnityEditor;
 /// DT1文件目录
 /// </summary>
 /// <remarks>
-/// 用于存储DT1文件
+/// 用于存储DT1文件中读取出来的瓦片信息和稀有度映射,并记录总数
 /// 这里的瓦片和单元格 = 宏瓦片 = Unity世界坐标的1单位 = 等距坐标的5单位
 /// </remarks>
 class DT1Index

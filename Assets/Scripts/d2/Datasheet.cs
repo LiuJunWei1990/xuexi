@@ -185,8 +185,17 @@ public class Obj
     public int monstatId = -1;
     public int direction = 0;
     public string _base;
+    /// <summary>
+    /// 路径的一部分,代表动画的对象类型
+    /// </summary>
     public string token;
+    /// <summary>
+    /// 姿态(攻击1,攻击2,行走,待命等)
+    /// </summary>
     public string mode;
+    /// <summary>
+    /// 类型(现在看到的好像都是HTH类型)
+    /// </summary>
     public string _class;
     public string[] layers = new string[16];
     public string colormap;
@@ -247,6 +256,9 @@ public class Obj
     }
 }
 
+/// <summary>
+/// 对象表,对象的详细参数
+/// </summary>
 [System.Serializable]
 public class ObjectInfo
 {

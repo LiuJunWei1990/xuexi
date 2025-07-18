@@ -52,6 +52,9 @@ public class COF
         public string name;
     }
 
+    /// <summary>
+    /// 游戏对象的模式名称
+    /// </summary>
     public static readonly string[][] ModeNames = {
         new string[] { "DT", "NU", "WL", "RN", "GH", "TN", "TW", "A1", "A2", "BL", "SC", "TH", "KK", "S1", "S2", "S3", "S4", "DD", "GH", "GH" }, // player (plrmode.txt)
         new string[] { "DT", "NU", "WL", "GH", "A1", "A2", "BL", "SC", "S1", "S2", "S3", "S4", "DD", "GH", "xx", "RN" }, // monsters (monmode.txt)

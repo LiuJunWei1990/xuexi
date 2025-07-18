@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// COF版的游戏对象动画器
+/// </summary>
 class COFAnimator : MonoBehaviour
 {
     /// <summary>
@@ -109,7 +112,7 @@ class COFAnimator : MonoBehaviour
         //如果cof为空,则返回
         if (cof == null)
             return;
-        
+
         //初始化时间
         time = 0;
         //初始化帧计数器
@@ -169,7 +172,7 @@ class COFAnimator : MonoBehaviour
     {
         if (cof == null)
             return;
-        
+
         //遍历当前COF文件中的所有动画数据
         for (int i = 0; i < cof.layerCount; ++i)
         {
