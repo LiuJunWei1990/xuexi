@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 /// <summary>
 /// 静态游戏对象组件
 /// </summary>
+[System.Diagnostics.DebuggerDisplay("{name}")]
 class StaticObject : MonoBehaviour
 {
     /// <summary>
@@ -64,6 +66,20 @@ class StaticObject : MonoBehaviour
             animator.loop = objectInfo.cycleAnim[mode];
             animator.SetFrameRange(objectInfo.start[mode], objectInfo.frameCount[mode]);
         }
+    }
+
+    /// <summary>
+    /// Unity方法,相机渲染后调用
+    /// </summary>
+    void OnRenderObject()
+    {
+        if (objectInfo.draw) MouseSelection.Submit(this, animator.bounds);
+    }
+
+    public bool selected
+    {
+        get { return animator.selected; }
+        set { animator.selected = value; }
     }
 }
 

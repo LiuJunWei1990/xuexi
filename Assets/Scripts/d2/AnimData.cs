@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+/// <summary>
+/// 
+/// </summary>
 public struct AnimData
 {
     public string cofName;
@@ -15,7 +18,7 @@ public struct AnimData
         if (buckets[hash].data == null)
             return false;
 
-        foreach(var data in buckets[hash].data)
+        foreach (var data in buckets[hash].data)
         {
             if (data.cofName == name)
             {
@@ -45,7 +48,7 @@ public struct AnimData
                 nb = i;
         }
         for (int i = 0; i < nb; i++)
-            hash += (byte) upperName[i];
+            hash += (byte)upperName[i];
         return hash;
     }
 

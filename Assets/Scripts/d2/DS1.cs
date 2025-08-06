@@ -786,6 +786,7 @@ public class DS1
         return gameObject;
     }
 
+    
     static GameObject CreateObject(Obj obj, Vector3 pos)
     {
         GameObject gameObject = new GameObject();

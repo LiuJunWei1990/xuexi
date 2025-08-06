@@ -2,7 +2,7 @@
 using UnityEngine;
 
 /// <summary>
-/// COF版的游戏对象动画器
+/// COF版的游戏对象动画机
 /// </summary>
 class COFAnimator : MonoBehaviour
 {
@@ -55,6 +55,15 @@ class COFAnimator : MonoBehaviour
     List<Layer> layers = new List<Layer>();
 
     /// <summary>
+    /// 是否被选中
+    /// </summary>
+    bool _selected = false;
+    /// <summary>
+    /// 材质
+    /// </summary>
+    Material material;
+
+    /// <summary>
     /// 游戏对象图层,结构体
     /// </summary>
     /// <remarks>
@@ -64,6 +73,47 @@ class COFAnimator : MonoBehaviour
     {
         public SpriteRenderer spriteRenderer;
     }
+
+    /// <summary>
+    /// 包围盒,几何类型,类似于vector3,用来表示一个矩形的边界
+    /// </summary>
+    public Bounds bounds
+    {
+        get
+        {
+            Bounds bounds = new Bounds();
+            // 遍历所有图层，将每个精灵渲染器的边界合并到总边界中
+            foreach (var layer in layers) bounds.Encapsulate(layer.spriteRenderer.bounds);
+            return bounds;
+        }
+    }
+
+    /// <summary>
+    /// 是否被选中(_selected字段的壳子)
+    /// </summary>
+    public bool selected
+    {
+        get { return _selected; }
+
+        set
+        {
+            //如果值和_selected字段的值不同,就更新_selected字段的值
+            if (_selected != value)
+            {
+                _selected = value;
+                //更新材质的SelfIllum字段的值,就是亮度
+                material.SetFloat("_SelfIllum", _selected ? 2.0f : 1.0f);
+            }
+        }
+    }
+
+    void Awake()
+    {
+        //设置材质
+        material = new Material(Shader.Find("Sprite"));
+    }
+
+    
 
     /// <summary>
     /// 初始化
@@ -130,6 +180,7 @@ class COFAnimator : MonoBehaviour
             layerObject.transform.position = new Vector3(0, 0, -i * 0.1f);
             layerObject.transform.SetParent(gameObject.transform, false);
             layer.spriteRenderer = layerObject.AddComponent<SpriteRenderer>();
+            layer.spriteRenderer.material = material;
             layer.spriteRenderer.sortingOrder = Iso.SortingOrder(gameObject.transform.position);
             //将新增的游戏对象图层添加到容器中
             layers.Add(layer);
