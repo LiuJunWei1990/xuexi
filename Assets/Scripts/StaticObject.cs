@@ -28,6 +28,15 @@ class StaticObject : MonoBehaviour
     COFAnimator animator;
 
     /// <summary>
+    /// 游戏对象信息
+    /// </summary>
+    public ObjectInfo info
+    {
+        get { return objectInfo; }
+    }
+
+
+    /// <summary>
     /// 初始化
     /// </summary>
     void Awake()
@@ -73,7 +82,7 @@ class StaticObject : MonoBehaviour
     /// </summary>
     void OnRenderObject()
     {
-        if (objectInfo.draw) MouseSelection.Submit(this, animator.bounds);
+        if (objectInfo.draw && objectInfo.selectable[mode]) MouseSelection.Submit(this, animator.bounds);
     }
 
     public bool selected

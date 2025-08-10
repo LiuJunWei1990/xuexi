@@ -75,15 +75,27 @@ class COFAnimator : MonoBehaviour
     }
 
     /// <summary>
-    /// 包围盒,几何类型,类似于vector3,用来表示一个矩形的边界
+    /// 当前动画的总边界(每帧堆叠计算)
     /// </summary>
+    /// <remarks>
+    /// <para> 1. 包围盒,几何类型,类似于vector3,用来表示一个矩形的边界 </para>
+    /// <para> 2. 用来做为鼠标选中的判断依据 </para>
+    /// </remarks>
     public Bounds bounds
     {
         get
         {
             Bounds bounds = new Bounds();
-            // 遍历所有图层，将每个精灵渲染器的边界合并到总边界中
-            foreach (var layer in layers) bounds.Encapsulate(layer.spriteRenderer.bounds);
+            
+            // 遍历所有图层，将每个精灵渲染器的边界合并到总边界中(第一个图层的边界赋值给bounds,后面的就和bounds合并)
+            for (int i = 0; i < layers.Count; ++i)
+            {
+                var layer = layers[i];
+                if (i == 0)
+                    bounds = layer.spriteRenderer.bounds;
+                else
+                    bounds.Encapsulate(layer.spriteRenderer.bounds);
+            }
             return bounds;
         }
     }
